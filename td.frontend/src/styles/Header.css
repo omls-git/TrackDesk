@@ -1,0 +1,6 @@
+.nav-link.btn-outline-light:hover, 
+.nav-link.btn-outline-light:focus {
+  color: #0d6efd !important; /* Bootstrap primary */
+  background-color: #fff !important;
+  border-color: #0d6efd !important;
+}
