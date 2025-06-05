@@ -6,6 +6,7 @@ import reportWebVitals from './reportWebVitals';
 import { PublicClientApplication } from '@azure/msal-browser';
 import { MsalProvider } from '@azure/msal-react';
 import { msalConfig } from './authConfig';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 export const msalInstance = new PublicClientApplication(msalConfig);
 
@@ -13,8 +14,6 @@ async function main() {
   try {
     await msalInstance.initialize(); // ✅ REQUIRED
     await msalInstance.handleRedirectPromise(); // ✅ REQUIRED for loginRedirect()
-import 'bootstrap/dist/css/bootstrap.min.css';
-
     const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(
       <React.StrictMode>
