@@ -13,6 +13,7 @@ async function main() {
   try {
     await msalInstance.initialize(); // ✅ REQUIRED
     await msalInstance.handleRedirectPromise(); // ✅ REQUIRED for loginRedirect()
+import 'bootstrap/dist/css/bootstrap.min.css';
 
     const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(
