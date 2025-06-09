@@ -1,3 +1,5 @@
+
+import { AuthenticatedTemplate, UnauthenticatedTemplate} from '@azure/msal-react';
 import './App.css';
 import Header from './components/Header';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
@@ -6,10 +8,13 @@ import AllCases from './pages/AllCases';
 import MyCases from './pages/MyCases';
 import Employeetracker from './pages/Employeetracker';
 import Admin from './pages/Admin';
+import Login from './Login';
+
 
 function App() {
   return (
     <div className="App">
+      <AuthenticatedTemplate>
       <Header />
       <div className="main-content">
         <Router>
@@ -22,6 +27,10 @@ function App() {
           </Routes>
         </Router>
       </div>
+      </AuthenticatedTemplate>
+      <UnauthenticatedTemplate>
+        <Login />
+      </UnauthenticatedTemplate>
     </div>
   );
 }
