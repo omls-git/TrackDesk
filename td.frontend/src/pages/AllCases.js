@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import * as XLSX from 'xlsx';
 import TrackTable from '../components/TrackTable';
 import ImportModal from '../components/ImportModal';
+import { fetchAllCases, postCases } from '../services/API';
 
 const AllCases = () => {
 
@@ -14,7 +15,6 @@ const AllCases = () => {
   const handleImportFile = async (file) => {
     setLoading(true);
     handleClose();
-    // const file = event.target.files[0];
     if (!file) return;
     const data = await file.arrayBuffer();
     const workbook = XLSX.read(data, { type: 'buffer' });  
@@ -41,6 +41,7 @@ const AllCases = () => {
     });  
     console.log(jsonData);
     setMasterData(jsonData);
+    await postCases(jsonData)
     setLoading(false);
   };
 
@@ -142,7 +143,9 @@ const AllCases = () => {
           placeholder="Search..."
           style={{ maxWidth: 250 }}
         />
-        <button className="btn btn-success ms-auto">Export</button>
+        <button className="btn btn-success ms-auto"
+         onClick={() => fetchAllCases()}
+         >Export</button>
       </div>
       {/* {loading && <div className="text-center">Loading...</div>}
       {!loading && masterData.length > 0 && (
