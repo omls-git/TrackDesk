@@ -4,7 +4,6 @@ const caseRouter = express.Router();
 
 caseRouter.get('/', (req, res) => {
   const sql = 'SELECT * FROM cases';
-  // console.log("sql", sql)
   db.query(sql, (err, results) => {
     if (err) return res.status(500).json({ error: 'Failed to fetch cases' });
     res.json(results);
