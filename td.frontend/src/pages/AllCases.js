@@ -1,62 +1,60 @@
-import React, { useRef, useState } from 'react'
+import React, { useState } from 'react'
 import * as XLSX from 'xlsx';
+import TrackTable from '../components/TrackTable';
+import ImportModal from '../components/ImportModal';
 
 const AllCases = () => {
 
-  const [jsonData, setJsonData] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const fileInputRef = useRef();
+  const [masterData, setMasterData] = useState([]);
+  const [loading, setLoading] = useState(false);  
+  const [show, setShow] = useState(false);
+  const [columns, setColumns] = useState([]); 
+// const fileInputRef = useRef(); 
 
-  const handleImportFile = async (event) => {
-    const file = event.target.files[0];
+  const handleImportFile = async (file) => {
+    setLoading(true);
+    handleClose();
+    // const file = event.target.files[0];
     if (!file) return;
     const data = await file.arrayBuffer();
-    const workbook = XLSX.read(data, { type: 'array' });  
-    console.log(`File imported: ${file.name}`);
+    const workbook = XLSX.read(data, { type: 'buffer' });  
+    // console.log(`File imported: ${file.name}`);
     console.log(`Workbook:`, workbook);
-    // const sheetName = workbook.SheetNames[0]; // Get the first sheet
     const worksheet = workbook.Sheets["Open Cases"];
-    // console.log(`Processing sheet: ${sheetName}`);
-    let jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: true, defval: "" });
-    console.log(jsonData); // Process the data as needed
+    let jsonData = XLSX.utils.sheet_to_json(worksheet, {defval: "" });
+   
+    let headers = Object.keys(jsonData[0] || {});
+    setColumns(headers);
     
     // Convert Excel serial dates to JS date strings in all cells that look like dates
     const isProbablyDate = (val) =>
       typeof val === 'number' && val > 25569 && val < 60000; // Excel date serial range
+    jsonData = jsonData.map(row => {
+      return Object.fromEntries( 
+        Object.entries(row).map(([key, value]) => {
+          if (isProbablyDate(value)) {
+            return [key, parseExcelDate(value)];
+          }
+          return [key, value];
+        })
+      );
+    });  
+    console.log(jsonData);
+    setMasterData(jsonData);
+    setLoading(false);
+  };
 
-    // Find all columns whose header includes 'date' (case-insensitive)
-    const dateColIdxs = jsonData[0]
-      ? jsonData[0]
-        .map((header, idx) =>
-        ((typeof header === 'string' && header.toLowerCase().includes('date')) || header.includes('IRD/FRD')) ? idx : -1
-        )
-        .filter(idx => idx !== -1)
-      : [];
-
-    // Convert Excel serial dates to JS date strings for all date columns
-    if (dateColIdxs.length > 0) {
-      jsonData = jsonData.map((row, idx) => {
-      if (idx === 0) return row;
-      dateColIdxs.forEach(colIdx => {
-        const cell = row[colIdx];
-        if (isProbablyDate(cell)) {
-        const jsDate = XLSX.SSF.parse_date_code(cell);
-        if (jsDate) {
-          // Add one day to fix the Excel date offset
-          const dateObj = new Date(jsDate.y, jsDate.m-1, jsDate.d);
-          // Format as "MMM-dd-yyyy"
-          const month = dateObj.toLocaleString('en-US', { month: 'short' });
-          const day = String(dateObj.getDate()).padStart(2, '0');
-          const year = dateObj.getFullYear();
-          row[colIdx] = `${month}-${day}-${year}`;
+   const parseExcelDate = (value) => {
+        if (typeof value === "number") {
+          const date = XLSX.SSF.parse_date_code(value);
+          if (!date) return "";
+          const iso = new Date(Date.UTC(date.y, date.m - 1, date.d)).toISOString();
+          return iso.split("T")[0];
         }
+        if (value instanceof Date) {
+          return value.toISOString().split("T")[0];
         }
-      });
-      return row;
-      });
-    }
-
-    setJsonData(jsonData);
+        return "";
   };
 
   const [dateRange, setDateRange] = useState({ from: '', to: '' });
@@ -67,19 +65,19 @@ const AllCases = () => {
   };
 
   const getDateColumnIndex = () => {
-    if (!jsonData.length) return -1;
+    if (!columns.length) return -1;
     // Try to find a column named 'Date' (case-insensitive)
-    return jsonData[0].findIndex(
+    return columns.findIndex(
       (header) => typeof header === 'string' && header.toLowerCase().includes('date')
     );
   };
 
   const filteredData = React.useMemo(() => {
     const dateIdx = getDateColumnIndex();
-    if (dateIdx === -1 || (!dateRange.from && !dateRange.to)) return jsonData;
+    if (dateIdx === -1 || (!dateRange.from && !dateRange.to)) return masterData;
     return [
-      jsonData[0],
-      ...jsonData.slice(1).filter((row) => {
+      masterData[0],
+      ...masterData.slice(1).filter((row) => {
         const cell = row[dateIdx];
         if (!cell) return false;
         const cellDate = new Date(cell);
@@ -91,25 +89,30 @@ const AllCases = () => {
         return true;
       }),
     ];
-  }, [jsonData, dateRange]);
+  }, [masterData, dateRange]);
+
+  const handleClose = () => setShow(false);
+
+  const handleShow = () => setShow(true);
   return (
     <div className="mt-4">   
 
       <div className="d-flex flex-wrap align-items-center mb-3 gap-2">
-        <input
+        {/* <input
           type="file"
           accept=".xlsx,.xls"
           ref={fileInputRef}
           style={{ display: 'none' }}
           onChange={async (event) => {
-            setLoading(true);
-            await handleImportFile(event);
-            setLoading(false);
+            
           }}
-        />
+        /> */}
         <button
           className="btn btn-primary"
-          onClick={() => fileInputRef.current && fileInputRef.current.click()}
+          onClick={() => 
+            handleShow()
+            // fileInputRef.current && fileInputRef.current.click()
+          }
         >
           Import File
         </button>
@@ -141,12 +144,12 @@ const AllCases = () => {
         />
         <button className="btn btn-success ms-auto">Export</button>
       </div>
-      {loading && <div className="text-center">Loading...</div>}
-      {!loading && jsonData.length > 0 && (
+      {/* {loading && <div className="text-center">Loading...</div>}
+      {!loading && masterData.length > 0 && (
         <table className="table table-striped table-bordered">
           <thead>
             <tr>
-              {jsonData[0].map((header, index) => (
+              {masterData[0].map((header, index) => (
                 <th key={index}>{header}</th>
               ))}
             </tr>
@@ -161,8 +164,13 @@ const AllCases = () => {
             ))}
           </tbody>
         </table>
-      )}
-      {!loading && jsonData.length === 0 && <div className="text-center">No data available</div>}
+      )} */}
+      {!loading && masterData.length === 0 && <div className="text-center">No data available</div>}
+      {loading && <div className="text-center">Loading...</div>}
+      {!loading && masterData.length > 0 && (
+         <TrackTable data={masterData} cols={columns} />
+      )}     
+      <ImportModal show={show} onClose={handleClose} onShow={handleShow} title={"Import Master Tracker"} onFileChange={handleImportFile} />
     </div>
   )
 }
