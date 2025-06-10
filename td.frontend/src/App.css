@@ -38,6 +38,6 @@
 }
 
 .main-content { 
-  margin-top: 40px; /* Adjust this value to match your Header's height */ padding: 20px; 
-  /* border: 1px solid #ccc; */
+  margin-top: 40px;
+  padding: 20px;
 }
