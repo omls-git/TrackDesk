@@ -23,30 +23,48 @@ export const fetchCaseById = async (id) => {
   }
 };
 
-export const postCases = async (cases) => {
-  const body = cases.map((item) => mapCaseToApiFormat(item));
-  console.log("boddddddddddy", body)
-  try {
-    const response = await axios.post(`${API_URL}/cases`, body);
-    return response.data;
-  } catch (error) {
-    console.error("Error posting the cases:", error);
-    throw error
+export const postCases = async (cases, clientId) => {
+  const sortCasesByPriority = cases.sort((a, b) => b["Cases open"] - a["Cases open"]);
+  const allCases = await fetchAllCases();
+  const selectedClientCases = allCases.filter((item) => item.project_id.toString() === clientId);
+  console.log(selectedClientCases);
+  
+ sortCasesByPriority.map(async (item) => {
+  const caseNumber = item["Case Number"];
+  if(caseNumber){
+      const existingCase = selectedClientCases.find((item) => item.caseNumber === caseNumber)
+      // console.log("Existed case", res.data)
+      if(existingCase){
+        
+        console.log("case already exists");
+        
+      }else{
+        try {
+          const body = mapCaseToApiFormat(item, clientId);
+          console.log("body", body)
+          const res = await axios.post(`${API_URL}/cases/`, body)
+          console.log("response post", res);
+          return res
+        } catch (error) {
+          console.error('error', error);
+        }       
+      }
   }
+ })
 }
-const mapCaseToApiFormat = (item) => ({
-  project_id: 2,
+const mapCaseToApiFormat = (item, id) => ({
+  project_id: parseInt(id),
   casesOpen: item["Cases open"],
   caseNumber: item["Case Number"],
   initial_fup_fupToOpen: item["Initial/FUP/FUP to Open (FUOP)"],
-  ird_frd: item["IRD/FRD"] ? new Date(item["IRD/FRD"]).toISOString() : null,
-  assignedDateDe: item["Assigned Date (DE)"] ? new Date(item["Assigned Date (DE)"]).toISOString() : null,
+  ird_frd: item["IRD/FRD"] + "ss",
+  assignedDateDe: item["Assigned Date (DE)"],
   completedDateDE: null,
   de: item["DE"] || "",
-  assignedDateQr: item["Assigned Date (QR)"] ? new Date(item["Assigned Date (QR)"]).toISOString() : null,
+  assignedDateQr: item["Assigned Date (QR)"],
   completedDateQR: null,
   qr: item["QR"] || "",
-  assignedDateMr: item["Assigned Date (MR)"] ? new Date(item["Assigned Date (MR)"]).toISOString() : null,
+  assignedDateMr: item["Assigned Date (MR)"],
   completedDateMr: null,
   mr: item["MR"] || "",
   caseStatus: item["Case Status"] || "",

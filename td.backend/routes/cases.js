@@ -12,7 +12,7 @@ caseRouter.get('/', (req, res) => {
 
 const getCasesById = (id) => {
   return new Promise((resolve, reject) => {
-    const sql = 'SELECT * FROM cases WHERE id = ?';
+    const sql = 'SELECT * FROM cases WHERE caseNumber = ?';
     db.query(sql, [id], (err, results) => {
       if (err) return reject(err);
       resolve(results);
@@ -101,7 +101,13 @@ caseRouter.post('/', (req, res) => {
         seriousness,
         live_backlog,
         comments,
-        isCaseOpen
+        isCaseOpen,
+        DestinationForReporting,
+        ReportingComment ,
+        SDEAObligation,
+        Source,
+        ReportType,
+        XML_Non_XML
       } = req.body;
     if (!project_id || !caseNumber) {
       return res.status(400).json({ error: 'Missing required fields' });
@@ -110,8 +116,8 @@ caseRouter.post('/', (req, res) => {
       project_id, casesOpen, caseNumber, initial_fup_fupToOpen, ird_frd,
       assignedDateDe, de, assignedDateQr, qr,
       assignedDateMr, mr, caseStatus, reportability, seriousness,
-      live_backlog, comments, isCaseOpen
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+      live_backlog, comments, isCaseOpen, DestinationForReporting, ReportingComment, SDEAObligation, Source, ReportType, XML_Non_XML
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
     const values = [
       project_id,
       casesOpen,
@@ -129,7 +135,13 @@ caseRouter.post('/', (req, res) => {
       seriousness || null,
       live_backlog || null,
       comments || null,
-      isCaseOpen
+      isCaseOpen,
+      DestinationForReporting || null,
+      ReportingComment || null,
+      SDEAObligation || null,
+      Source || null,
+      ReportType || null,
+      XML_Non_XML || null
     ];
     db.query(sql, values, (err, result) => {
       if (err) return res.status(500).json({ error: 'Failed to create case', err });

@@ -4,12 +4,15 @@ import TrackTable from '../components/TrackTable';
 import ImportModal from '../components/ImportModal';
 import { fetchAllCases, postCases } from '../services/API';
 
+const clients = [{id:1,name:"Client One"}, {id:2, name:"Client Two"}, {id:3, name: "Client Three" } ]
 const AllCases = () => {
 
   const [masterData, setMasterData] = useState([]);
   const [loading, setLoading] = useState(false);  
   const [show, setShow] = useState(false);
-  const [columns, setColumns] = useState([]); 
+  const [columns, setColumns] = useState([]);
+  const [selectedClientId, setSelectedClientId] = useState(null)
+  // const [selectedClient, setSelectedClient] = useState(clients[0])
 // const fileInputRef = useRef(); 
 
   const handleImportFile = async (file) => {
@@ -41,7 +44,7 @@ const AllCases = () => {
     });  
     console.log(jsonData);
     setMasterData(jsonData);
-    await postCases(jsonData)
+    await postCases(jsonData, selectedClientId)
     setLoading(false);
   };
 
@@ -95,6 +98,13 @@ const AllCases = () => {
   const handleClose = () => setShow(false);
 
   const handleShow = () => setShow(true);
+
+  const onClientChange =(e) => {
+    console.log("client", e.target.value); 
+    const clientId = e.target.value;
+    clientId ? setSelectedClientId(e.target.value) : setSelectedClientId('')
+  }
+
   return (
     <div className="mt-4">   
 
@@ -173,7 +183,8 @@ const AllCases = () => {
       {!loading && masterData.length > 0 && (
          <TrackTable data={masterData} cols={columns} />
       )}     
-      <ImportModal show={show} onClose={handleClose} onShow={handleShow} title={"Import Master Tracker"} onFileChange={handleImportFile} />
+      <ImportModal show={show} onClose={handleClose} onShow={handleShow} title={"Import Master Tracker"} onFileChange={handleImportFile} selectedClient={selectedClientId}
+       onSelect={onClientChange} clients={clients}/>
     </div>
   )
 }
