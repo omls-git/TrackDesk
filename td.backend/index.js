@@ -3,6 +3,8 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const authRoutes = require('./routes/auth');
 const casesRoutes = require('./routes/cases');
+const employeeRouter = require('./routes/employees');
+
 
 const app = express();
 app.use(cors());
@@ -15,11 +17,12 @@ app.use(bodyParser.json({ limit: '50mb' }));
 //   origin: 'https://your-production-frontend.com',
 //   credentials: true,
 // }));
+// app.use('/', (req, res) => {
+//   res.status(200).json({ message: 'Welcome to the API' });
+// });
 app.use('/api/auth', authRoutes);
 app.use('/api/cases', casesRoutes);
-app.use('/', (req, res) => {
-  res.status(200).json({ message: 'Welcome to the API' });
-});
+app.use('/api/employee', employeeRouter);
 
 app.listen(5000, () => {
   console.log('Server running on port at: http://localhost:5000');

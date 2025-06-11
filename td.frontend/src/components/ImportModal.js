@@ -4,28 +4,45 @@ import { Modal, Button } from 'react-bootstrap';
 const ImportModal = (props) => {
  const {show, onClose, OnShow, title} = props;
  const [file, setFile] = useState(null);
-  const clients = [{id:1,name:"Client One"}, {id:2, name:"Client Two"}, {id:3, name: "Client Three" } ]
-  return (
-    <>
-      {/* <Button variant="primary" onClick={OnShow}>
-        Open Modal
-      </Button> */}
+  
+  const [error, setError] = useState('');
 
-      <Modal show={show} onHide={onClose}>
+  const handleConfirm = () => {
+    if (!props.selectedClient || !file) {
+      setError('Please select a client and upload a file.');
+      return;
+    }
+    setError('');
+    props.onFileChange(file);
+  };
+
+  const handleClose =() => {
+    setError('');
+    setFile(null)
+    onClose();
+  }
+
+  return (
+      <Modal show={show} onHide={handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>{title}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
+          {error && (
+            <div className="alert alert-danger" role="alert">
+              {error}
+            </div>
+          )}
           <div className="mb-3">
             <label htmlFor="clientSelect" className="form-label">Select Client</label>
             <select
               className="form-select"
               id="clientSelect"
-              value={props.selectedClient}
-              onChange={props.onClientChange}
+              // value={props.selectedClient}
+              onChange={props.onSelect}
             >
               <option value="">Choose a client...</option>
-              {clients && clients.map(client => (
+              {props.clients && props.clients.map(client => (
                 <option key={client.id} value={client.id}>
                   {client.name}
                 </option>
@@ -44,15 +61,14 @@ const ImportModal = (props) => {
           </div>          
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={onClose}>
+          <Button variant="secondary" onClick={handleClose}>
             Close
           </Button>
-          <Button variant="primary" onClick={() => props.onFileChange(file)}>
+          <Button variant="primary" onClick={handleConfirm}>
             Confirm
           </Button>
         </Modal.Footer>
       </Modal>
-    </>
   );
 };
 
