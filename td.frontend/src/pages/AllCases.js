@@ -109,20 +109,10 @@ const AllCases = () => {
     <div className="mt-4">   
 
       <div className="d-flex flex-wrap align-items-center mb-3 gap-2">
-        {/* <input
-          type="file"
-          accept=".xlsx,.xls"
-          ref={fileInputRef}
-          style={{ display: 'none' }}
-          onChange={async (event) => {
-            
-          }}
-        /> */}
         <button
           className="btn btn-primary"
           onClick={() => 
             handleShow()
-            // fileInputRef.current && fileInputRef.current.click()
           }
         >
           Import File
@@ -157,27 +147,6 @@ const AllCases = () => {
          onClick={() => fetchAllCases()}
          >Export</button>
       </div>
-      {/* {loading && <div className="text-center">Loading...</div>}
-      {!loading && masterData.length > 0 && (
-        <table className="table table-striped table-bordered">
-          <thead>
-            <tr>
-              {masterData[0].map((header, index) => (
-                <th key={index}>{header}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {filteredData.slice(1).map((row, rowIndex) => (
-              <tr key={rowIndex}>
-                {row.map((cell, cellIndex) => (
-                  <td key={cellIndex}>{cell}</td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )} */}
       {!loading && masterData.length === 0 && <div className="text-center">No data available</div>}
       {loading && <div className="text-center">Loading...</div>}
       {!loading && masterData.length > 0 && (
