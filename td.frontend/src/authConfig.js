@@ -1,3 +1,5 @@
+import { startTransition } from "react";
+
 export const msalConfig = {
   auth: {
     clientId: process.env.REACT_APP_CLIENT_ID,
@@ -24,5 +26,6 @@ export const loginRequest = {
   scopes: [
     "User.Read",
     "Sites.Read.All",
+    "User.ReadBasic.All",
   ],
 };
