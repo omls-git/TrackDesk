@@ -8,79 +8,79 @@ const TrackTable = (props) => {
   
 const columns = [  
     {
-      dataField: 'Cases open',
+      dataField: 'casesOpen',
       text: 'Cases Open',
       sort: true,
       width: 100,
     },
     {
-      dataField: 'Case Number',
+      dataField: 'caseNumber',
       text: 'Case Number',
       // sort: true,
       width: 150,
     },
     {
-      dataField: 'Initial/FUP/FUP to Open (FUOP)',
+      dataField: 'initial_fup_fupToOpen',
       text: 'Initial/FUP/FUP to Open (FUOP)',
       // sort: true,
       width: 200,
     },
     {
-      dataField: 'IRD/FRD',
+      dataField: 'ird_frd',
       text: 'IRD/FRD',
       // sort: true,
       width: 150,
     },
     {
-      dataField: 'Assigned Date (DE)',
+      dataField: 'assignedDateDe',
       text: 'Assigned Date (DE)',
       // sort: true,
       width: 150,
     },
     {
-      dataField: 'DE',
+      dataField: 'de',
       text: 'DE',
       // sort: true,
       width: 100,
     },
     {
-      dataField: 'Assigned Date (QR)',
+      dataField: 'assignedDateQe',
       text: 'Assigned Date (QR)',
       // sort: true,
       width: 150,
     },
     {
-      dataField: 'QR',
+      dataField: 'qr',
       text: 'QR',
       // sort: true,
       width: 100,
     },
     {
-      dataField: 'Assigned Date (MR)',
+      dataField: 'assignedDateMr',
       text: 'Assigned Date (MR)',
       // sort: true,
       width: 150,
     },
     {
-      dataField: 'MR',
+      dataField: 'mr',
       text: 'MR',
       // sort: true,
       width: 100,
     },
     {
-      dataField: 'Case Status',
+      dataField: 'caseStatus',
       text: 'Case Status',
       // sort: true,
       width: 150,
     },
     {
-      dataField: 'Reportability',
+      dataField: 'reportability',
       text: 'Reportability',
       // sort: true,
       width: 150,
     },
     {
-      dataField: 'Seriousness',
+      dataField: 'seriousness',
       text: 'Seriousness',
       // sort: true,
       width: 150,
@@ -92,7 +92,7 @@ const columns = [
     //   width: 150,
     // },
     {
-      dataField: 'Comments',
+      dataField: 'comments',
       text: 'Comments',
       // sort: false,
       width: 200,
@@ -101,7 +101,7 @@ const columns = [
   return (
     <div className="mt-4">
       <BootstrapTable
-        keyField="Case Number"
+        keyField="caseNumber"
         data={data}
         columns={columns}
         bootstrap4

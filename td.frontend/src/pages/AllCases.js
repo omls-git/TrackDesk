@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import * as XLSX from 'xlsx';
 import TrackTable from '../components/TrackTable';
 import ImportModal from '../components/ImportModal';
@@ -43,10 +43,28 @@ const AllCases = () => {
       );
     });  
     console.log(jsonData);
-    setMasterData(jsonData);
+    // setMasterData(jsonData);
     await postCases(jsonData, selectedClientId)
+    await fetchAllCasesCallback();
     setLoading(false);
   };
+
+  const fetchAllCasesCallback = React.useCallback(async () => {
+    setLoading(true);
+    try {
+      const cases = await fetchAllCases();
+      setMasterData(cases);
+      console.log("Fetched cases:", cases);
+    } catch (error) {
+      console.error("Error fetching cases:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchAllCasesCallback();
+  }, [fetchAllCasesCallback])  
 
    const parseExcelDate = (value) => {
         if (typeof value === "number") {
