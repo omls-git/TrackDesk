@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
-import { getUsers } from '../services/graphApi';
+import { getUsers } from '../services/GraphApi';
 
 const EmployeeModal = ({ show, onClose, onSave }) => {
   const [users, setUsers] = useState([]);
