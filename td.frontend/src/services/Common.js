@@ -30,8 +30,6 @@ export const caseAllocation = (cases, existingAllCases, clientId) => {
       count ? mr.push({ username: assigny.username, count }) : mr.push({ username: assigny.username, count: 0 });
     });
 
-    // const allAssignees = [...de, ...qr, ...mr];
-
     const dataEntryCases = cases.filter(item => item["Case Status"].toLowerCase().trim() === "data entry");
     const qualityReviewCases = cases.filter(item => item["Case Status"].toLowerCase().trim() === "quality review");
     const medicalReviewCases = cases.filter(item => item["Case Status"].toLowerCase().trim() === "medical review");
@@ -45,42 +43,6 @@ export const caseAllocation = (cases, existingAllCases, clientId) => {
     const assignedCases = [...dateEntryAssignedCases, ...qualityReviewAssignedCases, ...medicalReviewAssignedCases, ...remainingCases.map(item => mapCaseToApiFormat(item, clientId))];
 
     return assignedCases;
-  // for (let i = 0; i < cases.length; i++) {
-  //   const currentCase = mapCaseToApiFormat(cases[i], clientId);
-  //   if(currentCase.caseStatus.toLowerCase().trim() === "data entry"){
-
-  //     const de = employeeToAssign(deAssiniees, existingAllCases, "de");
-
-  //     assignedCases.push({
-  //       ...currentCase,
-  //       de: de, //clientAssignies[i % clientAssignies.length].username,
-  //       assignedDateDe: new Date().toISOString().split("T")[0],
-  //     });
-  //     continue;
-  //   }
-  //   if(currentCase.caseStatus.toLowerCase().trim() === "quality review"){
-
-  //     const qr = employeeToAssign(clientAssignies, existingAllCases, "qr");
-
-  //     assignedCases.push({
-  //       ...currentCase,
-  //       qr: qr, //clientAssignies[i % clientAssignies.length].username,
-  //       assignedDateQr: new Date().toISOString().split("T")[0],
-  //     });
-  //     continue;
-  //   }
-  //   if(currentCase.caseStatus.toLowerCase().trim() === "medical review"){
-  //     const mr = employeeToAssign(clientAssignies, existingAllCases, "mr");
-  //     assignedCases.push({
-  //       ...currentCase,
-  //       mr: mr, //clientAssignies[i % clientAssignies.length].username,
-  //       assignedDateMr: new Date().toISOString().split("T")[0],
-  //     });
-  //     continue;
-  //   }
-  //   assignedCases.push(currentCase)
-  //   return assignedCases;
-  // }
 
 }
 

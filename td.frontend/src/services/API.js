@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { caseAllocation, mapCaseToApiFormat } from './Common';
+import { caseAllocation } from './Common';
 
 const API_URL = 'http://localhost:5000/api';
 
@@ -31,7 +31,7 @@ export const postCases = async (cases, clientId) => {
   console.log(selectedClientAllCases);
   const assignedCases = caseAllocation(sortCasesByPriority, selectedClientAllCases, clientId);
   console.log("assignedCases", assignedCases);
-  
+
   assignedCases.map(async (item) => {
   const caseNumber = item["Case Number"];
   if(caseNumber){
