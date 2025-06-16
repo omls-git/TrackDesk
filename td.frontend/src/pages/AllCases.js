@@ -44,7 +44,7 @@ const AllCases = () => {
     });  
     console.log(jsonData);
     setMasterData(jsonData);
-    await postCases(jsonData, selectedClientId)
+    // await postCases(jsonData, selectedClientId)
     setLoading(false);
   };
 

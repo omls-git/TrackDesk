@@ -32,7 +32,7 @@ employeeRouter.post('/addEmployee', (req, res) => {
   const {username, email, projectId, role, onLeave} = req.body;
   const sql = 'INSERT INTO employeeTracker (username, email, projectId, role, onLeave) VALUES (?, ?, ?, ?, ?)';
   db.query(sql, [username, email, projectId, role, onLeave], (err, result) => {
-    if (err) return res.status(500).json({ error: "Failed to add employee" });
+    if (err) return res.status(500).json({ error: "Failed to add employee",err });
     res.status(201).json({ message: "Employee added successfully", id: result.insertId });
   })
 })
