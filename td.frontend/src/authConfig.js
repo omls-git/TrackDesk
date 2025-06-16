@@ -22,6 +22,7 @@ export const protectedResources = {
   },
 };
 
+
 export const loginRequest = {
   scopes: [
     "User.Read",
