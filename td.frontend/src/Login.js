@@ -12,7 +12,12 @@ export const SignInButton = () => {
   const handleLogin = async() => {
     await msalInstance.initialize();
     try{
-      instance.loginPopup(loginRequest) // or loginPopup()
+      await instance.loginPopup(loginRequest)
+      console.log("Login successful",accounts);
+      
+      if (accounts && accounts.length > 0) {
+        localStorage.setItem('username', accounts[0].username);
+      }
     } catch(err){
       console.error("Login error: ", err);
     }

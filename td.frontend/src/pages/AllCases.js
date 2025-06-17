@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react'
 import * as XLSX from 'xlsx';
 import TrackTable from '../components/TrackTable';
 import ImportModal from '../components/ImportModal';
-import { deleteCases, fetchAllCases, postCases } from '../services/API';
+import { deleteCases, fetchAllCases, getEmployees, postCases } from '../services/API';
 
-const clients = [{id:1,name:"Client One"}, {id:2, name:"Client Two"}, {id:3, name: "Client Three" } ]
+const clients = [{id:2,name:"Client One"}, {id:3, name:"Client Two"}, {id:4, name: "Client Three" } ]
 const AllCases = () => {
 
   const [masterData, setMasterData] = useState([]);
@@ -125,11 +125,9 @@ const AllCases = () => {
   const deleteSelectedCases = async() => {
     // Implement delete logic here
     console.log("Delete selected cases", selectedCases);
-    // You can filter out the selected cases from masterData and update the state
-    // setMasterData(updatedData);
-    // await deleteCases(selectedCases);
-    // setSelectedCases([]);
-    // await fetchAllCasesCallback();
+    await deleteCases(selectedCases);
+    setSelectedCases([]);
+    await fetchAllCasesCallback();
   }
 
   return (
@@ -175,14 +173,14 @@ const AllCases = () => {
          onClick={deleteSelectedCases}
          >Delete {selectedCases.length ?'(' + selectedCases.length + ')' : ''}</button>
         <button className="btn btn-success ms-auto"
-         onClick={() => fetchAllCases()}
+         onClick={() => getEmployees()}
          >Export</button>
          </div>
       </div>
       {!loading && masterData.length === 0 && <div className="text-center">No data available</div>}
       {loading && <div className="text-center">Loading...</div>}
       {!loading && masterData.length > 0 && (
-         <TrackTable data={masterData} cols={columns} setSelectedCaseIds={setSelectedCases} selectedCaseIds={selectedCases} />
+         <TrackTable data={masterData} cols={null} setSelectedCaseIds={setSelectedCases} selectedCaseIds={selectedCases} />
       )}
       <ImportModal show={show} onClose={handleClose} onShow={handleShow} title={"Import Master Tracker"} onFileChange={handleImportFile} selectedClient={selectedClientId}
        onSelect={onClientChange} clients={clients}/>

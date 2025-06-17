@@ -11,9 +11,9 @@ const TrackTable = (props) => {
 const columns = [ 
   {
       dataField: 'id',
-      text: 'Case ID',
+      text: 'ID',
       // sort: true,
-      width: 100,
+      width: 50,
     }, 
     {
       dataField: 'casesOpen',
@@ -22,10 +22,16 @@ const columns = [
       width: 100,
     },
     {
+      dataField: 'project_id',
+      text: 'Client ID',
+      // sort: true,
+      width: 100,
+    },
+    {
       dataField: 'caseNumber',
       text: 'Case Number',
       // sort: true,
-      width: 150,
+      width: 200,
     },
     {
       dataField: 'initial_fup_fupToOpen',
