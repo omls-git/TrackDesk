@@ -26,7 +26,7 @@ export const protectedResources = {
 export const loginRequest = {
   scopes: [
     "User.Read",
-    "Sites.Read.All",
-    "User.ReadBasic.All",
+    // "Sites.Read.All",
+    // "User.ReadBasic.All",
   ],
 };
