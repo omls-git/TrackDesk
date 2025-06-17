@@ -1,13 +1,13 @@
 // services/graphApi.js
 import axios from 'axios';
-import { graphConfig } from '../authConfig';
 import { msalInstance } from '../index'; // make sure this points to your MSAL instance
+import { loginRequest } from '../authConfig';
 
 export const getUsers = async () => {
   try {
     const account = msalInstance.getAllAccounts()[0];
     const response = await msalInstance.acquireTokenSilent({
-      scopes: graphConfig.graphUserScopes,
+      scopes: loginRequest.scopes,
       account: account
     });
 

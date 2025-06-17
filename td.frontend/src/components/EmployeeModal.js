@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
-// import { getUsers } from '../services/GraphApi';
+import { getUsers } from '../services/graphApi';
 
 const EmployeeModal = ({ show, onClose, onSave }) => {
   const [users, setUsers] = useState([]);
@@ -8,8 +8,8 @@ const EmployeeModal = ({ show, onClose, onSave }) => {
 
   useEffect(() => {
     const fetchUsers = async () => {
-      // const graphUsers = await getUsers();
-      // setUsers(graphUsers);
+      const graphUsers = await getUsers();
+      setUsers(graphUsers);
     };
 
     if (show) fetchUsers();

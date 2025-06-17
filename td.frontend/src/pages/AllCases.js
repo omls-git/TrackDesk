@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import * as XLSX from 'xlsx';
 import TrackTable from '../components/TrackTable';
 import ImportModal from '../components/ImportModal';
-import { fetchAllCases, postCases } from '../services/API';
+import { deleteCases, fetchAllCases, postCases } from '../services/API';
 
 const clients = [{id:1,name:"Client One"}, {id:2, name:"Client Two"}, {id:3, name: "Client Three" } ]
 const AllCases = () => {
@@ -12,8 +12,7 @@ const AllCases = () => {
   const [show, setShow] = useState(false);
   const [columns, setColumns] = useState([]);
   const [selectedClientId, setSelectedClientId] = useState(null)
-  // const [selectedClient, setSelectedClient] = useState(clients[0])
-// const fileInputRef = useRef(); 
+  const [selectedCases, setSelectedCases] = useState([]); 
 
   const handleImportFile = async (file) => {
     setLoading(true);
@@ -42,7 +41,7 @@ const AllCases = () => {
         })
       );
     });  
-    console.log(jsonData);
+    // console.log(jsonData);
     // setMasterData(jsonData);
     await postCases(jsonData, selectedClientId)
     await fetchAllCasesCallback();
@@ -50,7 +49,7 @@ const AllCases = () => {
   };
 
   const fetchAllCasesCallback = React.useCallback(async () => {
-    setLoading(true);
+    // setLoading(true);
     try {
       const cases = await fetchAllCases();
       setMasterData(cases);
@@ -58,7 +57,7 @@ const AllCases = () => {
     } catch (error) {
       console.error("Error fetching cases:", error);
     } finally {
-      setLoading(false);
+      // setLoading(false);
     }
   }, []);
 
@@ -123,6 +122,16 @@ const AllCases = () => {
     clientId ? setSelectedClientId(e.target.value) : setSelectedClientId('')
   }
 
+  const deleteSelectedCases = async() => {
+    // Implement delete logic here
+    console.log("Delete selected cases", selectedCases);
+    // You can filter out the selected cases from masterData and update the state
+    // setMasterData(updatedData);
+    // await deleteCases(selectedCases);
+    // setSelectedCases([]);
+    // await fetchAllCasesCallback();
+  }
+
   return (
     <div className="mt-4">   
 
@@ -161,15 +170,20 @@ const AllCases = () => {
           placeholder="Search..."
           style={{ maxWidth: 250 }}
         />
+        <div className='d-flex flex-wrap align-items-center gap-2 ms-auto'>
+        <button className="btn btn-danger ms-auto"
+         onClick={deleteSelectedCases}
+         >Delete {selectedCases.length ?'(' + selectedCases.length + ')' : ''}</button>
         <button className="btn btn-success ms-auto"
          onClick={() => fetchAllCases()}
          >Export</button>
+         </div>
       </div>
       {!loading && masterData.length === 0 && <div className="text-center">No data available</div>}
       {loading && <div className="text-center">Loading...</div>}
       {!loading && masterData.length > 0 && (
-         <TrackTable data={masterData} cols={columns} />
-      )}     
+         <TrackTable data={masterData} cols={columns} setSelectedCaseIds={setSelectedCases} selectedCaseIds={selectedCases} />
+      )}
       <ImportModal show={show} onClose={handleClose} onShow={handleShow} title={"Import Master Tracker"} onFileChange={handleImportFile} selectedClient={selectedClientId}
        onSelect={onClientChange} clients={clients}/>
     </div>
