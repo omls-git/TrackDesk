@@ -29,16 +29,16 @@ export const postCases = async (cases, clientId) => {
   const allCases = await fetchAllCases();
   const selectedClientAllCases = allCases.filter((item) => item.project_id.toString() === clientId);
   console.log(selectedClientAllCases);
-  const assignedCases = caseAllocation(sortCasesByPriority, selectedClientAllCases, clientId);
+  const assignedCases = await caseAllocation(sortCasesByPriority, selectedClientAllCases, clientId);
   console.log("assignedCases", assignedCases);
 
   assignedCases.map(async (item) => {
-  const caseNumber = item["Case Number"];
+  const caseNumber = item.caseNumber;
   if(caseNumber){
       const existingCase = selectedClientAllCases.find((item) => item.caseNumber === caseNumber)
       // console.log("Existed case", res.data)
       if(existingCase){        
-        console.log("case already exists");        
+        console.log("case already exists with", caseNumber );
       }else{
         try {
           const body = item; // mapCaseToApiFormat(item, clientId);
@@ -57,6 +57,7 @@ export const postCases = async (cases, clientId) => {
 export const getEmployees = async () => {
   try {
     const response = await axios.get(`${API_URL}/employee`);
+    console.log("response get employees", response);
     return response.data;
   } catch (error) {
     console.error('Error fetching employees:', error);

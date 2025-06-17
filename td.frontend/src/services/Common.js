@@ -1,29 +1,31 @@
 import { getEmployees } from "./API"
 
-export const caseAllocation = (cases, existingAllCases, clientId) => {
-  const assignies = getEmployees();
-  const clientAssignies = assignies.filter((item) => item.projectId.toString() === clientId.toString() && item.onLeave === false);
+export const caseAllocation = async(cases, existingAllCases, clientId) => {
+  const assignies = await getEmployees();
+console.log("assignies", assignies);
+  const clientAssignies = assignies.filter((item) => item.projectId.toString() === clientId.toString() && !item.onLeave);
 
   if (clientAssignies.length === 0) {
-    console.error("No assignies found for the client to assign cases");
+    console.error("No assignies found for the client to assign cases", clientId);
     return [];
   }
   
-  const deAssiniees = clientAssignies.filter((item) => item.role.toLowerCase() === "de".toLowerCase() && item.onLeave === false);
+  const deAssiniees = clientAssignies.filter((item) => item.level.toLowerCase() === "de".toLowerCase() && !item.onLeave);
+
    let de = [];
     deAssiniees.forEach(assigny => {
       const count = existingAllCases.filter(item => item.de === assigny.username && !item.completedDateDE).length;
       count ? de.push({ username: assigny.username, count, maxCount: 8 }) : de.push({ username: assigny.username, count: 0, maxCount: 8 });
     });
 
-    const qrAssignees = clientAssignies.filter((item) => item.role.toLowerCase() === "qr".toLowerCase() && item.onLeave === false);
+    const qrAssignees = clientAssignies.filter((item) => item.level.toLowerCase() === "qr".toLowerCase() && !item.onLeave);
     let qr = [];
     qrAssignees.forEach(assigny => {
       const count = existingAllCases.filter(item => item.qr === assigny.username && !item.completedDateQR).length;
       count ? qr.push({ username: assigny.username, count, maxCount: 15 }) : qr.push({ username: assigny.username, count: 0, maxCount: 15 });
     });
 
-    const mrAssignees = clientAssignies.filter((item) => item.role.toLowerCase() === "mr".toLowerCase() && item.onLeave === false);
+    const mrAssignees = clientAssignies.filter((item) => item.level.toLowerCase() === "mr".toLowerCase() && !item.onLeave);
     let mr = [];
     mrAssignees.forEach(assigny => {
       const count = existingAllCases.filter(item => item.mr === assigny.username && !item.completedDateMR).length;
@@ -52,7 +54,7 @@ export const mapCaseToApiFormat = (item, id) => ({
   casesOpen: item["Cases open"],
   caseNumber: item["Case Number"],
   initial_fup_fupToOpen: item["Initial/FUP/FUP to Open (FUOP)"],
-  ird_frd: item["IRD/FRD"] + "ss",
+  ird_frd: item["IRD/FRD"],
   assignedDateDe: item["Assigned Date (DE)"],
   completedDateDE: null,
   de: item["DE"] || "",
