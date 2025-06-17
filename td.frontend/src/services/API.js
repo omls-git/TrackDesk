@@ -6,7 +6,7 @@ const API_URL = 'http://localhost:5000/api';
 export const fetchAllCases = async () => {
   try {
     const response = await axios.get(`${API_URL}/cases`);
-    console.log("response", response)
+    // console.log("response", response)
     return response.data;
   } catch (error) {
     console.error('Error fetching all cases:', error);
@@ -63,3 +63,30 @@ export const getEmployees = async () => {
     // throw error;
   }
 };
+
+export const deleteCases = async (ids) => {
+  let caseIds;
+  if (!ids || ids.length === 0) {
+    console.error('No case IDs provided for deletion');
+    return;
+  }
+  if (Array.isArray(ids) && ids.length === 1) {
+    caseIds = {"id" : ids[0]}; // Ensure ids is an array
+  } else {
+    caseIds = {"ids" : ids}; // Convert to the expected format
+  }
+  console.log("caseIds", caseIds);
+  try {
+    const response = await axios.delete(`${API_URL}/cases`, {
+      data: caseIds, // Use the data property for DELETE requests with a body
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    console.log("response delete", response);
+    // return response.data;
+  } catch (error) {
+    console.error('Error deleting cases:', error);
+    // throw error;
+  }
+}
