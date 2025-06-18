@@ -24,6 +24,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/cases', casesRoutes);
 app.use('/api/employee', employeeRouter);
 
+
 app.listen(5000, () => {
   console.log('Server running on port at: http://localhost:5000');
   // console.log(app.router.get())
