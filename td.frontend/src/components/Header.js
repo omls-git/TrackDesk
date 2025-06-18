@@ -11,7 +11,6 @@ const Header = () => (
         <Nav.Link as={Button} variant="outline-light" className="me-2" href="/admin">Admin</Nav.Link>
         <span className="text-light">User Name</span>
       </div>
-
       <Navbar.Collapse id="responsive-navbar-nav" className="order-3">
         <Nav className="me-auto">
           <Nav.Link as={Button} variant="outline-light" className="me-2 mb-2 mb-lg-0" href="/">Dashboard</Nav.Link>
