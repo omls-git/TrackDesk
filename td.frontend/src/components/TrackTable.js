@@ -99,7 +99,7 @@ const columns = [
   {
     dataField: 'caseStatus',
     text: 'Case Status',
-    sort: true,
+    // sort: true,
     width: 150,
     headerStyle: () => ({ width: '150px', minWidth: '150px' }),
   },
