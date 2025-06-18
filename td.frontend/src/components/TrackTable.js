@@ -10,116 +10,126 @@ const TrackTable = (props) => {
   }
 const columns = [ 
   {
-      dataField: 'id',
-      text: 'ID',
-      // sort: true,
-      width: 50,
-    }, 
-    {
-      dataField: 'casesOpen',
-      text: 'Cases Open',
-      sort: true,
-      width: 100,
-    },
-    {
-      dataField: 'project_id',
-      text: 'Client ID',
-      // sort: true,
-      width: 100,
-    },
-    {
-      dataField: 'caseNumber',
-      text: 'Case Number',
-      // sort: true,
-      width: 200,
-    },
-    {
-      dataField: 'initial_fup_fupToOpen',
-      text: 'Initial/FUP/FUP to Open (FUOP)',
-      // sort: true,
-      width: 100,
-    },
-    {
-      dataField: 'ird_frd',
-      text: 'IRD/FRD',
-      // sort: true,
-      width: 100,
-      formatter: formateDates
-    },
-    {
-      dataField: 'de',
-      text: 'DE',
-      // sort: true,
-      width: 150,
-    },
-    {
-      dataField: 'assignedDateDe',
-      text: 'Assigned Date (DE)',
-      // sort: true,
-      width: 100,
-      formatter: formateDates
-    },
-    {
-      dataField: 'qr',
-      text: 'QR',
-      // sort: true,
-      width: 100,
-    },
-    {
-      dataField: 'assignedDateQr',
-      text: 'Assigned Date (QR)',
-      // sort: true,
-      width: 100,
-      formatter: formateDates
-    },
-    {
-      dataField: 'mr',
-      text: 'MR',
-      // sort: true,
-      width: 100,
-    },
-    {
-      dataField: 'assignedDateMr',
-      text: 'Assigned Date (MR)',
-      // sort: true,
-      width: 100,
-      formatter: formateDates
-    },
-    {
-      dataField: 'caseStatus',
-      text: 'Case Status',
-      // sort: true,
-      width: 150,
-    },
-    {
-      dataField: 'reportability',
-      text: 'Reportability',
-      // sort: true,
-      width: 150,
-    },
-    {
-      dataField: 'seriousness',
-      text: 'Seriousness',
-      // sort: true,
-      width: 100,
-    },
-    // {
-    //   dataField: 'Live/backlog',
-    //   text: 'Live/Backlog',
-    //   sort: true,
-    //   width: 150,
-    // },
-    {
-      dataField: 'comments',
-      text: 'Comments',
-      // sort: false,
-      width: 200,
-    }
-  ]; 
+    dataField: 'id',
+    text: 'ID',
+    sort: true,
+    headerStyle: () => ({ width: '80px', minWidth: '50px' }),
+  }, 
+  {
+    dataField: 'casesOpen',
+    text: 'Cases Open',
+    // sort: true,
+    width: 100,
+    headerStyle: () => ({ width: '100px', minWidth: '100px' }),
+  },
+  {
+    dataField: 'project_id',
+    text: 'Client ID',
+    // sort: true,
+    width: 100,
+    headerStyle: () => ({ width: '100px', minWidth: '100px' }),
+  },
+  {
+    dataField: 'caseNumber',
+    text: 'Case Number',
+    // sort: true,
+    width: 200,
+    headerStyle: () => ({ width: '150px', minWidth: '150px' }),
+  },
+  {
+    dataField: 'initial_fup_fupToOpen',
+    text: 'Initial/FUP/FUP to Open (FUOP)',
+    // sort: true,
+    width: 100,
+    headerStyle: () => ({ width: '130px', minWidth: '130px' }),
+  },
+  {
+    dataField: 'ird_frd',
+    text: 'IRD/FRD',
+    // sort: true,
+    width: 100,
+    formatter: formateDates,
+    headerStyle: () => ({ width: '110px', minWidth: '100px' }),
+  },
+  {
+    dataField: 'de',
+    text: 'DE',
+    // sort: true,
+    width: 150,
+    headerStyle: () => ({ width: '150px', minWidth: '150px' }),
+  },
+  {
+    dataField: 'assignedDateDe',
+    text: 'Assigned Date (DE)',
+    // sort: true,
+    width: 100,
+    formatter: formateDates,
+    headerStyle: () => ({ width: '110px', minWidth: '100px' }),
+  },
+  {
+    dataField: 'qr',
+    text: 'QR',
+    // sort: true,
+    width: 100,
+    headerStyle: () => ({ width: '150px', minWidth: '100px' }),
+  },
+  {
+    dataField: 'assignedDateQr',
+    text: 'Assigned Date (QR)',
+    // sort: true,
+    width: 100,
+    formatter: formateDates,
+    headerStyle: () => ({ width: '110px', minWidth: '100px' }),
+  },
+  {
+    dataField: 'mr',
+    text: 'MR',
+    // sort: true,
+    width: 100,
+    headerStyle: () => ({ width: '150px', minWidth: '100px' }),
+  },
+  {
+    dataField: 'assignedDateMr',
+    text: 'Assigned Date (MR)',
+    // sort: true,
+    width: 100,
+    formatter: formateDates,
+    headerStyle: () => ({ width: '110px', minWidth: '100px' }),
+  },
+  {
+    dataField: 'caseStatus',
+    text: 'Case Status',
+    sort: true,
+    width: 150,
+    headerStyle: () => ({ width: '150px', minWidth: '150px' }),
+  },
+  {
+    dataField: 'reportability',
+    text: 'Reportability',
+    // sort: true,
+    width: 150,
+    headerStyle: () => ({ width: '150px', minWidth: '150px' }),
+  },
+  {
+    dataField: 'seriousness',
+    text: 'Seriousness',
+    // sort: true,
+    width: 100,
+    headerStyle: () => ({ width: '100px', minWidth: '100px' }),
+  },
+  {
+    dataField: 'comments',
+    text: 'Comments',
+    // sort: false,
+    width: 200,
+    headerStyle: () => ({ width: '200px', minWidth: '200px' }),
+  }
+]; 
   
   const selectRowConfig = {
     mode: 'checkbox',
     clickToSelect: true,
+    classes: 'selected-row',
     style: { backgroundColor: '#c8e6c9' },
     selected: props.selectedCaseIds || [],
     onSelect: (row, isSelect, rowIndex, e) => {
@@ -146,7 +156,7 @@ const columns = [
     }
   };
   return (
-    <div className="mt-4">
+    <div className="mt-4 text-center">
       <BootstrapTable
         keyField="id"
         data={data}
