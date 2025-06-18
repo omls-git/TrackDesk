@@ -90,3 +90,13 @@ export const deleteCases = async (ids) => {
     // throw error;
   }
 }
+
+export const postEmployee = async (employee) => {
+  try {
+    const res = await axios.post(`${API_URL}/employee/addEmployee`, employee);
+    return res.data;
+  } catch (error) {
+    console.error('Error posting employee:', error);
+    throw error; // Always good to throw it for error handling on frontend
+  }
+};
