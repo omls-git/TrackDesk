@@ -4,6 +4,7 @@ import { Modal, Button } from 'react-bootstrap';
 const ImportModal = (props) => {
  const {show, onClose, OnShow, title} = props;
  const [file, setFile] = useState(null);
+
   
   const [error, setError] = useState('');
 
@@ -21,6 +22,7 @@ const ImportModal = (props) => {
     setFile(null)
     onClose();
   }
+
 
   return (
       <Modal show={show} onHide={handleClose}>

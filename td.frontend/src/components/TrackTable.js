@@ -4,7 +4,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 
 const TrackTable = (props) => {
-  const { data } = props;
+  const { data, clients } = props;
    const formateDates = (cell, row) => {
     return cell ? cell.split('T')[0] : '';
   }
@@ -28,6 +28,13 @@ const columns = [
     // sort: true,
     width: 100,
     headerStyle: () => ({ width: '100px', minWidth: '100px' }),
+    formatter: (cell, row) => {
+      if (clients && clients.length > 0) {
+        const client = clients.find(c => c.id === row.project_id);
+        return client ? client.name : row.project_id;
+      }
+      return row.project_id;
+    }
   },
   {
     dataField: 'caseNumber',

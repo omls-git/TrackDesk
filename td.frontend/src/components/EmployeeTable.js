@@ -4,7 +4,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 
 const EmployeeTrackTable = (props) => {
-  const { data } = props;
+  const { data, clients } = props;
 
   const columns = [
     {
@@ -21,23 +21,27 @@ const EmployeeTrackTable = (props) => {
       dataField: 'projectId',
       text: 'Client',
       width: 150,
+      formatter: (cell, row) => {
+        if (clients && clients.length > 0) {
+          const client = clients.find(c => c.id === row.projectId);
+          return client ? client.name : row.projectId;
+        }
+        return row.projectId;
+      }
     },
     {
       dataField: 'onLeave',
       text: 'On Leave',
       width: 150,
+      formatter: (cell, row) => {
+        return row.onLeave ? 'Yes' : 'No';
+      }
     },
     {
       dataField: 'permission',
       text: 'Permission',
       width: 150,
      
-    },
-    {
-      dataField: 'isAdmin',
-      text: 'Is Admin',
-      width: 100,
-      
     }
   ];
 

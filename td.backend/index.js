@@ -4,6 +4,7 @@ const cors = require('cors');
 const authRoutes = require('./routes/auth');
 const casesRoutes = require('./routes/cases');
 const employeeRouter = require('./routes/employees');
+const clientRouter = require('./routes/clients');
 
 
 const app = express();
@@ -23,6 +24,7 @@ app.use(bodyParser.json({ limit: '50mb' }));
 app.use('/api/auth', authRoutes);
 app.use('/api/cases', casesRoutes);
 app.use('/api/employee', employeeRouter);
+app.use('/api/clients', clientRouter);
 
 
 app.listen(5000, () => {
