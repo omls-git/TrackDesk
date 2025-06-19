@@ -101,3 +101,13 @@ export const postEmployee = async (employee) => {
     throw error; // Always good to throw it for error handling on frontend
   }
 };
+
+export const getClients = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/clients`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching clients:', error);
+    // throw error;
+  }
+}

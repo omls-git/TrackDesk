@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
-import { getUsers } from '../services/GraphApi';
+import { getUsers } from '../services/graphApi';
 import { postEmployee } from '../services/API';
 
 const EmployeeModal = ({ show, onClose }) => {

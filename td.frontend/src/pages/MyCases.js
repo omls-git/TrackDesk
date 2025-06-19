@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import TrackTable from '../components/TrackTable'
-import { fetchAllCases } from '../services/API'
+import { fetchAllCases, getClients } from '../services/API'
 import { useMsal } from '@azure/msal-react'
 
 const MyCases = () => {
   const [myCases, setMyCases] = useState([])
   const [selectedMyCases, setSelectedMyCases] = useState([]);
+   const [clients, setClients] = useState([]);
   const { accounts } = useMsal();
   useEffect(() => {
     const userName = accounts.length > 0 ? accounts[0].name : '';
@@ -15,16 +16,22 @@ const MyCases = () => {
       setMyCases(myCases);
     }
     fetchData();
+
+     async function fetchClients() {
+      const fetchedClients = await getClients();
+      setClients(fetchedClients);
+    }
+    fetchClients();
   }, [accounts]);
+
 
   return (
     <div className='mt-2'>
       <h4>My Cases</h4>
-      {myCases.length > 0 ? (<TrackTable data={myCases} cols={null} setSelectedCaseIds={setSelectedMyCases} selectedCaseIds={selectedMyCases} />
+      {myCases.length > 0 ? (<TrackTable data={myCases} cols={null} setSelectedCaseIds={setSelectedMyCases} selectedCaseIds={selectedMyCases} clients={clients} />
       ) : (
         <h4 className="text-center mb-4">No Cases Assigned</h4>
       )}
-      
     </div>
   )
 }
