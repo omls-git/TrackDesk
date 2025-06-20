@@ -1,18 +1,54 @@
-import React from 'react';
+// import React, { useEffect, useState } from 'react';
 import BootstrapTable from 'react-bootstrap-table-next';
+import cellEditFactory, { Type } from 'react-bootstrap-table2-editor';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
+// import paginationFactory from 'react-bootstrap-table2-paginator';
+// import { getClientAssigniesOfRole } from '../services/Common';
+// import { useCallback } from 'react';
 
 const TrackTable = (props) => {
   const { data, clients } = props;
+  // const [des, setDes] = useState([]);
+
    const formateDates = (cell, row) => {
     return cell ? cell.split('T')[0] : '';
   }
+
+  // const fetchAssignes = useCallback(async () => {
+  //   if (data && data.length > 0) {
+  //     const assignies = await getClientAssigniesOfRole('de');
+  //     // const options = assignies.map(item => ({
+  //     //   value: item.username,
+  //     //   label: item.username
+  //     // }));
+  //     setDes(assignies);
+  //   }
+  // }, [data]);
+
+  // useEffect(() => {
+  //   fetchAssignes();
+  // }, [data, fetchAssignes]);
+//  const editRenderer = (editorProps, value, row, column, rowIndex, columnIndex) => {
+//     return (
+//       <select
+//         className="form-control"
+//         value={value || ''}
+//         onChange={e => editorProps.onUpdate(e.target.value)}
+//       >
+//         <option value="">Select</option>
+//         {getClientAssigniesOfRole(row.project_id, 'de').map(item => (
+//           <option key={item.username} value={item.username}>{item.username}</option>
+//         ))}
+//       </select>
+//     );
+//   }
 const columns = [ 
   {
     dataField: 'id',
     text: 'ID',
     sort: true,
+    editable: false,
     headerStyle: () => ({ width: '80px', minWidth: '50px' }),
   }, 
   {
@@ -20,6 +56,7 @@ const columns = [
     text: 'Cases Open',
     // sort: true,
     width: 100,
+    editable: false,
     headerStyle: () => ({ width: '100px', minWidth: '100px' }),
   },
   {
@@ -27,6 +64,7 @@ const columns = [
     text: 'Client ID',
     // sort: true,
     width: 100,
+    editable: false,
     headerStyle: () => ({ width: '100px', minWidth: '100px' }),
     formatter: (cell, row) => {
       if (clients && clients.length > 0) {
@@ -41,6 +79,7 @@ const columns = [
     text: 'Case Number',
     // sort: true,
     width: 200,
+    editable: false,
     headerStyle: () => ({ width: '150px', minWidth: '150px' }),
   },
   {
@@ -48,6 +87,7 @@ const columns = [
     text: 'Initial/FUP/FUP to Open (FUOP)',
     // sort: true,
     width: 100,
+    editable: false,
     headerStyle: () => ({ width: '130px', minWidth: '130px' }),
   },
   {
@@ -55,6 +95,7 @@ const columns = [
     text: 'IRD/FRD',
     // sort: true,
     width: 100,
+    editable: false,
     formatter: formateDates,
     headerStyle: () => ({ width: '110px', minWidth: '100px' }),
   },
@@ -63,6 +104,54 @@ const columns = [
     text: 'DE',
     // sort: true,
     width: 150,
+    editable: true,
+    // editor: {
+    //   type: Type.SELECT,
+    // //   options: (row, column, index) => {
+    // //   return des
+    // //     ?.filter(item => item.projectId.toString() === row.project_id.toString())
+    // //     ?.map(item => ({
+    // //       value: item.username,
+    // //       label: item.username
+    // //     })) || [];
+    // // }
+    // },
+    // editorRenderer: (editorProps, value, row, column, rowIndex, columnIndex) => {
+    //   const options = des?.filter(item =>  item.projectId.toString() === row.project_id.toString())?.map(item => ({
+    //     value: item.username,
+    //     label: item.username
+    //   }));
+
+    //   // Use editorProps.onUpdate if available, otherwise fallback to editorProps.onBlur
+    //   const handleChange = (e) => {
+    //     if (editorProps.onUpdate) {
+    //       editorProps.onUpdate(e.target.value);
+    //     } else {
+    //       // Fallback: trigger blur event properly if onUpdate is not available
+    //       if (editorProps.onBlur) {
+    //         // Create a mock event with getValue method if needed
+    //         const mockEvent = {
+    //           getValue: () => e.target.value
+    //         };
+    //         editorProps.onBlur(mockEvent);
+    //       }
+    //     }
+    //   };
+
+    //   console.log("options", options);
+    //   return (
+    //     <select
+    //       className="form-control"
+    //       value={value || ''}
+    //       onChange={handleChange}
+    //     >
+    //       <option value="">Select DE</option>
+    //       {options.map(item => (
+    //         <option key={item.value} value={item.value}>{item.label}</option>
+    //       ))}
+    //     </select>
+    //   )
+    // },
     headerStyle: () => ({ width: '150px', minWidth: '150px' }),
   },
   {
@@ -70,6 +159,11 @@ const columns = [
     text: 'Assigned Date (DE)',
     // sort: true,
     width: 100,
+    editable: true,
+    editor : {
+      type: Type.DATE,
+      dateFormat: 'YYYY-MM-DD',
+    },
     formatter: formateDates,
     headerStyle: () => ({ width: '110px', minWidth: '100px' }),
   },
@@ -78,6 +172,10 @@ const columns = [
     text: 'QR',
     // sort: true,
     width: 100,
+    editable: true,
+    editor : {
+      type: Type.TEXT,
+    },
     headerStyle: () => ({ width: '150px', minWidth: '100px' }),
   },
   {
@@ -85,6 +183,11 @@ const columns = [
     text: 'Assigned Date (QR)',
     // sort: true,
     width: 100,
+    editable: true,
+    editor : {
+      type: Type.DATE,
+      dateFormat: 'YYYY-MM-DD',
+    },
     formatter: formateDates,
     headerStyle: () => ({ width: '110px', minWidth: '100px' }),
   },
@@ -93,6 +196,10 @@ const columns = [
     text: 'MR',
     // sort: true,
     width: 100,
+    editable: true,
+    editor : {
+      type: Type.TEXT,
+    },
     headerStyle: () => ({ width: '150px', minWidth: '100px' }),
   },
   {
@@ -100,6 +207,11 @@ const columns = [
     text: 'Assigned Date (MR)',
     // sort: true,
     width: 100,
+    editable: true,
+    editor : {
+      type: Type.DATE,
+      dateFormat: 'YYYY-MM-DD',
+    },
     formatter: formateDates,
     headerStyle: () => ({ width: '110px', minWidth: '100px' }),
   },
@@ -108,6 +220,16 @@ const columns = [
     text: 'Case Status',
     // sort: true,
     width: 150,
+    editable: true,
+    editor : {
+      type: Type.SELECT,
+      options: [
+        { value: 'Reporting', label: 'Reporting' },
+        { value: 'Data Entry', label: 'Data Entry' },
+        { value: 'Quality Review', label: 'Quality Review' },
+        { value: 'Medical Review', label: 'Medical Review' }
+      ],
+    },
     headerStyle: () => ({ width: '150px', minWidth: '150px' }),
   },
   {
@@ -115,6 +237,7 @@ const columns = [
     text: 'Reportability',
     // sort: true,
     width: 150,
+    editable: false,
     headerStyle: () => ({ width: '150px', minWidth: '150px' }),
   },
   {
@@ -122,6 +245,7 @@ const columns = [
     text: 'Seriousness',
     // sort: true,
     width: 100,
+    editable: false,
     headerStyle: () => ({ width: '100px', minWidth: '100px' }),
   },
   {
@@ -129,13 +253,18 @@ const columns = [
     text: 'Comments',
     // sort: false,
     width: 200,
+    editable: true,
+    editor : {
+      type: Type.TEXTAREA,
+      rows: 3,
+    },
     headerStyle: () => ({ width: '200px', minWidth: '200px' }),
   }
 ]; 
   
   const selectRowConfig = {
     mode: 'checkbox',
-    clickToSelect: true,
+    // clickToSelect: true,
     classes: 'selected-row',
     style: { backgroundColor: '#c8e6c9' },
     selected: props.selectedCaseIds || [],
@@ -173,6 +302,44 @@ const columns = [
         hover
         condensed
         selectRow={selectRowConfig}
+        cellEdit={cellEditFactory({
+          mode: 'click',
+          blurToSave: true,
+           beforeSaveCell: (
+              oldValueIn,
+              newValueIn,
+              row,
+              column,
+              done
+          ) =>{
+            const oldValue = oldValueIn?.trim();
+            const newValue = newValueIn?.trim();
+            if (oldValue === newValue) {
+              done(true);
+              return;
+            }
+            // Example validation: Ensure new value is not empty
+            if (newValue === '') {
+              done(false); // Prevent the save
+              return;
+            }
+            // Example validation: Ensure new value is a valid string (you can customize this)
+            // Add any additional validation logic here if needed
+            done(true); // Allow the save
+          },
+          afterSaveCell: (oldValue, newValue, row, column, rowIndex, columnIndex) => {
+            console.log(`Cell edited at row ${rowIndex}, column ${columnIndex}: ${oldValue} -> ${newValue}`);
+          }
+        })}
+        // pagination={paginationFactory({
+        //   sizePerPage: 30,
+        //   hideSizePerPage: true,
+        //   showTotal: data.length > 30,
+        //   totalSize: data.length,
+        //   paginationTotalRenderer: (from, to, size) => {
+        //     return ("Showing " + from + " to " + to + " of " + size + " entries")
+        //     }
+        // })}
       />
     </div>
   );

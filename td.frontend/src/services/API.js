@@ -31,7 +31,8 @@ export const postCases = async (cases, clientId) => {
   console.log(selectedClientAllCases);
   const assignedCases = await caseAllocation(sortCasesByPriority, selectedClientAllCases, clientId);
   console.log("assignedCases", assignedCases);
-
+  const clients = await getClients();
+  const selectedClient = clients.find((item) => item.id.toString() === clientId.toString());
   assignedCases.map(async (item) => {
   const caseNumber = item.caseNumber;
   if(caseNumber){
@@ -45,6 +46,7 @@ export const postCases = async (cases, clientId) => {
           console.log("body", body)
           const res = await axios.post(`${API_URL}/cases/`, body)
           console.log("response post", res);
+          //  alert(`Cases assigned successfully to Client: ${selectedClient.name}`);
           return res
         } catch (error) {
           console.error('error', error);

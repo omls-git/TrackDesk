@@ -4,21 +4,17 @@ import TrackTable from '../components/TrackTable';
 import ImportModal from '../components/ImportModal';
 import { deleteCases, fetchAllCases, getClients, postCases } from '../services/API';
 
-// const clients = [{id:2,name:"Client One"}, {id:3, name:"Client Two"}, {id:4, name: "Client Three" } ]
 const AllCases = () => {
 
-  const [masterData, setMasterData] = useState([]);
-  const [loading, setLoading] = useState(false);  
+  const [masterData, setMasterData] = useState([]); 
   const [show, setShow] = useState(false);
   const [columns, setColumns] = useState([]);
   const [selectedClientId, setSelectedClientId] = useState(null)
   const [selectedCases, setSelectedCases] = useState([]); 
   const [searchTerm, setSearchTerm] = useState('');
-   const [clients, setClients] = useState([]);
+  const [clients, setClients] = useState([]);
 
   const handleImportFile = async (file) => {
-    setLoading(true);
-    handleClose();
     if (!file) return;
     const data = await file.arrayBuffer();
     const workbook = XLSX.read(data, { type: 'buffer' });  
@@ -42,12 +38,10 @@ const AllCases = () => {
           return [key, value];
         })
       );
-    });  
-    // console.log(jsonData);
-    // setMasterData(jsonData);
+    });
     await postCases(jsonData, selectedClientId)
     await fetchAllCasesCallback();
-    setLoading(false);
+    handleClose();
   };
 
   const handleExport = () => {
@@ -101,7 +95,7 @@ const AllCases = () => {
   const handleShow = () => setShow(true);
 
   const onClientChange =(e) => {
-    // console.log("client", e.target.value); 
+    console.log("client", e.target.value); 
     const clientId = e.target.value;
     clientId ? setSelectedClientId(e.target.value) : setSelectedClientId('')
   }
@@ -221,9 +215,9 @@ const AllCases = () => {
          >Export</button>
          </div>
       </div>
-      {!loading && masterData.length === 0 && <div className="text-center">No data available</div>}
-      {loading && <div className="text-center">Loading...</div>}
-      {!loading && masterData.length > 0 && (
+      {masterData.length === 0 && <div className="text-center">No data available</div>}
+      {/* {loading && <div className="text-center">Loading...</div>} */}
+      {masterData.length > 0 && (
          <TrackTable data={masterData} cols={null} setSelectedCaseIds={setSelectedCases} selectedCaseIds={selectedCases} clients={clients} />
       )}
       <ImportModal show={show} onClose={handleClose} onShow={handleShow} title={"Import Master Tracker"} onFileChange={handleImportFile} selectedClient={selectedClientId}
