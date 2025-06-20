@@ -3,18 +3,19 @@ import { Modal, Button } from 'react-bootstrap';
 
 const ImportModal = (props) => {
  const {show, onClose, OnShow, title} = props;
- const [file, setFile] = useState(null);
-
-  
+ const [file, setFile] = useState(null); 
   const [error, setError] = useState('');
+  const [warnMessage, setWarnMessage] = useState('');
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (!props.selectedClient || !file) {
       setError('Please select a client and upload a file.');
       return;
     }
     setError('');
-    props.onFileChange(file);
+    setWarnMessage('Cases allocation is in progress. Please wait...');
+    await props.onFileChange(file);
+    setWarnMessage('');
   };
 
   const handleClose =() => {
@@ -60,7 +61,12 @@ const ImportModal = (props) => {
               accept=".xlsx, .xls"
               onChange={(e) => setFile(e.target.files[0])}
             />
-          </div>          
+          </div>  
+          {warnMessage && (
+            <div className="alert alert-info" role="alert">
+              {warnMessage}
+            </div>
+          )}
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleClose}>

@@ -177,3 +177,19 @@ export const employeesToAssign = (assignees, cases, role, projectId) => {
   }
 
 }
+
+export const getClientAssigniesOfRole = async (role) => {
+  const assignies = await getEmployees();
+  console.log("assignies", assignies);
+  const clientAssigniesOfRole = assignies.filter((item) =>!item.onLeave && item.level.toLowerCase() === role.toLowerCase());
+  
+  if (clientAssigniesOfRole.length === 0) {
+    console.error("No assignies found for the client to assign cases");
+    return [];
+  }
+
+  return clientAssigniesOfRole;
+}
+
+
+
