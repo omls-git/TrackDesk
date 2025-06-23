@@ -359,23 +359,18 @@ const columns = [
             const oldValue = oldValueIn?.trim();
             const newValue = newValueIn?.trim();
 
-            console.log(oldValue, newValue , typeof oldValue, typeof newValue)
             if (oldValue === newValue || (!oldValue && !newValue)) {
               done(true); // No change, allow saving
               return;
             }
             let updatedCase = row;
-              updatedCase[column.dataField] = newValue.trim();
+            updatedCase[column.dataField] = newValue.trim();
 
             if(newValue !== oldValue){
               updateCase(updatedCase)
             }
             done(true);
           },
-          
-          // afterSaveCell: (oldValue, newValue, row, column, rowIndex, columnIndex) => {
-          //   console.log(`Cell edited at row ${rowIndex}, column ${columnIndex}: ${oldValue} -> ${newValue}`);
-          // }
         })}
         // pagination={paginationFactory({
         //   sizePerPage: 30,

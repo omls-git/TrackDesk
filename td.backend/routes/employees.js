@@ -43,21 +43,22 @@ employeeRouter.put('/:id', (req, res) => {
     if (err) return res.status(500).json({ error: "Failed to fetch employee" });
     if (!existingEmployee) return res.status(404).json({ error: "Employee not found" });
 
-    const { username, email, projectId, role, onLeave } = req.body;
+    const { username, email, projectId, level, onLeave, permission } = req.body;
     const updatedEmployee = {
       username: username ? username : existingEmployee.username,
       email: email ? email : existingEmployee.email,
       projectId: projectId ? projectId : existingEmployee.projectId,
-      role: role ? role : existingEmployee.role,
-      onLeave: onLeave !== undefined ? onLeave : existingEmployee.onLeave
+      level: level ? level : existingEmployee.level,
+      onLeave: onLeave !== undefined ? onLeave : existingEmployee.onLeave,
+      permission : permission ? permission : existingEmployee.permission
     };
 
-    const sql = 'UPDATE employeeTracker SET username = ?, email = ?, projectId = ?, role = ?, onLeave = ? WHERE id = ?';
+    const sql = 'UPDATE employeeTracker SET username = ?, email = ?, projectId = ?, level = ?, onLeave = ?, permission = ? WHERE id = ?';
     db.query(
       sql,
-      [updatedEmployee.username, updatedEmployee.email, updatedEmployee.projectId, updatedEmployee.role, updatedEmployee.onLeave, id],
+      [updatedEmployee.username, updatedEmployee.email, updatedEmployee.projectId, updatedEmployee.level, updatedEmployee.onLeave, updatedEmployee.permission, id],
       (err) => {
-        if (err) return res.status(500).json({ error: "Failed to update employee" });
+        if (err) return res.status(500).json({ error: "Failed to update employee", err });
         res.json({ message: "Employee updated successfully" });
       }
     );
@@ -65,6 +66,7 @@ employeeRouter.put('/:id', (req, res) => {
 })
 
 employeeRouter.delete('/', (req, res) => {
+  console.log("bodyyyyyyyyyy", req.body)
   const { ids } = req.body;
   if (Array.isArray(ids) && ids.length > 1) {
     const placeholders = ids.map(() => '?').join(',');
@@ -77,7 +79,7 @@ employeeRouter.delete('/', (req, res) => {
     const id = Array.isArray(ids) ? ids[0] : ids;
     const sql = 'DELETE FROM employeeTracker WHERE id = ?';
     db.query(sql, [id], (err, result) => {
-      if (err) return res.status(500).json({ error: "Failed to delete employee" });
+      if (err) return res.status(500).json({ error: "Failed to delete employee", err });
       res.json({ message: "Employee deleted successfully", affectedRows: result.affectedRows });
     });
   }

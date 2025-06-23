@@ -17,9 +17,7 @@ const AllCases = () => {
   const handleImportFile = async (file) => {
     if (!file) return;
     const data = await file.arrayBuffer();
-    const workbook = XLSX.read(data, { type: 'buffer' });  
-    // console.log(`File imported: ${file.name}`);
-    console.log(`Workbook:`, workbook);
+    const workbook = XLSX.read(data, { type: 'buffer' });
     const worksheet = workbook.Sheets["Open Cases"];
     let jsonData = XLSX.utils.sheet_to_json(worksheet, {defval: "" });
    
@@ -57,7 +55,6 @@ const AllCases = () => {
     try {
       const cases = await fetchAllCases();
       setMasterData(cases);
-      console.log("Fetched cases:", cases);
     } catch (error) {
       console.error("Error fetching cases:", error);
     } finally {
@@ -100,14 +97,11 @@ const AllCases = () => {
   const handleShow = () => setShow(true);
 
   const onClientChange =(e) => {
-    console.log("client", e.target.value); 
-    const clientId = e.target.value;
+    const clientId = e?.target?.value;
     clientId ? setSelectedClientId(e.target.value) : setSelectedClientId('')
   }
 
   const deleteSelectedCases = async() => {
-    // Implement delete logic here
-    console.log("Delete selected cases", selectedCases);
     await deleteCases(selectedCases);
     setSelectedCases([]);
     await fetchAllCasesCallback();
@@ -160,9 +154,7 @@ const AllCases = () => {
       <div className="d-flex flex-wrap align-items-center mb-3 gap-2">
         <button
           className="btn btn-primary"
-          onClick={() => 
-            handleShow()
-          }
+          onClick={handleShow}
         >
           Import File
         </button>
