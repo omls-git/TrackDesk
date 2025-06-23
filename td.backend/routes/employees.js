@@ -66,7 +66,6 @@ employeeRouter.put('/:id', (req, res) => {
 })
 
 employeeRouter.delete('/', (req, res) => {
-  console.log("bodyyyyyyyyyy", req.body)
   const { ids } = req.body;
   if (Array.isArray(ids) && ids.length > 1) {
     const placeholders = ids.map(() => '?').join(',');
