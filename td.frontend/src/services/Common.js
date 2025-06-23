@@ -10,7 +10,7 @@ console.log("assignies", assignies);
     return [];
   }
   
-  const deAssiniees = clientAssignies.filter((item) => item.level.toLowerCase() === "de".toLowerCase() && !item.onLeave);
+  const deAssiniees = clientAssignies.filter((item) => item.level.toLowerCase() === "data entry".toLowerCase() && !item.onLeave);
 
    let de = [];
     deAssiniees.forEach(assigny => {
@@ -18,14 +18,14 @@ console.log("assignies", assignies);
       count ? de.push({ username: assigny.username, count, maxCount: 8 }) : de.push({ username: assigny.username, count: 0, maxCount: 8 });
     });
 
-    const qrAssignees = clientAssignies.filter((item) => item.level.toLowerCase() === "qr".toLowerCase() && !item.onLeave);
+    const qrAssignees = clientAssignies.filter((item) => item.level.toLowerCase() === "quality review".toLowerCase() && !item.onLeave);
     let qr = [];
     qrAssignees.forEach(assigny => {
       const count = existingAllCases.filter(item => item.qr === assigny.username && !item.completedDateQR).length;
       count ? qr.push({ username: assigny.username, count, maxCount: 15 }) : qr.push({ username: assigny.username, count: 0, maxCount: 15 });
     });
 
-    const mrAssignees = clientAssignies.filter((item) => item.level.toLowerCase() === "mr".toLowerCase() && !item.onLeave);
+    const mrAssignees = clientAssignies.filter((item) => item.level.toLowerCase() === "medical review".toLowerCase() && !item.onLeave);
     let mr = [];
     mrAssignees.forEach(assigny => {
       const count = existingAllCases.filter(item => item.mr === assigny.username && !item.completedDateMR).length;
