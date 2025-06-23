@@ -3,7 +3,7 @@ import { Modal, Button, Form, ListGroup } from 'react-bootstrap';
 import { getUsers } from '../services/GraphApi';
 import { postEmployee } from '../services/API';
 
-const EmployeeModal = ({ show, onClose }) => {
+const EmployeeModal = ({ show, onClose, clients }) => {
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -13,11 +13,7 @@ const EmployeeModal = ({ show, onClose }) => {
   const [selectedLevel, setSelectedLevel] = useState('');
   const [selectedPermission, setSelectedPermission] = useState('');
 
-  const clientOptions = [
-    { id: 1, name: "Client One" },
-    { id: 2, name: "Client Two" },
-    { id: 3, name: "Client Three" }
-  ];
+  const clientOptions = clients;
   const levelOptions = ['Data Entry', 'Quality Review', 'Medical Review'];
   const permissionOptions = ['Admin', 'Manager', 'User'];
 
@@ -59,8 +55,8 @@ const EmployeeModal = ({ show, onClose }) => {
 
     try {
       await postEmployee(employeeData);
-      alert('Employee saved successfully!');
       onClose();
+      alert('Employee saved successfully!');      
     } catch (error) {
       console.error('Error saving employee:', error);
       alert('Failed to save employee.');

@@ -17,9 +17,7 @@ const AllCases = () => {
   const handleImportFile = async (file) => {
     if (!file) return;
     const data = await file.arrayBuffer();
-    const workbook = XLSX.read(data, { type: 'buffer' });  
-    // console.log(`File imported: ${file.name}`);
-    console.log(`Workbook:`, workbook);
+    const workbook = XLSX.read(data, { type: 'buffer' });
     const worksheet = workbook.Sheets["Open Cases"];
     let jsonData = XLSX.utils.sheet_to_json(worksheet, {defval: "" });
    
@@ -30,7 +28,7 @@ const AllCases = () => {
     const isProbablyDate = (val) =>
       typeof val === 'number' && val > 25569 && val < 60000; // Excel date serial range
     jsonData = jsonData.map(row => {
-      return Object.fromEntries( 
+      return Object.fromEntries(
         Object.entries(row).map(([key, value]) => {
           if (isProbablyDate(value)) {
             return [key, parseExcelDate(value)];
@@ -57,7 +55,6 @@ const AllCases = () => {
     try {
       const cases = await fetchAllCases();
       setMasterData(cases);
-      console.log("Fetched cases:", cases);
     } catch (error) {
       console.error("Error fetching cases:", error);
     } finally {
@@ -66,7 +63,12 @@ const AllCases = () => {
   }, []);
 
   useEffect(() => {
-    fetchAllCasesCallback();
+    async function fetchClientsAndCases() {
+      const fetchedClients = await getClients();
+      setClients(fetchedClients);
+      fetchAllCasesCallback();
+    }
+    fetchClientsAndCases();
   }, [fetchAllCasesCallback])  
 
    const parseExcelDate = (value) => {
@@ -74,10 +76,10 @@ const AllCases = () => {
           const date = XLSX.SSF.parse_date_code(value);
           if (!date) return "";
           const iso = new Date(Date.UTC(date.y, date.m - 1, date.d)).toISOString();
-          return iso.split("T")[0];
+          return iso.slice(0, 19).replace("T", " ");
         }
         if (value instanceof Date) {
-          return value.toISOString().split("T")[0];
+          return value.toISOString().slice(0, 19).replace("T", " ")
         }
         return "";
   };
@@ -95,14 +97,11 @@ const AllCases = () => {
   const handleShow = () => setShow(true);
 
   const onClientChange =(e) => {
-    console.log("client", e.target.value); 
-    const clientId = e.target.value;
+    const clientId = e?.target?.value;
     clientId ? setSelectedClientId(e.target.value) : setSelectedClientId('')
   }
 
   const deleteSelectedCases = async() => {
-    // Implement delete logic here
-    console.log("Delete selected cases", selectedCases);
     await deleteCases(selectedCases);
     setSelectedCases([]);
     await fetchAllCasesCallback();
@@ -149,22 +148,13 @@ const AllCases = () => {
     });
   }, [dateRange.from, dateRange.to, fetchAllCasesCallback]);
 
-  useEffect(() => {
-      async function fetchClients() {
-        const fetchedClients = await getClients();
-        setClients(fetchedClients);
-      }
-      fetchClients();
-    }, []);
   return (
     <div className="mt-4">   
 
       <div className="d-flex flex-wrap align-items-center mb-3 gap-2">
         <button
           className="btn btn-primary"
-          onClick={() => 
-            handleShow()
-          }
+          onClick={handleShow}
         >
           Import File
         </button>

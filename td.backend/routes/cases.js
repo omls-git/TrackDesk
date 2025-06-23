@@ -10,9 +10,19 @@ caseRouter.get('/', (req, res) => {
   });
 });
 
-const getCasesById = (id) => {
+const getCasesByCaseNum = (id) => {
   return new Promise((resolve, reject) => {
     const sql = 'SELECT * FROM cases WHERE caseNumber = ?';
+    db.query(sql, [id], (err, results) => {
+      if (err) return reject(err);
+      resolve(results);
+    });
+  });
+}
+
+const getCasesById = (id) => {
+  return new Promise((resolve, reject) => {
+    const sql = 'SELECT * FROM cases WHERE id = ?';
     db.query(sql, [id], (err, results) => {
       if (err) return reject(err);
       resolve(results);
@@ -231,11 +241,11 @@ caseRouter.put('/:id', (req, res) => {
     seriousness || result.seriousness || null,
     live_backlog || result.live_backlog || null,  
     comments || result.comments || null,
-    isCaseOpen || result.isCaseOpen || null,
+    isCaseOpen,
     id
   ];
   db.query(sql, values, (err, result) => {
-    if (err) return res.status(500).json({ error: 'Failed to update case' });
+    if (err) return res.status(500).json({ error: 'Failed to update case',err });
     if (result.affectedRows === 0) return res.status(404).json({ error: 'Case not found' });
     res.json({ message: 'Case updated successfully' });
   });

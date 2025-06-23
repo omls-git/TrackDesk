@@ -15,11 +15,13 @@ const ImportModal = (props) => {
     setError('');
     setWarnMessage('Cases allocation is in progress. Please wait...');
     await props.onFileChange(file);
+    handleClose()
     setWarnMessage('');
   };
 
   const handleClose =() => {
     setError('');
+    props.onSelect()
     setFile(null)
     onClose();
   }

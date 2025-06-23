@@ -2,7 +2,6 @@ import { getEmployees } from "./API"
 
 export const caseAllocation = async(cases, existingAllCases, clientId) => {
   const assignies = await getEmployees();
-console.log("assignies", assignies);
   const clientAssignies = assignies.filter((item) => item.projectId.toString() === clientId.toString() && !item.onLeave);
 
   if (clientAssignies.length === 0) {
@@ -68,7 +67,7 @@ export const mapCaseToApiFormat = (item, id) => ({
   reportability: item["Reportability"] || "",
   seriousness: item["Seriousness"] || "",
   live_backlog: item["Live/backlog"] || "",
-  comments: item["Comments"] || "",
+  comments: item["Comments_1"] || "",
   isCaseOpen: true,
   DestinationForReporting: item["Destination for Reporting"] || "",
   ReportingComment: item["Reporting Comment"] || "",
@@ -180,7 +179,6 @@ export const employeesToAssign = (assignees, cases, role, projectId) => {
 
 export const getClientAssigniesOfRole = async (role) => {
   const assignies = await getEmployees();
-  console.log("assignies", assignies);
   const clientAssigniesOfRole = assignies.filter((item) =>!item.onLeave && item.level.toLowerCase() === role.toLowerCase());
   
   if (clientAssigniesOfRole.length === 0) {
