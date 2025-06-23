@@ -1,34 +1,38 @@
-// import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import BootstrapTable from 'react-bootstrap-table-next';
 import cellEditFactory, { Type } from 'react-bootstrap-table2-editor';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 // import paginationFactory from 'react-bootstrap-table2-paginator';
-// import { getClientAssigniesOfRole } from '../services/Common';
-// import { useCallback } from 'react';
+import { getClientAssigniesOfRole } from '../services/Common';
+import { useCallback } from 'react';
+import { updateCase } from '../services/API';
 
 const TrackTable = (props) => {
   const { data, clients } = props;
-  // const [des, setDes] = useState([]);
+  const [des, setDes] = useState([]);
+  const [qrs, setQrs] = useState([]);
+  const [mrs, setMrs] = useState([]);
 
    const formateDates = (cell, row) => {
     return cell ? cell.split('T')[0] : '';
   }
 
-  // const fetchAssignes = useCallback(async () => {
-  //   if (data && data.length > 0) {
-  //     const assignies = await getClientAssigniesOfRole('de');
-  //     // const options = assignies.map(item => ({
-  //     //   value: item.username,
-  //     //   label: item.username
-  //     // }));
-  //     setDes(assignies);
-  //   }
-  // }, [data]);
+  const fetchAssignes = useCallback(async () => {
+    if (data && data.length > 0) {
+      const assignies = await getClientAssigniesOfRole('data entry');
+      setDes(assignies);
+      const qrAssignies = await getClientAssigniesOfRole('quality review');
+      setQrs(qrAssignies);
+      const mrAssignies = await getClientAssigniesOfRole('medical review');
+      setMrs(mrAssignies);
+    }
+  }, [data]);
 
-  // useEffect(() => {
-  //   fetchAssignes();
-  // }, [data, fetchAssignes]);
+  useEffect(() => {
+    fetchAssignes();
+  }, [data, fetchAssignes]);
+
 //  const editRenderer = (editorProps, value, row, column, rowIndex, columnIndex) => {
 //     return (
 //       <select
@@ -43,6 +47,7 @@ const TrackTable = (props) => {
 //       </select>
 //     );
 //   }
+
 const columns = [ 
   {
     dataField: 'id',
@@ -105,17 +110,13 @@ const columns = [
     // sort: true,
     width: 150,
     editable: true,
-    // editor: {
-    //   type: Type.SELECT,
-    // //   options: (row, column, index) => {
-    // //   return des
-    // //     ?.filter(item => item.projectId.toString() === row.project_id.toString())
-    // //     ?.map(item => ({
-    // //       value: item.username,
-    // //       label: item.username
-    // //     })) || [];
-    // // }
-    // },
+    editor: {
+      type: Type.SELECT,
+      options: des?.map(item => ({
+        value: item.username,
+        label: item.username
+      })),
+    },
     // editorRenderer: (editorProps, value, row, column, rowIndex, columnIndex) => {
     //   const options = des?.filter(item =>  item.projectId.toString() === row.project_id.toString())?.map(item => ({
     //     value: item.username,
@@ -159,11 +160,11 @@ const columns = [
     text: 'Assigned Date (DE)',
     // sort: true,
     width: 100,
-    editable: true,
-    editor : {
-      type: Type.DATE,
-      dateFormat: 'YYYY-MM-DD',
-    },
+    editable: false,
+    // editor : {
+    //   type: Type.DATE,
+    //   dateFormat: 'YYYY-MM-DD',
+    // },
     formatter: formateDates,
     headerStyle: () => ({ width: '110px', minWidth: '100px' }),
   },
@@ -174,7 +175,11 @@ const columns = [
     width: 100,
     editable: true,
     editor : {
-      type: Type.TEXT,
+      type: Type.SELECT,
+      options: qrs?.map(item => ({
+        value: item.username,
+        label: item.username
+      })),
     },
     headerStyle: () => ({ width: '150px', minWidth: '100px' }),
   },
@@ -183,11 +188,11 @@ const columns = [
     text: 'Assigned Date (QR)',
     // sort: true,
     width: 100,
-    editable: true,
-    editor : {
-      type: Type.DATE,
-      dateFormat: 'YYYY-MM-DD',
-    },
+    editable: false,
+    // editor : {
+    //   type: Type.DATE,
+    //   dateFormat: 'YYYY-MM-DD',
+    // },
     formatter: formateDates,
     headerStyle: () => ({ width: '110px', minWidth: '100px' }),
   },
@@ -198,7 +203,11 @@ const columns = [
     width: 100,
     editable: true,
     editor : {
-      type: Type.TEXT,
+      type: Type.SELECT,
+      options: mrs?.map(item => ({
+        value: item.username,
+        label: item.username
+      })),
     },
     headerStyle: () => ({ width: '150px', minWidth: '100px' }),
   },
@@ -207,11 +216,45 @@ const columns = [
     text: 'Assigned Date (MR)',
     // sort: true,
     width: 100,
-    editable: true,
-    editor : {
-      type: Type.DATE,
-      dateFormat: 'YYYY-MM-DD',
-    },
+    editable: false,
+    // editor : {
+    //   type: Type.DATE,
+    //   dateFormat: 'YYYY-MM-DD',
+    // },
+  // editorRenderer: (editorProps, value, row, column, rowIndex, columnIndex,) => {
+  //   const defaultDate = value || new Date().toISOString().split('T')[0]; // 'YYYY-MM-DD'
+
+  //   const handleChange = (e) => {
+  //     const selected = e.target.value;
+  //     if (!selected) {
+  //       if (editorProps && typeof editorProps.onUpdate === 'function') {
+  //         editorProps.onUpdate(null);
+  //       } else if (editorProps && typeof editorProps.onBlur === 'function') {
+  //         // Always provide an event with getValue method
+  //           editorProps.onBlur({ target: { value: null }, getValue: () => null });
+  //       }
+  //     } else {
+  //       if (editorProps && typeof editorProps.onUpdate === 'function') {
+  //         editorProps.onUpdate(selected);
+  //       } else if (editorProps && typeof editorProps.onBlur === 'function') {
+  //         // Always provide an event with getValue method
+  //         editorProps.onBlur({ getValue: () => selected });
+  //       }
+  //     }
+  //   };
+
+  //   return (
+  //     <input
+  //       type="date"
+  //       className="form-control"
+  //       defaultValue={defaultDate}
+  //       onBlur={handleChange}
+  //       onKeyDown={(e) => {
+  //         if (e.key === 'Enter') e.target.blur(); // Save on Enter
+  //       }}
+  //     />
+  //   );
+  // },
     formatter: formateDates,
     headerStyle: () => ({ width: '110px', minWidth: '100px' }),
   },
@@ -261,7 +304,7 @@ const columns = [
     headerStyle: () => ({ width: '200px', minWidth: '200px' }),
   }
 ]; 
-  
+
   const selectRowConfig = {
     mode: 'checkbox',
     // clickToSelect: true,
@@ -302,6 +345,7 @@ const columns = [
         hover
         condensed
         selectRow={selectRowConfig}
+        
         cellEdit={cellEditFactory({
           mode: 'click',
           blurToSave: true,
@@ -314,22 +358,24 @@ const columns = [
           ) =>{
             const oldValue = oldValueIn?.trim();
             const newValue = newValueIn?.trim();
-            if (oldValue === newValue) {
-              done(true);
+
+            console.log(oldValue, newValue , typeof oldValue, typeof newValue)
+            if (oldValue === newValue || (!oldValue && !newValue)) {
+              done(true); // No change, allow saving
               return;
             }
-            // Example validation: Ensure new value is not empty
-            if (newValue === '') {
-              done(false); // Prevent the save
-              return;
+            let updatedCase = row;
+              updatedCase[column.dataField] = newValue.trim();
+
+            if(newValue !== oldValue){
+              updateCase(updatedCase)
             }
-            // Example validation: Ensure new value is a valid string (you can customize this)
-            // Add any additional validation logic here if needed
-            done(true); // Allow the save
+            done(true);
           },
-          afterSaveCell: (oldValue, newValue, row, column, rowIndex, columnIndex) => {
-            console.log(`Cell edited at row ${rowIndex}, column ${columnIndex}: ${oldValue} -> ${newValue}`);
-          }
+          
+          // afterSaveCell: (oldValue, newValue, row, column, rowIndex, columnIndex) => {
+          //   console.log(`Cell edited at row ${rowIndex}, column ${columnIndex}: ${oldValue} -> ${newValue}`);
+          // }
         })}
         // pagination={paginationFactory({
         //   sizePerPage: 30,

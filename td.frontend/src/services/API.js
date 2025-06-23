@@ -113,3 +113,40 @@ export const getClients = async () => {
     // throw error;
   }
 }
+
+export const updateCase = async (item) => {
+  console.log("item to update", item);
+  // Format all date fields in item to 'YYYY-MM-DD HH:mm:ss' if they exist
+  const formatDate = (date) =>
+    date ? new Date(date).toISOString().slice(0, 19).replace("T", " ") : null;
+
+  const updatedCase = {
+    project_id: item.project_id,
+    casesOpen: item.casesOpen,
+    caseNumber: item.caseNumber,
+    initial_fup_fupToOpen: item.initial_fup_fupToOpen,
+    ird_frd: formatDate(item.ird_frd),
+    assignedDateDe: formatDate(item.assignedDateDe),
+    completedDateDE: formatDate(item.completedDateDE),
+    de: item.de,
+    assignedDateQr: formatDate(item.assignedDateQr),
+    completedDateQR: formatDate(item.completedDateQR),
+    qr: item.qr,
+    assignedDateMr: formatDate(item.assignedDateMr),
+    completedDateMr: formatDate(item.completedDateMr),
+    mr: item.mr,
+    caseStatus: item.caseStatus,
+    reportability: item.reportability,
+    seriousness: item.seriousness,
+    live_backlog: item.live_backlog,
+    comments: item.comments,
+    isCaseOpen: item.isCaseOpen
+  }
+  try {
+    const response = await axios.put(`${API_URL}/cases/${item.id}`, updatedCase);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating cases:', error);
+    // throw error;
+  }
+}

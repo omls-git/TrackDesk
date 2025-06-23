@@ -21,11 +21,11 @@ function EmployeeTracker() {
     }
   };
 
-  useEffect(() => {
-    fetchEmployees();
+  useEffect(() => {    
      async function fetchClients() {
       const fetchedClients = await getClients();
       setClients(fetchedClients);
+      fetchEmployees();
     }
     fetchClients();
   }, []);

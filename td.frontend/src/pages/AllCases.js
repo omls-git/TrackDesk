@@ -30,7 +30,7 @@ const AllCases = () => {
     const isProbablyDate = (val) =>
       typeof val === 'number' && val > 25569 && val < 60000; // Excel date serial range
     jsonData = jsonData.map(row => {
-      return Object.fromEntries( 
+      return Object.fromEntries(
         Object.entries(row).map(([key, value]) => {
           if (isProbablyDate(value)) {
             return [key, parseExcelDate(value)];
@@ -66,7 +66,12 @@ const AllCases = () => {
   }, []);
 
   useEffect(() => {
-    fetchAllCasesCallback();
+    async function fetchClientsAndCases() {
+      const fetchedClients = await getClients();
+      setClients(fetchedClients);
+      fetchAllCasesCallback();
+    }
+    fetchClientsAndCases();
   }, [fetchAllCasesCallback])  
 
    const parseExcelDate = (value) => {
@@ -74,10 +79,10 @@ const AllCases = () => {
           const date = XLSX.SSF.parse_date_code(value);
           if (!date) return "";
           const iso = new Date(Date.UTC(date.y, date.m - 1, date.d)).toISOString();
-          return iso.split("T")[0];
+          return iso.slice(0, 19).replace("T", " ");
         }
         if (value instanceof Date) {
-          return value.toISOString().split("T")[0];
+          return value.toISOString().slice(0, 19).replace("T", " ")
         }
         return "";
   };
@@ -149,13 +154,6 @@ const AllCases = () => {
     });
   }, [dateRange.from, dateRange.to, fetchAllCasesCallback]);
 
-  useEffect(() => {
-      async function fetchClients() {
-        const fetchedClients = await getClients();
-        setClients(fetchedClients);
-      }
-      fetchClients();
-    }, []);
   return (
     <div className="mt-4">   
 
