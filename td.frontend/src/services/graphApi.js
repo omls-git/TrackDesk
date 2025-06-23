@@ -19,7 +19,21 @@ export const getUsers = async () => {
       }
     });
 
-    return graphResponse.data.value;
+    // Handle paging to get all users
+    let users = graphResponse.data.value;
+    let nextLink = graphResponse.data['@odata.nextLink'];
+
+    while (nextLink) {
+      const nextResponse = await axios.get(nextLink, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+      });
+      users = users.concat(nextResponse.data.value);
+      nextLink = nextResponse.data['@odata.nextLink'];
+    }
+
+    return users;
 
   } catch (error) {
     console.error('Error fetching users:', error);

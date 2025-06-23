@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Button, Form } from 'react-bootstrap';
-import { getUsers } from '../services/graphApi';
+import { Modal, Button, Form, ListGroup } from 'react-bootstrap';
+import { getUsers } from '../services/GraphApi';
 import { postEmployee } from '../services/API';
 
 const EmployeeModal = ({ show, onClose }) => {
   const [users, setUsers] = useState([]);
-  const [selectedUserId, setSelectedUserId] = useState('');
+  const [filteredUsers, setFilteredUsers] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedUser, setSelectedUser] = useState(null);
+
   const [selectedClientId, setSelectedClientId] = useState('');
   const [selectedLevel, setSelectedLevel] = useState('');
   const [selectedPermission, setSelectedPermission] = useState('');
@@ -22,13 +25,30 @@ const EmployeeModal = ({ show, onClose }) => {
     const fetchUsers = async () => {
       const graphUsers = await getUsers();
       setUsers(graphUsers);
+      setFilteredUsers(graphUsers);
     };
 
     if (show) fetchUsers();
   }, [show]);
 
+  // Debounce search
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      const filtered = users.filter(user =>
+        user.displayName.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredUsers(filtered);
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery, users]);
+
   const handleSave = async () => {
-    const selectedUser = users.find(user => user.id === selectedUserId);
+    if (!selectedUser) {
+      alert('Please select an employee.');
+      return;
+    }
+
     const employeeData = {
       username: selectedUser.displayName,
       email: selectedUser.mail,
@@ -47,24 +67,41 @@ const EmployeeModal = ({ show, onClose }) => {
     }
   };
 
+  const handleUserSelect = (user) => {
+    setSelectedUser(user);
+    setSearchQuery(user.displayName); // Show the selected user's name in the input
+    setFilteredUsers([]); // Hide suggestions after selection
+  };
+
   return (
     <Modal show={show} onHide={onClose}>
       <Modal.Header closeButton>
         <Modal.Title>Select Employee</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        {/* Employee Dropdown */}
+        {/* People Picker */}
         <Form.Group className="mb-3">
-          <Form.Label>Select Employee</Form.Label>
-          <Form.Select value={selectedUserId} onChange={(e) => setSelectedUserId(e.target.value)}>
-            <option value="">Choose an employee...</option>
-            {users.map(user => (
-              <option key={user.id} value={user.id}>
-                {user.displayName} 
-                {/* ({user.mail}) */}
-              </option>
-            ))}
-          </Form.Select>
+          <Form.Label>Search Employee</Form.Label>
+          <Form.Control
+            type="text"
+            placeholder="Search by name..."
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setSelectedUser(null); // Reset selected user if typing again
+            }}
+            autoComplete="off"
+          />
+          {/* Suggestions List */}
+          {searchQuery && filteredUsers.length > 0 && !selectedUser && (
+            <ListGroup style={{ maxHeight: '150px', overflowY: 'auto', cursor: 'pointer' }}>
+              {filteredUsers.map(user => (
+                <ListGroup.Item key={user.id} onClick={() => handleUserSelect(user)}>
+                  {user.displayName}
+                </ListGroup.Item>
+              ))}
+            </ListGroup>
+          )}
         </Form.Group>
 
         {/* Client Dropdown */}
