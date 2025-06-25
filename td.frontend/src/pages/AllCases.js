@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react'
 import * as XLSX from 'xlsx';
 import TrackTable from '../components/TrackTable';
 import ImportModal from '../components/ImportModal';
-import { deleteCases, fetchAllCases, getClients, postCases } from '../services/API';
+import { deleteCases, fetchAllCases, getClients, getEmployees, postCases } from '../services/API';
+import { formattedIST, loggedUserName, users } from '../services/Common';
 
 const AllCases = () => {
 
@@ -13,6 +14,7 @@ const AllCases = () => {
   const [selectedCases, setSelectedCases] = useState([]); 
   const [searchTerm, setSearchTerm] = useState('');
   const [clients, setClients] = useState([]);
+  const [isAdminOrManager, setIsAdminOrManager] = useState(false);
 
   const handleImportFile = async (file) => {
     if (!file) return;
@@ -66,6 +68,11 @@ const AllCases = () => {
     async function fetchClientsAndCases() {
       const fetchedClients = await getClients();
       setClients(fetchedClients);
+       const employeeList = users;
+        const userDetails = employeeList.find((item) => item.username === loggedUserName);
+        if(userDetails?.permission.trim() === "Admin" || userDetails?.permission.trim() === "Manager"){
+          setIsAdminOrManager(true)
+        }
       fetchAllCasesCallback();
     }
     fetchClientsAndCases();
@@ -75,11 +82,11 @@ const AllCases = () => {
         if (typeof value === "number") {
           const date = XLSX.SSF.parse_date_code(value);
           if (!date) return "";
-          const iso = new Date(Date.UTC(date.y, date.m - 1, date.d)).toISOString();
-          return iso.slice(0, 19).replace("T", " ");
+          const iso = formattedIST(Date.UTC(date.y, date.m - 1, date.d)) //new Date(Date.UTC(date.y, date.m - 1, date.d)).toISOString().slice(0, 19).replace("T", " ");
+          return iso
         }
         if (value instanceof Date) {
-          return value.toISOString().slice(0, 19).replace("T", " ")
+          return formattedIST(value) //value.toISOString().slice(0, 19).replace("T", " ")
         }
         return "";
   };
@@ -152,12 +159,15 @@ const AllCases = () => {
     <div className="mt-4">   
 
       <div className="d-flex flex-wrap align-items-center mb-3 gap-2">
+        {
+          isAdminOrManager ?         
         <button
           className="btn btn-primary"
           onClick={handleShow}
         >
           Import File
-        </button>
+        </button>: null
+        }
         {/* Date range filter */}
         <input
           type="date"
@@ -195,15 +205,17 @@ const AllCases = () => {
           }}
         >
           Clear Filters
-        </button>
+        </button>          
         <div className='d-flex flex-wrap align-items-center gap-2 ms-auto'>
+          {isAdminOrManager ? 
         <button className="btn btn-danger ms-auto"
          onClick={deleteSelectedCases}
-         >Delete {selectedCases.length ?'(' + selectedCases.length + ')' : ''}</button>
+         >Delete {selectedCases.length ?'(' + selectedCases.length + ')' : ''}</button> : null }
         <button className="btn btn-success ms-auto"
          onClick={handleExport}
          >Export</button>
          </div>
+
       </div>
       {masterData.length === 0 && <div className="text-center">No data available</div>}
       {/* {loading && <div className="text-center">Loading...</div>} */}

@@ -5,21 +5,28 @@ import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 import { Type } from 'react-bootstrap-table2-editor';
 import cellEditFactory from 'react-bootstrap-table2-editor';
 import { updateEmployee } from '../services/API';
+import { isAdmin, isManager } from '../services/Common';
 
 const EmployeeTable = (props) => {
   const { data, clients } = props;
+  const isEditable = (cell,  row) => {
+      const editable = (isManager(row.projectId, data) || isAdmin(row.projectId, data)) ? true : false
+      // console.log(isManager(row.project_id) , isAdmin(row.project_id))
+      return editable
+    }
 
   const columns = [
     {
       dataField: 'username',
       text: 'Name',
       width: 150,
+      editable: false,
     },
     {
       dataField: 'level',
       text: 'Level',
       width: 150,
-      editable: true,
+      editable: isEditable,
         editor : {
           type: Type.SELECT,
           options: [
@@ -33,7 +40,7 @@ const EmployeeTable = (props) => {
       dataField: 'projectId',
       text: 'Client',
       width: 150,
-      editable: true,
+      editable: isEditable,
       editor: {
         type: Type.SELECT,
         options: clients?.map((client) => ({
