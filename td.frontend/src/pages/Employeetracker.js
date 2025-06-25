@@ -95,7 +95,7 @@ function EmployeeTracker() {
               
               <button className="btn btn-success" onClick={() => setModalIsOpen(true)}>Add Employee</button>
               <button className="btn btn-danger" style={{ marginLeft: 'auto'}} onClick={handleDeleteEmp}>
-                Delete {selectedEmployeeIds.length ?'('+ selectedEmployeeIds.length + ')' : ''}
+                Delete {selectedEmployeeIds?.length ?'('+ selectedEmployeeIds.length + ')' : ''}
               </button>
             </div>
             <EmployeeTable data={employees} clients={clients} 
