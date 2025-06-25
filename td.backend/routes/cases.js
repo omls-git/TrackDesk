@@ -1,5 +1,6 @@
 const express = require('express');
 const db = require('../db');
+const { formattedIST } = require('../common');
 const caseRouter = express.Router();
 
 caseRouter.get('/', (req, res) => {
@@ -52,8 +53,6 @@ caseRouter.post('/', (req, res) => {
     if (cases.length === 0) {
       return res.status(400).json({ error: 'Cases array is required' });
     }
-    // const values = cases.map(c => [c.title, c.description, c.status]);
-    // Validate all required fields for each case
     for (const c of cases) {
       if (
       !c.project_id ||
@@ -117,8 +116,10 @@ caseRouter.post('/', (req, res) => {
         SDEAObligation,
         Source,
         ReportType,
-        XML_Non_XML
+        XML_Non_XML,
+        createdBy
       } = req.body;
+      const createdOn = formattedIST()
     if (!project_id || !caseNumber) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
@@ -126,8 +127,8 @@ caseRouter.post('/', (req, res) => {
       project_id, casesOpen, caseNumber, initial_fup_fupToOpen, ird_frd,
       assignedDateDe, de, assignedDateQr, qr,
       assignedDateMr, mr, caseStatus, reportability, seriousness,
-      live_backlog, comments, isCaseOpen, DestinationForReporting, ReportingComment, SDEAObligation, Source, ReportType, XML_Non_XML
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+      live_backlog, comments, isCaseOpen, DestinationForReporting, ReportingComment, SDEAObligation, Source, ReportType, XML_Non_XML, createdBy, createdOn
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
     const values = [
       project_id,
       casesOpen,
@@ -151,7 +152,9 @@ caseRouter.post('/', (req, res) => {
       SDEAObligation || null,
       Source || null,
       ReportType || null,
-      XML_Non_XML || null
+      XML_Non_XML || null,
+      createdBy,
+      createdOn
     ];
     db.query(sql, values, (err, result) => {
       if (err) return res.status(500).json({ error: 'Failed to create case', err });
@@ -191,9 +194,12 @@ caseRouter.put('/:id', (req, res) => {
     seriousness,
     live_backlog,
     comments,
-    isCaseOpen
+    isCaseOpen,
+    createdBy,
+    createdOn,
+    modifiedBy
   } = req.body;
-
+  const modifiedOn = formattedIST();
   if (!project_id || !caseNumber) {
     return res.status(400).json({ error: 'project_id and caseNumber are required' });
   }
@@ -218,7 +224,11 @@ caseRouter.put('/:id', (req, res) => {
     seriousness = ?,
     live_backlog = ?,
     comments = ?,
-    isCaseOpen = ?
+    isCaseOpen = ?,
+    createdBy = ?,
+    createdOn = ?,
+    modifiedBy = ?,
+    modifiedOn = ?
     WHERE id = ?`;
 
   const values = [
@@ -242,6 +252,10 @@ caseRouter.put('/:id', (req, res) => {
     live_backlog || result.live_backlog || null,  
     comments || result.comments || null,
     isCaseOpen,
+    createdBy,
+    createdOn,
+    modifiedBy,
+    modifiedOn,
     id
   ];
   db.query(sql, values, (err, result) => {

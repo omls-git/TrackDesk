@@ -2,12 +2,16 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { Navbar, Container, Nav, Button } from 'react-bootstrap';
 import '../styles/Header.css'; 
 import { useMsal } from '@azure/msal-react';
+import { useEffect } from 'react';
 
 const Header = () => {
-  // You can use the window.location object as an alternative
   const { accounts } = useMsal();
   const pathName = window.location.pathname;
-  const userName = accounts.length > 0 ? accounts[0].name : 'User Name';
+  const userName = accounts.length > 0 ? accounts[0].name : '';
+  useEffect(() => {
+    localStorage.setItem("userName", userName);
+    localStorage.setItem("userEmail", accounts[0].username);
+  },[accounts, userName])
   return (
     <Navbar bg="primary" variant="dark" expand="sm" fixed="top">
       <Container fluid>

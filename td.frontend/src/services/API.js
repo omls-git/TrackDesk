@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { caseAllocation } from './Common';
+import { caseAllocation, formattedIST } from './Common';
 
 const API_URL = 'http://localhost:5000/api';
 
@@ -84,7 +84,7 @@ export const deleteCases = async (ids) => {
         'Content-Type': 'application/json'
       }
     });
-    // return response.data;
+    return response.data;
   } catch (error) {
     console.error('Error deleting cases:', error);
     // throw error;
@@ -113,8 +113,8 @@ export const getClients = async () => {
 
 export const updateCase = async (item) => {
   const formatDate = (date) =>
-    date ? new Date(date).toISOString().slice(0, 19).replace("T", " ") : null;
-
+    date ? formattedIST(date)  : null;
+// new Date(date).toISOString().slice(0, 19).replace("T", " ")
   const updatedCase = {
     project_id: item.project_id,
     casesOpen: item.casesOpen,
@@ -170,4 +170,8 @@ export const deleteEmployees = async(ids) => {
   } catch (error) {
     console.error("Error deleting Employee(s) ", error)
   }
+}
+
+export const updateToNext = async (updatedCase) => {
+
 }
