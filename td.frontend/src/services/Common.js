@@ -1,4 +1,7 @@
 import { getEmployees } from "./API"
+export const loggedUserName = localStorage.getItem("userName");
+export const loggedUserMail = localStorage.getItem('userEmail')
+export const users = await getEmployees();
 
 export const caseAllocation = async(cases, existingAllCases, clientId) => {
   const assignies = await getEmployees();
@@ -99,7 +102,7 @@ export const employeesToAssign = (assignees, cases, role, projectId) => {
             deAssignedCases.push({
               ...currentCase,
               de: assignee.username,
-              assignedDateDe: new Date().toISOString().split("T")[0],
+              assignedDateDe: formattedIST(''),
             });
             assignee.count++;
             assigned = true;
@@ -134,7 +137,7 @@ export const employeesToAssign = (assignees, cases, role, projectId) => {
           qrAssignedCases.push({
             ...currentCase,
             qr: assignee.username,
-            assignedDateQr: new Date().toISOString().split("T")[0],
+            assignedDateQr: formattedIST(''),
           });
           assignee.count++;
           assigned = true;
@@ -165,7 +168,7 @@ export const employeesToAssign = (assignees, cases, role, projectId) => {
       mrAssignedCases.push({
         ...currentCase,
         mr: assignees[mrCount].username,
-        assignedDateMr: new Date().toISOString().split("T")[0],
+        assignedDateMr: formattedIST(''),
       });
       mrCount++;
       if (mrCount >= assignees.length) {
@@ -189,5 +192,70 @@ export const getClientAssigniesOfRole = async (role) => {
   return clientAssigniesOfRole;
 }
 
+export const formattedIST = (value) => {
+  const date = value ?  new Date(value) : new Date();
+  const istDate = new Date(date.getTime() + (5.5 * 60 * 60 * 1000)); // UTC + 5:30
+  const formattedIST = istDate.toISOString().slice(0, 19).replace("T", " ");
 
+  return formattedIST;
+}
 
+export const isAdmin = (clientId, allusers) => {
+  const userName = loggedUserName;
+  const userDetailes = allusers?.filter((item) => item.username === userName && item.projectId?.toString() === clientId.toString())[0];
+  // console.log(clientId, userName, allusers)
+  if(userDetailes){
+    // console.log("userDetailes",clientId, userDetailes)
+    if(userDetailes?.permission?.trim() === "Admin"){
+      return true;
+    }
+  }  
+  return false;
+}
+export const isManager = (clientId, allusers) => {
+  const userName = loggedUserName;
+  const userDetailes = allusers?.filter((item) => item.username === userName && item.projectId?.toString() === clientId.toString())[0];
+  if(userDetailes){
+    //  console.log("userDetailes manager",clientId, userDetailes)
+    if(userDetailes.permission.trim() === "Manager"){
+      return true;
+    }
+  }
+  return false;
+}
+export const isUser = (clientId, allusers) => {
+  const userName = loggedUserName;
+  const userDetailes = allusers?.filter((item) => item.username === userName && item.projectId?.toString() === clientId.toString())[0];
+  if(userDetailes){
+  if(userDetailes.permission.trim() === "User"){
+    return true;
+  }
+  } 
+  return false;
+}
+
+export const userAssignedCasesCount = (clientAssignies, existingAllCases) => {
+  const deAssiniees = clientAssignies.filter((item) => item.level.toLowerCase() === "data entry".toLowerCase() && !item.onLeave);
+
+   let deAvailabe = [];
+    deAssiniees.forEach(assigny => {
+      const count = existingAllCases.filter(item => item.de === assigny.username && !item.completedDateDE).length;
+      count ? deAvailabe.push({ username: assigny.username, count, maxCount: 8 }) : deAvailabe.push({ username: assigny.username, count: 0, maxCount: 8 });
+    });
+
+    const qrAssignees = clientAssignies.filter((item) => item.level.toLowerCase() === "quality review".toLowerCase() && !item.onLeave);
+    let qrAvailabe = [];
+    qrAssignees.forEach(assigny => {
+      const count = existingAllCases.filter(item => item.qr === assigny.username && !item.completedDateQR).length;
+      count ? qrAvailabe.push({ username: assigny.username, count, maxCount: 15 }) : qrAvailabe.push({ username: assigny.username, count: 0, maxCount: 15 });
+    });
+
+    const mrAssignees = clientAssignies.filter((item) => item.level.toLowerCase() === "medical review".toLowerCase() && !item.onLeave);
+    let mrAvailable = [];
+    mrAssignees.forEach(assigny => {
+      const count = existingAllCases.filter(item => item.mr === assigny.username && !item.completedDateMR).length;
+      count ? mrAvailable.push({ username: assigny.username, count }) : mrAvailable.push({ username: assigny.username, count: 0 });
+    });
+
+    return [deAvailabe, qrAvailabe, mrAvailable]
+}

@@ -3,6 +3,7 @@ import React, { useState, useEffect} from 'react';
 import EmployeeModal from '../components/EmployeeModal';
 import { deleteEmployees, getClients, getEmployees } from '../services/API';
 import EmployeeTable from '../components/EmployeeTable';
+import { loggedUserName } from '../services/Common';
 
 
 function EmployeeTracker() {
@@ -11,10 +12,15 @@ function EmployeeTracker() {
    const [clients, setClients] = useState([]);
    const [searchTerm, setSearchTerm] = useState("");
    const [selectedEmployeeIds, setSelectedEmployeeIds] = useState([]);
+   const [isAdminOrManager, setIsAdminOrManager] = useState(false);
 
   const fetchEmployees = async () => {
     try {
       const employeeList = await getEmployees();
+      const userDetails = employeeList.find((item) => item.username === loggedUserName);
+      if(userDetails?.permission.trim() === "Admin" || userDetails?.permission.trim() === "Manager"){
+        setIsAdminOrManager(true)
+      }
       setEmployees(employeeList);
     } catch (error) {
       console.error('Error fetching employees:', error);
@@ -92,11 +98,16 @@ function EmployeeTracker() {
                     ×
                   </span>
                 )}
-              
-              <button className="btn btn-success" onClick={() => setModalIsOpen(true)}>Add Employee</button>
+              {
+                isAdminOrManager ? 
+              <button className="btn btn-success" onClick={() => setModalIsOpen(true)}>Add Employee</button> : null
+              }
+              {
+                isAdminOrManager ? 
               <button className="btn btn-danger" style={{ marginLeft: 'auto'}} onClick={handleDeleteEmp}>
-                Delete {selectedEmployeeIds?.length ?'('+ selectedEmployeeIds.length + ')' : ''}
-              </button>
+                Delete {selectedEmployeeIds.length ?'('+ selectedEmployeeIds.length + ')' : ''}
+              </button> : null
+              }
             </div>
             <EmployeeTable data={employees} clients={clients} 
             refreshData={fetchEmployees} 

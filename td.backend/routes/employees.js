@@ -1,5 +1,6 @@
 const express = require('express');
 const db = require('../db');
+const { formattedIST } = require('../common');
 const employeeRouter = express.Router();
 
 employeeRouter.get('/', (req, res) => {
@@ -29,9 +30,11 @@ employeeRouter.get('/:id', (req, res) => {
 });
 
 employeeRouter.post('/addEmployee', (req, res) => {
-  const {username, email, projectId, level, permission} = req.body;
-  const sql = 'INSERT INTO employeeTracker (username, email, projectId, level, permission) VALUES (?, ?, ?, ?, ?)';
-  db.query(sql, [username, email, projectId, level, permission], (err, result) => {
+  const {username, email, projectId, level, permission, createdBy} = req.body;
+  const createdOn = formattedIST();
+
+  const sql = 'INSERT INTO employeeTracker (username, email, projectId, level, permission, createdOn, createdBy) VALUES (?, ?, ?, ?, ?, ?, ?)';
+  db.query(sql, [username, email, projectId, level, permission, createdOn, createdBy], (err, result) => {
     if (err) return res.status(500).json({ error: "Failed to add employee",err });
     res.status(201).json({ message: "Employee added successfully", id: result.insertId });
   })
@@ -43,20 +46,27 @@ employeeRouter.put('/:id', (req, res) => {
     if (err) return res.status(500).json({ error: "Failed to fetch employee" });
     if (!existingEmployee) return res.status(404).json({ error: "Employee not found" });
 
-    const { username, email, projectId, level, onLeave, permission } = req.body;
+    const { username, email, projectId, level, onLeave, permission, createdOn, createdBy, modifiedBy } = req.body;
+   
+    const modifiedOn = formattedIST()
+    
     const updatedEmployee = {
       username: username ? username : existingEmployee.username,
       email: email ? email : existingEmployee.email,
       projectId: projectId ? projectId : existingEmployee.projectId,
       level: level ? level : existingEmployee.level,
       onLeave: onLeave !== undefined ? onLeave : existingEmployee.onLeave,
-      permission : permission ? permission : existingEmployee.permission
+      permission: permission ? permission : existingEmployee.permission,
+      createdOn: createdOn ? createdOn : existingEmployee.createdOn,
+      createdBy: createdBy ? createdBy : existingEmployee.createdBy,
+      modifiedOn: modifiedOn,
+      modifiedBy: modifiedBy ? modifiedBy : existingEmployee.modifiedBy
     };
 
-    const sql = 'UPDATE employeeTracker SET username = ?, email = ?, projectId = ?, level = ?, onLeave = ?, permission = ? WHERE id = ?';
+    const sql = 'UPDATE employeeTracker SET username = ?, email = ?, projectId = ?, level = ?, onLeave = ?, permission = ?, createdBy = ?, createdOn = ?, modifiedBy = ?, modifiedOn = ?, WHERE id = ?';
     db.query(
       sql,
-      [updatedEmployee.username, updatedEmployee.email, updatedEmployee.projectId, updatedEmployee.level, updatedEmployee.onLeave, updatedEmployee.permission, id],
+      [updatedEmployee.username, updatedEmployee.email, updatedEmployee.projectId, updatedEmployee.level, updatedEmployee.onLeave, updatedEmployee.permission, updatedEmployee.createdBy, updatedEmployee.createdOn, updatedEmployee.modifiedBy, updatedEmployee.modifiedOn, id],
       (err) => {
         if (err) return res.status(500).json({ error: "Failed to update employee", err });
         res.json({ message: "Employee updated successfully" });
