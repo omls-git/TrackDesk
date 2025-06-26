@@ -1,7 +1,9 @@
-import { getEmployees } from "./API"
+import { formattedIST } from "../Utility";
+import { getClients, getEmployees } from "./API"
 export const loggedUserName = localStorage.getItem("userName");
 export const loggedUserMail = localStorage.getItem('userEmail')
 export const users = await getEmployees();
+export const allClients = await getClients();
 
 export const caseAllocation = async(cases, existingAllCases, clientId) => {
   const assignies = await getEmployees();
@@ -192,17 +194,9 @@ export const getClientAssigniesOfRole = async (role) => {
   return clientAssigniesOfRole;
 }
 
-export const formattedIST = (value) => {
-  const date = value ?  new Date(value) : new Date();
-  const istDate = new Date(date.getTime() + (5.5 * 60 * 60 * 1000)); // UTC + 5:30
-  const formattedIST = istDate.toISOString().slice(0, 19).replace("T", " ");
-
-  return formattedIST;
-}
-
 export const isAdmin = (clientId, allusers) => {
   const userName = loggedUserName;
-  const userDetailes = allusers?.filter((item) => item.username === userName && item.projectId?.toString() === clientId.toString())[0];
+  const userDetailes = allusers?.find((item) => item.username === userName);
   // console.log(clientId, userName, allusers)
   if(userDetailes){
     // console.log("userDetailes",clientId, userDetailes)
@@ -214,7 +208,7 @@ export const isAdmin = (clientId, allusers) => {
 }
 export const isManager = (clientId, allusers) => {
   const userName = loggedUserName;
-  const userDetailes = allusers?.filter((item) => item.username === userName && item.projectId?.toString() === clientId.toString())[0];
+  const userDetailes = allusers?.find((item) => item.username === userName);
   if(userDetailes){
     //  console.log("userDetailes manager",clientId, userDetailes)
     if(userDetailes.permission.trim() === "Manager"){
@@ -225,7 +219,7 @@ export const isManager = (clientId, allusers) => {
 }
 export const isUser = (clientId, allusers) => {
   const userName = loggedUserName;
-  const userDetailes = allusers?.filter((item) => item.username === userName && item.projectId?.toString() === clientId.toString())[0];
+  const userDetailes = allusers?.find((item) => item.username === userName && item.projectId?.toString() === clientId.toString());
   if(userDetailes){
   if(userDetailes.permission.trim() === "User"){
     return true;
@@ -235,8 +229,9 @@ export const isUser = (clientId, allusers) => {
 }
 
 export const userAssignedCasesCount = (clientAssignies, existingAllCases) => {
+  
   const deAssiniees = clientAssignies.filter((item) => item.level.toLowerCase() === "data entry".toLowerCase() && !item.onLeave);
-
+ 
    let deAvailabe = [];
     deAssiniees.forEach(assigny => {
       const count = existingAllCases.filter(item => item.de === assigny.username && !item.completedDateDE).length;

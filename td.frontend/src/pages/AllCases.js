@@ -2,30 +2,26 @@ import React, { useEffect, useState } from 'react'
 import * as XLSX from 'xlsx';
 import TrackTable from '../components/TrackTable';
 import ImportModal from '../components/ImportModal';
-import { deleteCases, fetchAllCases, getClients, getEmployees, postCases } from '../services/API';
-import { formattedIST, loggedUserName, users } from '../services/Common';
+import { deleteCases, fetchAllCases, postCases } from '../services/API';
+import { allClients, loggedUserName, users } from '../services/Common';
+import { jsonDataFromFile, parseExcelDate } from '../Utility';
 
 const AllCases = () => {
 
   const [masterData, setMasterData] = useState([]); 
   const [show, setShow] = useState(false);
-  const [columns, setColumns] = useState([]);
+  // const [columns, setColumns] = useState([]);
   const [selectedClientId, setSelectedClientId] = useState(null)
   const [selectedCases, setSelectedCases] = useState([]); 
   const [searchTerm, setSearchTerm] = useState('');
-  const [clients, setClients] = useState([]);
   const [isAdminOrManager, setIsAdminOrManager] = useState(false);
+  const [dateRange, setDateRange] = useState({ from: '', to: '' });
 
   const handleImportFile = async (file) => {
     if (!file) return;
-    const data = await file.arrayBuffer();
-    const workbook = XLSX.read(data, { type: 'buffer' });
-    const worksheet = workbook.Sheets["Open Cases"];
-    let jsonData = XLSX.utils.sheet_to_json(worksheet, {defval: "" });
-   
-    let headers = Object.keys(jsonData[0] || {});
-    setColumns(headers);
-    
+    let jsonData = await jsonDataFromFile(file)
+    // let headers = Object.keys(jsonData[0] || {});
+    // setColumns(headers);
     // Convert Excel serial dates to JS date strings in all cells that look like dates
     const isProbablyDate = (val) =>
       typeof val === 'number' && val > 25569 && val < 60000; // Excel date serial range
@@ -59,15 +55,11 @@ const AllCases = () => {
       setMasterData(cases);
     } catch (error) {
       console.error("Error fetching cases:", error);
-    } finally {
-      // setLoading(false);
     }
   }, []);
 
   useEffect(() => {
     async function fetchClientsAndCases() {
-      const fetchedClients = await getClients();
-      setClients(fetchedClients);
        const employeeList = users;
         const userDetails = employeeList.find((item) => item.username === loggedUserName);
         if(userDetails?.permission.trim() === "Admin" || userDetails?.permission.trim() === "Manager"){
@@ -77,21 +69,6 @@ const AllCases = () => {
     }
     fetchClientsAndCases();
   }, [fetchAllCasesCallback])  
-
-   const parseExcelDate = (value) => {
-        if (typeof value === "number") {
-          const date = XLSX.SSF.parse_date_code(value);
-          if (!date) return "";
-          const iso = formattedIST(Date.UTC(date.y, date.m - 1, date.d)) //new Date(Date.UTC(date.y, date.m - 1, date.d)).toISOString().slice(0, 19).replace("T", " ");
-          return iso
-        }
-        if (value instanceof Date) {
-          return formattedIST(value) //value.toISOString().slice(0, 19).replace("T", " ")
-        }
-        return "";
-  };
-
-  const [dateRange, setDateRange] = useState({ from: '', to: '' });
 
   const handleDateChange = (e) => {
     const { name, value } = e.target;
@@ -156,8 +133,7 @@ const AllCases = () => {
   }, [dateRange.from, dateRange.to, fetchAllCasesCallback]);
 
   return (
-    <div className="mt-4">   
-
+    <div className="mt-4">
       <div className="d-flex flex-wrap align-items-center mb-3 gap-2">
         {
           isAdminOrManager ?         
@@ -215,15 +191,19 @@ const AllCases = () => {
          onClick={handleExport}
          >Export</button>
          </div>
-
       </div>
       {masterData.length === 0 && <div className="text-center">No data available</div>}
       {/* {loading && <div className="text-center">Loading...</div>} */}
       {masterData.length > 0 && (
-         <TrackTable data={masterData} cols={null} setSelectedCaseIds={setSelectedCases} selectedCaseIds={selectedCases} clients={clients} />
+         <TrackTable data={masterData} cols={null} 
+         setSelectedCaseIds={setSelectedCases} 
+         selectedCaseIds={selectedCases} 
+         clients={allClients} 
+         setData={setMasterData}
+         refreshData={fetchAllCasesCallback} />
       )}
       <ImportModal show={show} onClose={handleClose} onShow={handleShow} title={"Import Master Tracker"} onFileChange={handleImportFile} selectedClient={selectedClientId}
-       onSelect={onClientChange} clients={clients}/>
+       onSelect={onClientChange} clients={allClients}/>
     </div>
   )
 }

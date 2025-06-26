@@ -4,11 +4,24 @@ const { formattedIST } = require('../common');
 const caseRouter = express.Router();
 
 caseRouter.get('/', (req, res) => {
-  const sql = 'SELECT * FROM cases';
-  db.query(sql, (err, results) => {
+  if(!req.query.isOpen){
+    const sql = 'SELECT * FROM cases';
+    db.query(sql, (err, results) => {
     if (err) return res.status(500).json({ error: 'Failed to fetch cases' });
     res.json(results);
   });
+  }else {
+    getCasesByCaseIsOpen().then(result => {
+      if(result.length === 0){
+        return res.status(404).json({error : "Open Cases not found"})
+      }
+      res.json(result)
+    }).catch(err => {
+      console.error('Error fetching open cases:', err);
+      res.status(500).json({ error: 'Failed to fetch open case', err });
+    });
+  }
+  
 });
 
 const getCasesByCaseNum = (id) => {
@@ -19,6 +32,16 @@ const getCasesByCaseNum = (id) => {
       resolve(results);
     });
   });
+}
+
+const getCasesByCaseIsOpen = () => {
+  return new Promise((resolve, reject) => {
+    const sql = 'SELECT * FROM cases WHERE isCaseOpen = 1'
+    db.query(sql, (err, result) => {
+      if(err) return reject(err);
+      resolve(result)
+    })
+  })
 }
 
 const getCasesById = (id) => {
