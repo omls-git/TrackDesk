@@ -6,7 +6,7 @@ import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 // import paginationFactory from 'react-bootstrap-table2-paginator';
 import { getClientAssigniesOfRole, isAdmin, isManager, loggedUserName, users } from '../services/Common';
 import { useCallback } from 'react';
-import { getEmployees, updateCase } from '../services/API';
+import { getEmployees, updateCase, updateToNext } from '../services/API';
 
 const TrackTable = (props) => {
   const { data, clients } = props;
@@ -297,15 +297,38 @@ const columns = [
               return;
             }
             let updatedCase = row;
-            updatedCase[column.dataField] = newValue.trim();
-
-            if(newValue !== oldValue){
-              updateCase(updatedCase)
-            }
-
             if(column.dataField === "caseStatus"){
-              // updateToNext()
+              updatedCase[column.dataField] = newValue.trim();
+              if(newValue.toLowerCase().trim() === "quality review" && oldValue.toLowerCase().trim() === "data entry"){
+                updateToNext(updatedCase)
+                done(true)
+                return
+              }
+              if(newValue.toLowerCase().trim() === "medical review" && oldValue.toLowerCase().trim() === "quality review"){
+                updatedCase[column.dataField] = newValue.trim();
+                updateToNext(updatedCase)
+                done(true)
+                return
+              }
+              if(newValue.toLowerCase().trim() === "reporting" && oldValue.toLowerCase().trim() === "medical review"){
+                updatedCase[column.dataField] = newValue.trim();
+                updateToNext(updatedCase)
+                done(true)
+                return
+              }
+              props.setData((prevData) =>
+                prevData.map((item) => (item.id === updatedCase.id ? { ...item, ...updatedCase } : item))
+              );
+              console.log("wrong selection")
+              //  props.refreshData()
+              done(true)
+              return
             }
+            updatedCase[column.dataField] = newValue.trim();
+            if(newValue !== oldValue){
+              updateCase(updatedCase);
+              // props.refreshData()
+            }            
             done(true);
           },
         })}

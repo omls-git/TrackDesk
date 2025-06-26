@@ -1,28 +1,20 @@
 import React, { useEffect, useState } from 'react'
 import TrackTable from '../components/TrackTable'
-import { fetchAllCases, getClients } from '../services/API'
-import { useMsal } from '@azure/msal-react'
+import { fetchAllCases } from '../services/API'
+import { allClients, loggedUserName } from '../services/Common'
 
 const MyCases = () => {
   const [myCases, setMyCases] = useState([])
   const [selectedMyCases, setSelectedMyCases] = useState([]);
-   const [clients, setClients] = useState([]);
-  const { accounts } = useMsal();
-  useEffect(() => {
-     async function fetchClients() {
-      const fetchedClients = await getClients();
-      setClients(fetchedClients);
-    }
-    fetchClients();
-
-    const userName = accounts.length > 0 ? accounts[0].name : '';
-    async function fetchData() {
+  async function fetchData() {
       const allCases = await fetchAllCases();
-      const myCases = allCases.filter(caseItem => [caseItem.de, caseItem.qr, caseItem.mr].includes(userName) && (caseItem.completedDateDE === null || caseItem.completedDateDE === '' || caseItem.completedDateQR === null || caseItem.completedDateQR === '' || caseItem.completedDateMr === null || caseItem.completedDateMr === ''));
+      const myCases = allCases.filter(caseItem => [caseItem.de, caseItem.qr, caseItem.mr].includes(loggedUserName) && (caseItem.completedDateDE === null || caseItem.completedDateDE === '' || caseItem.completedDateQR === null || caseItem.completedDateQR === '' || caseItem.completedDateMr === null || caseItem.completedDateMr === ''));
       setMyCases(myCases);
     }
+
+  useEffect(() => {
     fetchData();    
-  }, [accounts]);
+  }, [myCases]);
 
   return (
     <div className='mt-2'>
@@ -31,7 +23,9 @@ const MyCases = () => {
         <TrackTable data={myCases} cols={null}
         setSelectedCaseIds={setSelectedMyCases} 
         selectedCaseIds={selectedMyCases}
-        clients={clients} />
+        clients={allClients}
+        setData={setMyCases}
+        refreshData={fetchData} />
       ) : (
         <h4 className="text-center mb-4">No Cases Assigned</h4>
       )}
