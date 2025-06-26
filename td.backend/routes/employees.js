@@ -63,7 +63,7 @@ employeeRouter.put('/:id', (req, res) => {
       modifiedBy: modifiedBy ? modifiedBy : existingEmployee.modifiedBy
     };
 
-    const sql = 'UPDATE employeeTracker SET username = ?, email = ?, projectId = ?, level = ?, onLeave = ?, permission = ?, createdBy = ?, createdOn = ?, modifiedBy = ?, modifiedOn = ?, WHERE id = ?';
+    const sql = 'UPDATE employeeTracker SET username = ?, email = ?, projectId = ?, level = ?, onLeave = ?, permission = ?, createdBy = ?, createdOn = ?, modifiedBy = ?, modifiedOn = ? WHERE id = ?';
     db.query(
       sql,
       [updatedEmployee.username, updatedEmployee.email, updatedEmployee.projectId, updatedEmployee.level, updatedEmployee.onLeave, updatedEmployee.permission, updatedEmployee.createdBy, updatedEmployee.createdOn, updatedEmployee.modifiedBy, updatedEmployee.modifiedOn, id],

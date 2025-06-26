@@ -18,6 +18,7 @@ function EmployeeTracker() {
     try {
       const employeeList = await getEmployees();
       const userDetails = employeeList.find((item) => item.username === loggedUserName);
+      console.log("User Details", userDetails, employeeList);
       if(userDetails?.permission.trim() === "Admin" || userDetails?.permission.trim() === "Manager"){
         setIsAdminOrManager(true)
       }
