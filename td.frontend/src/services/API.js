@@ -1,5 +1,6 @@
 import axios from 'axios';
-import { caseAllocation, formattedIST } from './Common';
+import { caseAllocation, loggedUserName, userAssignedCasesCount } from './Common';
+import { formattedIST } from '../Utility';
 
 const API_URL = 'http://localhost:5000/api';
 
@@ -9,6 +10,16 @@ export const fetchAllCases = async () => {
     return response.data;
   } catch (error) {
     console.error('Error fetching all cases:', error);
+    // throw error;
+  }
+};
+
+export const fetchAllOpenCases = async (isOpen) => {
+  try {
+    const response = await axios.get(`${API_URL}/cases`, {params:{data: isOpen}});
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching all open cases:', error);
     // throw error;
   }
 };
@@ -172,6 +183,49 @@ export const deleteEmployees = async(ids) => {
   }
 }
 
+
 export const updateToNext = async (updatedCase) => {
 
+  const assignies = await getEmployees();
+  const clientAssignies = assignies.filter((item) => item.projectId.toString() === updatedCase.project_id.toString() && !item.onLeave);
+  const allOpenCases = await fetchAllOpenCases(true);
+  // console.log(clientAssignies, clientId, assignies)
+  const selectedClientOpenCases = allOpenCases.filter(
+    (item) => item.project_id.toString() === updatedCase.project_id.toString() && 
+    item.caseStatus.toLowerCase().trim() === "data entry");
+    // console.log(selectedClientOpenCases)
+  const [deAvailabe, qrAvailabe, mrAvailable] = userAssignedCasesCount(clientAssignies, selectedClientOpenCases);
+  console.log(deAvailabe, qrAvailabe, mrAvailable)
+    if(updatedCase.caseStatus.toLowerCase().trim() === "data entry"){
+      const nextAvailableUserName = deAvailabe.sort((a,b) => a.count - b.count)[0].username
+      updatedCase.de = nextAvailableUserName;
+      updatedCase.assignedDateDe = formattedIST()
+      updatedCase.isCaseOpen = true
+      updatedCase.modifiedBy = loggedUserName
+    }
+     if(updatedCase.caseStatus.toLowerCase().trim() === "quality review"){
+      const nextAvailableUserName = qrAvailabe.sort((a,b) => a.count - b.count)[0].username
+      updatedCase.qr = nextAvailableUserName
+      updatedCase.assignedDateQr = formattedIST()
+      updatedCase.completedDateDE = formattedIST()
+      updatedCase.isCaseOpen = true
+      updatedCase.modifiedBy = loggedUserName
+    }
+    if(updatedCase.caseStatus.toLowerCase().trim() === "medical review"){
+      const nextAvailableUserName = mrAvailable.sort((a,b) => a.count - b.count)[0].username
+      updatedCase.mr = nextAvailableUserName
+      updatedCase.assignedDateMr = formattedIST()
+      updatedCase.completedDateQR = formattedIST()
+      updatedCase.isCaseOpen = true
+      updatedCase.modifiedBy = loggedUserName
+    }
+   
+    if(updatedCase.caseStatus.toLowerCase().trim() === "reporting"){
+      // const nextAvailableUserName = qrAvailabe.sort((a,b) => a.count - b.count)[0].username
+      updatedCase.completedDateMr = formattedIST()
+      updatedCase.isCaseOpen = false
+      updatedCase.modifiedBy = loggedUserName
+    }
+    updateCase(updatedCase)
+    return updatedCase;
 }

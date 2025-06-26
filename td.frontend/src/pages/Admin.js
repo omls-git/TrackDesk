@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Type } from 'react-bootstrap-table2-editor'
-import { getClients } from '../services/API';
+import { getClients, updateToNext } from '../services/API';
 import BootstrapTable from 'react-bootstrap-table-next';
 import { users } from '../services/Common';
 
