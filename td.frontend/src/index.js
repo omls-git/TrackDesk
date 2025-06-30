@@ -8,6 +8,7 @@ import { MsalProvider } from '@azure/msal-react';
 import { msalConfig } from './authConfig';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
+import { GlobalProvider } from './services/GlobalContext';
 
 export const msalInstance = new PublicClientApplication(msalConfig);
 
@@ -19,7 +20,9 @@ async function main() {
     root.render(
       <React.StrictMode>
         <MsalProvider instance={msalInstance}>
-          <App />
+          <GlobalProvider>
+            <App />
+          </GlobalProvider>
         </MsalProvider>
       </React.StrictMode>
     );

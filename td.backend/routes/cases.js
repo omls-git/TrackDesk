@@ -54,6 +54,24 @@ const getCasesById = (id) => {
   });
 }
 
+caseRouter.get('/by-project/:project_id', (req, res) => {
+  const { project_id } = req.params;
+  if (!project_id) {
+    return res.status(400).json({ error: 'project_id is required' });
+  }
+  const sql = 'SELECT * FROM cases WHERE project_id = ?';
+  db.query(sql, [project_id], (err, results) => {
+    if (err) {
+      console.error('Error fetching cases by project_id: ', project_id, err);
+      return res.status(500).json({ error: 'Failed to fetch cases', err });
+    }
+    if (results.length === 0) {
+      return res.status(404).json({ error: 'No cases found for this project_id'});
+    }
+    res.json(results);
+  });
+});
+
 caseRouter.get('/:id', (req, res) => {
   const { id } = req.params;
   getCasesById(id)

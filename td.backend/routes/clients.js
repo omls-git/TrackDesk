@@ -21,8 +21,8 @@ clientRouter.post('/', async (req, res) => {
   const sql = 'INSERT INTO projects (name) VALUES (?)';
   db.query(sql, [name], (err, result) => {
     if (err) {
-      console.error('Error adding client:', err);
-      return res.status(500).json({ error: 'Internal server error' });
+      console.error('Error adding client:', err.code);
+      return res.status(500).json({ error: 'Internal server error', code: err.code });
     }
     res.status(201).json({ id: result.insertId, name });
   });
@@ -37,7 +37,7 @@ clientRouter.delete('/', async (req, res) => {
   db.query(sql, [ids], (err, result) => {
     if (err) {
       console.error('Error deleting clients:', err);
-      return res.status(500).json({ error: 'Internal server error' });
+      return res.status(500).json({ error: 'Internal server error',err });
     }
     res.status(204).send();
   });
