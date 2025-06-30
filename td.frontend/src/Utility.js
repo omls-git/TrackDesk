@@ -1,4 +1,5 @@
 import * as XLSX from 'xlsx';
+const loggedUserName = localStorage.getItem("userName");
 
 export const formattedIST = (value) => {
   const date = value ?  new Date(value) : new Date();
@@ -27,5 +28,17 @@ export const jsonDataFromFile = async(file) =>{
   const worksheet = workbook.Sheets["Open Cases"];
   let jsonData = XLSX.utils.sheet_to_json(worksheet, {defval: "" });
   return jsonData
+}
+
+export const createdNameDate = (item) => {
+  item.createdOn = formattedIST();
+  item.createdBy = loggedUserName
+  return item;
+}
+
+export const modifiedNameDate = (item) => {
+  item.modifiedOn = formattedIST();
+  item.modifiedBy = loggedUserName;
+  return item;
 }
 

@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react'
 import * as XLSX from 'xlsx';
 import TrackTable from '../components/TrackTable';
 import ImportModal from '../components/ImportModal';
-import { deleteCases, fetchAllCases, postCases } from '../services/API';
-import { allClients, loggedUserName, users } from '../services/Common';
+import { deleteCases,fetchCasesByClientId, postCases } from '../services/API';
 import { jsonDataFromFile, parseExcelDate } from '../Utility';
+import { useGlobalData } from '../services/GlobalContext';
+import Skeleton from '../components/Skeleton';
 
 const AllCases = () => {
 
@@ -16,7 +17,8 @@ const AllCases = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isAdminOrManager, setIsAdminOrManager] = useState(false);
   const [dateRange, setDateRange] = useState({ from: '', to: '' });
-
+  const { loggedUserName, users, user, allClients} = useGlobalData();
+  const [loading, setLoading] = useState(false)
   const handleImportFile = async (file) => {
     if (!file) return;
     let jsonData = await jsonDataFromFile(file)
@@ -49,14 +51,19 @@ const AllCases = () => {
   };
 
   const fetchAllCasesCallback = React.useCallback(async () => {
-    // setLoading(true);
-    try {
-      const cases = await fetchAllCases();
-      setMasterData(cases);
-    } catch (error) {
-      console.error("Error fetching cases:", error);
+    setLoading(true); 
+    if(user){
+      try {
+        const cases = await fetchCasesByClientId(user.projectId);
+        setMasterData(cases);
+      } catch (error) {
+        console.error("Error fetching cases:", error);
+      } finally{
+        setLoading(false)
+      }
     }
-  }, []);
+    
+  }, [user]);
 
   useEffect(() => {
     async function fetchClientsAndCases() {
@@ -68,7 +75,7 @@ const AllCases = () => {
       fetchAllCasesCallback();
     }
     fetchClientsAndCases();
-  }, [fetchAllCasesCallback])  
+  }, [fetchAllCasesCallback, loggedUserName, users])  
 
   const handleDateChange = (e) => {
     const { name, value } = e.target;
@@ -127,10 +134,10 @@ const AllCases = () => {
       });
     };
 
-    fetchAllCases().then(data => {
+    fetchCasesByClientId(user?.projectId).then(data => {
       setMasterData(filterByDate(data));
     });
-  }, [dateRange.from, dateRange.to, fetchAllCasesCallback]);
+  }, [dateRange.from, dateRange.to, fetchAllCasesCallback, user]);
 
   return (
     <div className="mt-4">
@@ -192,9 +199,11 @@ const AllCases = () => {
          >Export</button>
          </div>
       </div>
-      {masterData.length === 0 && <div className="text-center">No data available</div>}
-      {/* {loading && <div className="text-center">Loading...</div>} */}
-      {masterData.length > 0 && (
+      {loading && (
+        <Skeleton masterData={masterData} />
+      )}
+      {!loading && masterData && masterData.length === 0 && <div className="text-center">No data available</div>}
+      {!loading && masterData && masterData.length > 0 && (
          <TrackTable data={masterData} cols={null} 
          setSelectedCaseIds={setSelectedCases} 
          selectedCaseIds={selectedCases} 

@@ -5,12 +5,13 @@ import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 import { Type } from 'react-bootstrap-table2-editor';
 import cellEditFactory from 'react-bootstrap-table2-editor';
 import { updateEmployee } from '../services/API';
-import { isAdmin, isManager } from '../services/Common';
+import { useGlobalData } from '../services/GlobalContext';
 
 const EmployeeTable = (props) => {
   const { data, clients } = props;
+  const { isManager, isAdmin, isUser, loggedUserName } = useGlobalData();
   const isEditable = (cell,  row) => {
-      const editable = (isManager(row.projectId, data) || isAdmin(row.projectId, data)) ? true : false
+      const editable = (isManager|| isAdmin) ? true : false
       // console.log(isManager(row.project_id) , isAdmin(row.project_id))
       return editable
     }

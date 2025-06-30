@@ -1,9 +1,5 @@
 import { formattedIST } from "../Utility";
-import { getClients, getEmployees } from "./API"
-export const loggedUserName = localStorage.getItem("userName");
-export const loggedUserMail = localStorage.getItem('userEmail')
-export const users = await getEmployees();
-export const allClients = await getClients();
+import { getEmployees } from "./API"
 
 export const caseAllocation = async(cases, existingAllCases, clientId) => {
   const assignies = await getEmployees();
@@ -194,39 +190,7 @@ export const getClientAssigniesOfRole = async (role) => {
   return clientAssigniesOfRole;
 }
 
-export const isAdmin = (clientId, allusers) => {
-  const userName = loggedUserName;
-  const userDetailes = allusers?.find((item) => item.username === userName);
-  // console.log(clientId, userName, allusers)
-  if(userDetailes){
-    // console.log("userDetailes",clientId, userDetailes)
-    if(userDetailes?.permission?.trim() === "Admin"){
-      return true;
-    }
-  }  
-  return false;
-}
-export const isManager = (clientId, allusers) => {
-  const userName = loggedUserName;
-  const userDetailes = allusers?.find((item) => item.username === userName);
-  if(userDetailes){
-    //  console.log("userDetailes manager",clientId, userDetailes)
-    if(userDetailes.permission.trim() === "Manager"){
-      return true;
-    }
-  }
-  return false;
-}
-export const isUser = (clientId, allusers) => {
-  const userName = loggedUserName;
-  const userDetailes = allusers?.find((item) => item.username === userName && item.projectId?.toString() === clientId.toString());
-  if(userDetailes){
-  if(userDetailes.permission.trim() === "User"){
-    return true;
-  }
-  } 
-  return false;
-}
+
 
 export const userAssignedCasesCount = (clientAssignies, existingAllCases) => {
   
