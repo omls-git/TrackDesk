@@ -5,6 +5,6 @@ clientsRouter.post("/", clients.create);
 clientsRouter.get("/", clients.findAll);
 clientsRouter.get("/:id", clients.findOne);
 clientsRouter.put("/:id", clients.update);
-clientsRouter.delete("/:id", clients.deleteMany);
+clientsRouter.delete("/", clients.deleteMany);
 
 module.exports = clientsRouter
