@@ -1,17 +1,19 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const authRoutes = require('./routes/auth');
-const casesRoutes = require('./routes/cases');
-const employeeRouter = require('./routes/employees');
-const clientRouter = require('./routes/clients');
+// const authRoutes = require('./routes/auth');
+// const clientRouter = require('./routes/clients');
+const dB = require('./models');
+const clientsRouter = require('./routes/clients.route');
+const employeeRouter = require('./routes/employees.route');
+const casesRouter = require('./routes/cases.routes');
 
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json({ limit: '50mb' }));
 // Allow requests from your local
-// app.use(cors({ origin: 'http://localhost:3001' }));
+// app.use(cors({ origin: 'http://localhost:5000' }));
 
 // allow request for production
 // app.use(cors({
@@ -20,15 +22,17 @@ app.use(bodyParser.json({ limit: '50mb' }));
 // }));
 // app.use('/', (req, res) => {
 //   res.status(200).json({ message: 'Welcome to the API' });
-// });
-app.use('/api/auth', authRoutes);
-app.use('/api/cases', casesRoutes);
+// // });
+// app.use('/api/auth', authRoutes);
+
+app.use('/api/cases', casesRouter);
 app.use('/api/employee', employeeRouter);
-app.use('/api/clients', clientRouter);
+app.use('/api/clients', clientsRouter)
 
+// Sync models and start server
+dB.sequelize.sync().then(() => {
+  console.log("✅ Database synced (tables created if not existing)");
 
-app.listen(5000, () => {
-  console.log('Server running on port at: http://localhost:5000');
-  // console.log(app.router.get())
-  // console.log("authRoutesdsssssssssss",authRoutes)
+  const PORT = 5000;
+  app.listen(PORT, () => console.log(`🚀 Server running at http://localhost:${PORT}`));
 });

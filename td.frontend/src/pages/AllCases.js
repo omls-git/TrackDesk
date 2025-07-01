@@ -37,6 +37,7 @@ const AllCases = () => {
         })
       );
     });
+    // console.log(jsonData)
     await postCases(jsonData, selectedClientId)
     await fetchAllCasesCallback();
     handleClose();
@@ -55,7 +56,9 @@ const AllCases = () => {
     if(user){
       try {
         const cases = await fetchCasesByClientId(user.projectId);
-        setMasterData(cases);
+        if (cases) {
+           setMasterData(cases);
+        }       
       } catch (error) {
         console.error("Error fetching cases:", error);
       } finally{
@@ -110,7 +113,10 @@ const AllCases = () => {
         String(value).toLowerCase().includes(searchTerm)
       )
     );
-    setMasterData(filteredData);
+    if(filteredData){
+      setMasterData(filteredData);
+    }
+    
   };
 
   useEffect(() => {
@@ -138,7 +144,6 @@ const AllCases = () => {
       setMasterData(filterByDate(data));
     });
   }, [dateRange.from, dateRange.to, fetchAllCasesCallback, user]);
-
   return (
     <div className="mt-4">
       <div className="d-flex flex-wrap align-items-center mb-3 gap-2">
@@ -200,9 +205,9 @@ const AllCases = () => {
          </div>
       </div>
       {loading && (
-        <Skeleton masterData={masterData} />
+        <Skeleton />
       )}
-      {!loading && masterData && masterData.length === 0 && <div className="text-center">No data available</div>}
+      {!loading && masterData.length === 0 && <div className="text-center">No data available</div>}
       {!loading && masterData && masterData.length > 0 && (
          <TrackTable data={masterData} cols={null} 
          setSelectedCaseIds={setSelectedCases} 

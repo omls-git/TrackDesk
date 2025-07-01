@@ -51,18 +51,16 @@ export const postCases = async (cases, clientId) => {
 
   const selectedClientAllCases = allCases?.filter((item) => item.project_id.toString() === clientId.toString());
 
-  console.log(selectedClientAllCases);  
-
   const assignedCases = await caseAllocation(sortCasesByPriority, selectedClientAllCases, clientId);
 
-  const clients = await getClients();
+  // const clients = await getClients();
 
-  const selectedClient = clients.find((item) => item.id.toString() === clientId.toString());
+  // const selectedClient = clients.find((item) => item.id.toString() === clientId.toString());
 
   assignedCases.map(async (item) => {
   const caseNumber = item.caseNumber;
   if(caseNumber){
-      const existingCase = selectedClientAllCases.find((item) => item.caseNumber === caseNumber)
+      const existingCase = selectedClientAllCases?.find((item) => item.caseNumber === caseNumber)
       // console.log("Existed case", res.data)
       if(existingCase){        
         console.log(`case already exists in ${clientId} with`, caseNumber );
@@ -241,13 +239,12 @@ export const updateToNext = async (updatedCase) => {
     }
    
     if(updatedCase.caseStatus.toLowerCase().trim() === "reporting"){
-      // const nextAvailableUserName = qrAvailabe.sort((a,b) => a.count - b.count)[0].username
       updatedCase.completedDateMr = formattedIST()
       updatedCase.isCaseOpen = false
       modifiedNameDate(updatedCase)
     }
 
-    isUpdated && updateCase(updatedCase)
+    isUpdated && await updateCase(updatedCase)
     return updatedCase;
 }
 

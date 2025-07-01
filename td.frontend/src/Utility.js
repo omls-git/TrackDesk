@@ -19,7 +19,7 @@ export const parseExcelDate = (value) => {
       if (value instanceof Date) {
         return formattedIST(value) //value.toISOString().slice(0, 19).replace("T", " ")
       }
-      return "";
+      return null;
 };
 
 export const jsonDataFromFile = async(file) =>{

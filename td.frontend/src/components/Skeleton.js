@@ -1,6 +1,6 @@
 import React from 'react'
 
-const Skeleton = ({masterData}) => {
+const Skeleton = ({ masterData = [] }) => {
   return (
     <div>
           <table className="table">
