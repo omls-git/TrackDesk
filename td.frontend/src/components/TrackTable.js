@@ -6,7 +6,7 @@ import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 // import paginationFactory from 'react-bootstrap-table2-paginator';
 import { getClientAssigniesOfRole } from '../services/Common';
 import { useCallback } from 'react';
-import { getEmployees, updateCase, updateToNext } from '../services/API';
+import {updateCase, updateToNext } from '../services/API';
 import { useGlobalData } from '../services/GlobalContext';
 
 const TrackTable = (props) => {
@@ -14,7 +14,7 @@ const TrackTable = (props) => {
   const [des, setDes] = useState([]);
   const [qrs, setQrs] = useState([]);
   const [mrs, setMrs] = useState([]);
-  const { loggedUserName, users, user, allClients, isAdmin, isManager, isUser, } = useGlobalData();
+  const { loggedUserName, isAdmin, isManager, isUser, } = useGlobalData();
    const formateDates = (cell, row) => {
     return cell ? cell.split('T')[0] : '';
   }
@@ -32,7 +32,7 @@ const TrackTable = (props) => {
 
   useEffect(() => {
     fetchAssignes();
-  }, [data, fetchAssignes]);
+  }, []);
 
   const isEditable = (cell,  row) => {
     const editable = (isManager || isAdmin) ? true : false
@@ -286,7 +286,7 @@ const columns = [
         cellEdit={cellEditFactory({
           mode: 'click',
           blurToSave: true,
-           beforeSaveCell: (
+           beforeSaveCell: async(
               oldValueIn,
               newValueIn,
               row,
@@ -303,36 +303,34 @@ const columns = [
             let updatedCase = row;
             if(column.dataField === "caseStatus"){
               updatedCase[column.dataField] = newValue.trim();
-              if(newValue.toLowerCase().trim() === "quality review" && oldValue.toLowerCase().trim() === "data entry"){
-                updateToNext(updatedCase)
+              if((newValue.toLowerCase().trim() === "quality review" && oldValue.toLowerCase().trim() === "data entry") || 
+                (newValue.toLowerCase().trim() === "medical review" && oldValue.toLowerCase().trim() === "quality review") || 
+                (newValue.toLowerCase().trim() === "reporting" && oldValue.toLowerCase().trim() === "medical review")){
+
+                const caseUpdated = await updateToNext(updatedCase)
+                console.log(caseUpdated)
+                props.setData((prevData) =>
+                prevData.map((item) => (item.id === caseUpdated.id ? { ...item, ...caseUpdated } : item))
+                );              
                 done(true)
                 return
-              }
-              if(newValue.toLowerCase().trim() === "medical review" && oldValue.toLowerCase().trim() === "quality review"){
-                updatedCase[column.dataField] = newValue.trim();
-                updateToNext(updatedCase)
-                done(true)
-                return
-              }
-              if(newValue.toLowerCase().trim() === "reporting" && oldValue.toLowerCase().trim() === "medical review"){
-                updatedCase[column.dataField] = newValue.trim();
-                updateToNext(updatedCase)
-                done(true)
-                return
-              }
-              props.setData((prevData) =>
+              } 
+              console.log("wrong selection")
+              updatedCase[column.dataField] = oldValue.trim();
+                props.setData((prevData) =>
                 prevData.map((item) => (item.id === updatedCase.id ? { ...item, ...updatedCase } : item))
               );
-              console.log("wrong selection")
-              //  props.refreshData()
               done(true)
-              return
+              return;
             }
             updatedCase[column.dataField] = newValue.trim();
             if(newValue !== oldValue){
               updateCase(updatedCase);
               // props.refreshData()
-            }            
+            }
+            props.setData((prevData) =>
+                prevData.map((item) => (item.id === updatedCase.id ? { ...item, ...updatedCase } : item))
+              );
             done(true);
           },
         })}

@@ -2,16 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { Modal, Button, Form, ListGroup } from 'react-bootstrap';
 import { getUsers } from '../services/GraphApi';
 import { postEmployee } from '../services/API';
+import { useGlobalData } from '../services/GlobalContext';
 
 const EmployeeModal = ({ show, onClose, clients }) => {
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
-
   const [selectedClientId, setSelectedClientId] = useState('');
   const [selectedLevel, setSelectedLevel] = useState('');
   const [selectedPermission, setSelectedPermission] = useState('');
+  const { loggedUserName } = useGlobalData();
 
   const clientOptions = clients;
   const levelOptions = ['Data Entry', 'Quality Review', 'Medical Review'];
@@ -50,7 +51,8 @@ const EmployeeModal = ({ show, onClose, clients }) => {
       email: selectedUser.mail,
       projectId: selectedClientId,
       level: selectedLevel,
-      permission: selectedPermission
+      permission: selectedPermission,
+      createdBy: loggedUserName
     };
 
     try {

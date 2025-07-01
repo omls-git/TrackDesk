@@ -32,11 +32,10 @@ const MyCases = () => {
   useEffect(() => {
     fetchData();    
   }, [fetchData]);
-
   return (
     <div className='mt-2'>
       <h4>My Cases</h4>
-      {loading && <Skeleton masterData={myCases}/>}
+      {loading && <Skeleton />}
       {myCases.length > 0 && !loading ? (
         <TrackTable data={myCases} cols={null}
         setSelectedCaseIds={setSelectedMyCases} 
@@ -45,7 +44,7 @@ const MyCases = () => {
         setData={setMyCases}
         refreshData={fetchData} />
       ) : null}
-      {myCases && myCases.length === 0 &&  <h4 className="text-center mb-4">No Cases Assigned</h4>}
+      {!loading && myCases.length === 0 &&  <h4 className="text-center mb-4">No Cases Assigned</h4>}
     </div>
   )
 }
