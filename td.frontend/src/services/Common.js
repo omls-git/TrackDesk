@@ -1,9 +1,5 @@
 import { formattedIST } from "../Utility";
-import { getClients, getEmployees } from "./API"
-export const loggedUserName = localStorage.getItem("userName");
-export const loggedUserMail = localStorage.getItem('userEmail')
-export const users = await getEmployees();
-export const allClients = await getClients();
+import { getEmployees } from "./API"
 
 export const caseAllocation = async(cases, existingAllCases, clientId) => {
   const assignies = await getEmployees();
@@ -18,21 +14,21 @@ export const caseAllocation = async(cases, existingAllCases, clientId) => {
 
    let de = [];
     deAssiniees.forEach(assigny => {
-      const count = existingAllCases.filter(item => item.de === assigny.username && !item.completedDateDE).length;
+      const count = existingAllCases?.filter(item => item.de === assigny.username && !item.completedDateDE).length;
       count ? de.push({ username: assigny.username, count, maxCount: 8 }) : de.push({ username: assigny.username, count: 0, maxCount: 8 });
     });
 
     const qrAssignees = clientAssignies.filter((item) => item.level.toLowerCase() === "quality review".toLowerCase() && !item.onLeave);
     let qr = [];
     qrAssignees.forEach(assigny => {
-      const count = existingAllCases.filter(item => item.qr === assigny.username && !item.completedDateQR).length;
+      const count = existingAllCases?.filter(item => item.qr === assigny.username && !item.completedDateQR).length;
       count ? qr.push({ username: assigny.username, count, maxCount: 15 }) : qr.push({ username: assigny.username, count: 0, maxCount: 15 });
     });
 
     const mrAssignees = clientAssignies.filter((item) => item.level.toLowerCase() === "medical review".toLowerCase() && !item.onLeave);
     let mr = [];
     mrAssignees.forEach(assigny => {
-      const count = existingAllCases.filter(item => item.mr === assigny.username && !item.completedDateMR).length;
+      const count = existingAllCases?.filter(item => item.mr === assigny.username && !item.completedDateMR).length;
       count ? mr.push({ username: assigny.username, count }) : mr.push({ username: assigny.username, count: 0 });
     });
 
@@ -47,7 +43,7 @@ export const caseAllocation = async(cases, existingAllCases, clientId) => {
 
 
     const assignedCases = [...dateEntryAssignedCases, ...qualityReviewAssignedCases, ...medicalReviewAssignedCases, ...remainingCases.map(item => mapCaseToApiFormat(item, clientId))];
-
+    console.log(assignedCases)
     return assignedCases;
 
 }
@@ -59,13 +55,13 @@ export const mapCaseToApiFormat = (item, id) => ({
   caseNumber: item["Case Number"],
   initial_fup_fupToOpen: item["Initial/FUP/FUP to Open (FUOP)"],
   ird_frd: item["IRD/FRD"],
-  assignedDateDe: item["Assigned Date (DE)"],
+  assignedDateDe: item["Assigned Date (DE)"] ? item["Assigned Date (DE)"] : null ,
   completedDateDE: null,
   de: item["DE"] || "",
-  assignedDateQr: item["Assigned Date (QR)"],
+  assignedDateQr: item["Assigned Date (QR)"] ? item["Assigned Date (QR)"] : null,
   completedDateQR: null,
   qr: item["QR"] || "",
-  assignedDateMr: item["Assigned Date (MR)"],
+  assignedDateMr: item["Assigned Date (MR)"] ? item["Assigned Date (MR)"] : null,
   completedDateMr: null,
   mr: item["MR"] || "",
   caseStatus: item["Case Status"] || "",
@@ -104,7 +100,9 @@ export const employeesToAssign = (assignees, cases, role, projectId) => {
             deAssignedCases.push({
               ...currentCase,
               de: assignee.username,
-              assignedDateDe: formattedIST(''),
+              assignedDateDe: formattedIST(),
+              assignedDateMr: currentCase.assignedDateMr ? formattedIST(currentCase.assignedDateMr) : null,
+              assignedDateQr: currentCase.assignedDateQr ? formattedIST(currentCase.assignedDateQr) : null
             });
             assignee.count++;
             assigned = true;
@@ -118,6 +116,8 @@ export const employeesToAssign = (assignees, cases, role, projectId) => {
             ...currentCase,
             de: "",
             assignedDateDe: null,
+            assignedDateMr: currentCase.assignedDateMr ? formattedIST(currentCase.assignedDateMr) : null,
+            assignedDateQr: currentCase.assignedDateQr ? formattedIST(currentCase.assignedDateQr) : null
           });
           deIndex = (deIndex + 1) % assignees.length;
         }     
@@ -139,7 +139,9 @@ export const employeesToAssign = (assignees, cases, role, projectId) => {
           qrAssignedCases.push({
             ...currentCase,
             qr: assignee.username,
-            assignedDateQr: formattedIST(''),
+            assignedDateQr: formattedIST(),
+            assignedDateDe : currentCase.assignedDateDe ? formattedIST(currentCase.assignedDateDe) : null,
+            assignedDateMr : currentCase.assignedDateMr ? formattedIST(currentCase.assignedDateMr) : null
           });
           assignee.count++;
           assigned = true;
@@ -153,6 +155,8 @@ export const employeesToAssign = (assignees, cases, role, projectId) => {
           ...currentCase,
           qr: "",
           assignedDateQr: null,
+          assignedDateDe : currentCase.assignedDateDe ? formattedIST(currentCase.assignedDateDe) : null,
+          assignedDateMr : currentCase.assignedDateMr ? formattedIST(currentCase.assignedDateMr) : null,
         });
         qrIndex = (qrIndex + 1) % assignees.length;
       }
@@ -170,7 +174,9 @@ export const employeesToAssign = (assignees, cases, role, projectId) => {
       mrAssignedCases.push({
         ...currentCase,
         mr: assignees[mrCount].username,
-        assignedDateMr: formattedIST(''),
+        assignedDateMr: formattedIST(),
+        assignedDateDe : currentCase.assignedDateDe ? formattedIST(currentCase.assignedDateDe) : null,
+        assignedDateQr: currentCase.assignedDateQr ? formattedIST(currentCase.assignedDateQr) : null
       });
       mrCount++;
       if (mrCount >= assignees.length) {
@@ -194,39 +200,7 @@ export const getClientAssigniesOfRole = async (role) => {
   return clientAssigniesOfRole;
 }
 
-export const isAdmin = (clientId, allusers) => {
-  const userName = loggedUserName;
-  const userDetailes = allusers?.find((item) => item.username === userName);
-  // console.log(clientId, userName, allusers)
-  if(userDetailes){
-    // console.log("userDetailes",clientId, userDetailes)
-    if(userDetailes?.permission?.trim() === "Admin"){
-      return true;
-    }
-  }  
-  return false;
-}
-export const isManager = (clientId, allusers) => {
-  const userName = loggedUserName;
-  const userDetailes = allusers?.find((item) => item.username === userName);
-  if(userDetailes){
-    //  console.log("userDetailes manager",clientId, userDetailes)
-    if(userDetailes.permission.trim() === "Manager"){
-      return true;
-    }
-  }
-  return false;
-}
-export const isUser = (clientId, allusers) => {
-  const userName = loggedUserName;
-  const userDetailes = allusers?.find((item) => item.username === userName && item.projectId?.toString() === clientId.toString());
-  if(userDetailes){
-  if(userDetailes.permission.trim() === "User"){
-    return true;
-  }
-  } 
-  return false;
-}
+
 
 export const userAssignedCasesCount = (clientAssignies, existingAllCases) => {
   
@@ -234,21 +208,21 @@ export const userAssignedCasesCount = (clientAssignies, existingAllCases) => {
  
    let deAvailabe = [];
     deAssiniees.forEach(assigny => {
-      const count = existingAllCases.filter(item => item.de === assigny.username && !item.completedDateDE).length;
+      const count = existingAllCases?.filter(item => item.de === assigny.username && !item.completedDateDE).length;
       count ? deAvailabe.push({ username: assigny.username, count, maxCount: 8 }) : deAvailabe.push({ username: assigny.username, count: 0, maxCount: 8 });
     });
 
     const qrAssignees = clientAssignies.filter((item) => item.level.toLowerCase() === "quality review".toLowerCase() && !item.onLeave);
     let qrAvailabe = [];
     qrAssignees.forEach(assigny => {
-      const count = existingAllCases.filter(item => item.qr === assigny.username && !item.completedDateQR).length;
+      const count = existingAllCases?.filter(item => item.qr === assigny.username && !item.completedDateQR).length;
       count ? qrAvailabe.push({ username: assigny.username, count, maxCount: 15 }) : qrAvailabe.push({ username: assigny.username, count: 0, maxCount: 15 });
     });
 
     const mrAssignees = clientAssignies.filter((item) => item.level.toLowerCase() === "medical review".toLowerCase() && !item.onLeave);
     let mrAvailable = [];
     mrAssignees.forEach(assigny => {
-      const count = existingAllCases.filter(item => item.mr === assigny.username && !item.completedDateMR).length;
+      const count = existingAllCases?.filter(item => item.mr === assigny.username && !item.completedDateMR).length;
       count ? mrAvailable.push({ username: assigny.username, count }) : mrAvailable.push({ username: assigny.username, count: 0 });
     });
 

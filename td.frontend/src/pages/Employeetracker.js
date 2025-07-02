@@ -1,9 +1,9 @@
 // src/App.js
-import React, { useState, useEffect} from 'react';
+import React, { useState, useEffect, useCallback} from 'react';
 import EmployeeModal from '../components/EmployeeModal';
 import { deleteEmployees, getClients, getEmployees } from '../services/API';
 import EmployeeTable from '../components/EmployeeTable';
-import { loggedUserName } from '../services/Common';
+import { useGlobalData } from '../services/GlobalContext';
 
 
 function EmployeeTracker() {
@@ -13,8 +13,9 @@ function EmployeeTracker() {
    const [searchTerm, setSearchTerm] = useState("");
    const [selectedEmployeeIds, setSelectedEmployeeIds] = useState([]);
    const [isAdminOrManager, setIsAdminOrManager] = useState(false);
+    const { loggedUserName } = useGlobalData();
 
-  const fetchEmployees = async () => {
+  const fetchEmployees = useCallback(async () => {
     try {
       const employeeList = await getEmployees();
       const userDetails = employeeList.find((item) => item.username === loggedUserName);
@@ -26,7 +27,7 @@ function EmployeeTracker() {
     } catch (error) {
       console.error('Error fetching employees:', error);
     }
-  };
+  },[loggedUserName]);
 
   useEffect(() => {    
      async function fetchClients() {
@@ -35,7 +36,7 @@ function EmployeeTracker() {
       fetchEmployees();
     }
     fetchClients();
-  }, []);
+  }, [fetchEmployees]);
 
   const handleEmployeeSave = () => {
     fetchEmployees(); // Refresh table data
