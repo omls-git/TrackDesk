@@ -7,13 +7,13 @@ import Skeleton from '../components/Skeleton'
 const MyCases = () => {
   const [myCases, setMyCases] = useState([])
   const [selectedMyCases, setSelectedMyCases] = useState([]);
-  const { loggedUserName, user, allClients } = useGlobalData();
+  const { loggedUserName, allClients, currentClientId } = useGlobalData();
   const [loading, setLoading] = useState(false);
   const fetchData = React.useCallback(async () => {
     setLoading(true)
     try {
-      if(user){
-        const allCases = await fetchCasesByClientId(user?.projectId);
+      if(currentClientId){
+        const allCases = await fetchCasesByClientId(currentClientId);
         if(allCases){
           const myCases = allCases.filter(caseItem => [caseItem.de, caseItem.qr, caseItem.mr].includes(loggedUserName) && (caseItem.completedDateDE === null || caseItem.completedDateDE === '' || caseItem.completedDateQR === null || caseItem.completedDateQR === '' || caseItem.completedDateMr === null || caseItem.completedDateMr === ''));
           setMyCases(myCases);
@@ -27,7 +27,7 @@ const MyCases = () => {
       }, 1000);
       
     }    
-  }, [user, loggedUserName]);
+  }, [currentClientId, loggedUserName]);
 
   useEffect(() => {
     fetchData();    
