@@ -9,7 +9,7 @@ import { useGlobalData } from '../services/GlobalContext';
 
 const EmployeeTable = (props) => {
   const { data, clients } = props;
-  const { isManager, isAdmin, isUser, loggedUserName } = useGlobalData();
+  const { isManager, isAdmin } = useGlobalData();
   const isEditable = (cell,  row) => {
       const editable = (isManager|| isAdmin) ? true : false
       // console.log(isManager(row.project_id) , isAdmin(row.project_id))
@@ -25,7 +25,7 @@ const EmployeeTable = (props) => {
     },
     {
       dataField: 'level',
-      text: 'Level',
+      text: 'Role',
       width: 150,
       editable: isEditable,
         editor : {

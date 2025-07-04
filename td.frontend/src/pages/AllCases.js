@@ -17,7 +17,7 @@ const AllCases = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isAdminOrManager, setIsAdminOrManager] = useState(false);
   const [dateRange, setDateRange] = useState({ from: '', to: '' });
-  const { loggedUserName, users, user, allClients} = useGlobalData();
+  const { loggedUserName, users, user, allClients, currentClientId} = useGlobalData();
   const [loading, setLoading] = useState(false)
   const handleImportFile = async (file) => {
     if (!file) return;
@@ -55,7 +55,7 @@ const AllCases = () => {
     setLoading(true); 
     if(user){
       try {
-        const cases = await fetchCasesByClientId(user.projectId);
+        const cases = await fetchCasesByClientId(currentClientId);
         if (cases) {
            setMasterData(cases);
         }       

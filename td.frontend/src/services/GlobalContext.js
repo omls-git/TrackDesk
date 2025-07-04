@@ -42,7 +42,8 @@ export const GlobalProvider = ({ children }) => {
     fetchData();
   }, [loggedUserName]);
 
-  const user = users.find((user) => user.username === loggedUserName);
+  const user = users.find((user) => user.username === loggedUserName);  
+  const currentClientId = localStorage.getItem("currentClient") ? localStorage.getItem("currentClient") : user ? user.id : '';
 
   const value = {
     loggedUserName,
@@ -53,9 +54,9 @@ export const GlobalProvider = ({ children }) => {
     isAdmin,
     isManager,
     isUser,
+    currentClientId,
     loading
   };
-  console.log(value)
 
   return (
     <GlobalContext.Provider value={value}>
