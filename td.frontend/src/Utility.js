@@ -42,3 +42,14 @@ export const modifiedNameDate = (item) => {
   return item;
 }
 
+export const userInitials = (name) => {
+  if(name){
+    let bits = name.split(' ');
+    let initails = bits.reduce((acc, val) => {
+      return acc + (val[0] || "");
+    }, '').replace(/\W/g,'').toUpperCase();
+    return initails;
+  }else{
+    return '';
+  }
+}
