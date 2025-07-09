@@ -2,7 +2,8 @@ module.exports = (sequelize, DataTypes) =>{
   const Clients = sequelize.define("clients", {
     name: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
+      unique: true 
     },
     isActive: {
       type: DataTypes.BOOLEAN,
