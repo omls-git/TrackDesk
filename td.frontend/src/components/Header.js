@@ -49,7 +49,7 @@ const Header = () => {
         </div>
         <Navbar.Collapse id="responsive-navbar-nav" className="order-3">
            {
-              isAdmin ? (
+              clientName ? (
                 <h6
                   className="clientName me-2 mb-2 mb-lg-0"
                   onClick={handleModalClick}                  
