@@ -8,35 +8,37 @@ import { getClientAssigniesOfRole } from '../services/Common';
 import { useCallback } from 'react';
 import {updateCase, updateToNext } from '../services/API';
 import { useGlobalData } from '../services/GlobalContext';
+import { formattedIST, getDaysOpen } from '../Utility';
 
 const TrackTable = (props) => {
   const { data, clients } = props;
   const [des, setDes] = useState([]);
   const [qrs, setQrs] = useState([]);
   const [mrs, setMrs] = useState([]);
-  const { loggedUserName, isAdmin, isManager, isUser, } = useGlobalData();
+  const { loggedUserName, isAdmin, isManager, isUser,currentClientId, allClients } = useGlobalData();
+
    const formateDates = (cell, row) => {
+    
     return cell ? cell.split('T')[0] : '';
   }
 
   const fetchAssignes = useCallback(async () => {
     if (data && data.length > 0) {
-      const assignies = await getClientAssigniesOfRole('data entry');
+      const assignies = await getClientAssigniesOfRole('data entry',currentClientId);
       setDes(assignies);
-      const qrAssignies = await getClientAssigniesOfRole('quality review');
+      const qrAssignies = await getClientAssigniesOfRole('quality review',currentClientId);
       setQrs(qrAssignies);
-      const mrAssignies = await getClientAssigniesOfRole('medical review');
+      const mrAssignies = await getClientAssigniesOfRole('medical review', currentClientId);
       setMrs(mrAssignies);
     }
-  }, [data]);
+  }, [data, currentClientId]);
 
   useEffect(() => {
     fetchAssignes();
-  }, []);
+  }, [fetchAssignes]);
 
   const isEditable = (cell,  row) => {
     const editable = (isManager || isAdmin) ? true : false
-    // console.log(isManager(row.project_id) , isAdmin(row.project_id))
     return editable
   }
 
@@ -56,10 +58,7 @@ const columns = [
     editable: false,
     headerStyle: () => ({ width: '100px', minWidth: '100px' }),
     formatter: (cell, row) => {
-      const today = new Date();
-      const irdFrdData = new Date(row.ird_frd)
-      const numberOfDaysCaseOpen = Math.floor((today - irdFrdData) / (1000 * 60 * 60 * 24))
-      // console.log(row.ird_frd)
+      const numberOfDaysCaseOpen = getDaysOpen(row);
       return numberOfDaysCaseOpen
     }
   },
@@ -107,6 +106,23 @@ const columns = [
     formatter: formateDates,
     headerStyle: () => ({ width: '110px', minWidth: '100px' }),
   },
+  ...(currentClientId && allClients.find((client) => client.id.toString() === currentClientId)?.name?.toLowerCase() === "cipla" ? [{
+    dataField: 'ORD',
+    text: 'ORD',
+    // sort: true,
+    width: 100,
+    editable: false,
+    formatter: formateDates,
+    headerStyle: () => ({ width: '110px', minWidth: '100px' }),
+  },
+  {dataField: 'Source',
+    text: 'Source',
+    // sort: true,
+    width: 100,
+    editable: false,
+    headerStyle: () => ({ width: '110px', minWidth: '100px' }),
+  }
+] : []),
   {
     dataField: 'de',
     text: 'DE',
@@ -323,14 +339,34 @@ const columns = [
               done(true)
               return;
             }
-            updatedCase[column.dataField] = newValue.trim();
-            if(newValue !== oldValue){
-              updateCase(updatedCase);
-              // props.refreshData()
+            if(column.dataField === "de" || column.dataField === "qr" || column.dataField === "mr"){
+              if(newValue !== oldValue){
+                updatedCase[column.dataField] = newValue.trim();                
+                if(column.dataField === "de"){
+                  updatedCase.assignedDateDe = formattedIST();
+                } else if(column.dataField === "qr"){
+                  updatedCase.assignedDateQr = formattedIST();
+                } else if(column.dataField === "mr"){
+                  updatedCase.assignedDateMr = formattedIST();
+                }
+
+                props.setData((prevData) =>
+                  prevData.map((item) => (item.id === updatedCase.id ? { ...item, ...updatedCase } : item))
+                );
+                await updateCase(updatedCase);
+                done(true);
+                return;
+              }
+
             }
+
+            updatedCase[column.dataField] = newValue.trim();
             props.setData((prevData) =>
                 prevData.map((item) => (item.id === updatedCase.id ? { ...item, ...updatedCase } : item))
               );
+            if(newValue !== oldValue){
+              await updateCase(updatedCase);
+            }            
             done(true);
           },
         })}

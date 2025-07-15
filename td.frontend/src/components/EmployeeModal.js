@@ -9,10 +9,10 @@ const EmployeeModal = ({ show, onClose, clients }) => {
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
-  const [selectedClientId, setSelectedClientId] = useState('');
+  const { loggedUserName, currentClientId } = useGlobalData();
+  const [selectedClientId, setSelectedClientId] = useState(currentClientId || '');
   const [selectedLevel, setSelectedLevel] = useState('');
   const [selectedPermission, setSelectedPermission] = useState('');
-  const { loggedUserName } = useGlobalData();
 
   const clientOptions = clients;
   const levelOptions = ['Data Entry', 'Quality Review', 'Medical Review'];

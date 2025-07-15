@@ -9,15 +9,15 @@ import Skeleton from '../components/Skeleton';
 
 const AllCases = () => {
 
+  const { loggedUserName, users, user, allClients, currentClientId} = useGlobalData();
   const [masterData, setMasterData] = useState([]); 
   const [show, setShow] = useState(false);
   // const [columns, setColumns] = useState([]);
-  const [selectedClientId, setSelectedClientId] = useState(null)
+  const [selectedClientId, setSelectedClientId] = useState(currentClientId || '');
   const [selectedCases, setSelectedCases] = useState([]); 
   const [searchTerm, setSearchTerm] = useState('');
   const [isAdminOrManager, setIsAdminOrManager] = useState(false);
   const [dateRange, setDateRange] = useState({ from: '', to: '' });
-  const { loggedUserName, users, user, allClients, currentClientId} = useGlobalData();
   const [loading, setLoading] = useState(false)
   const handleImportFile = async (file) => {
     if (!file) return;
@@ -37,7 +37,6 @@ const AllCases = () => {
         })
       );
     });
-    // console.log(jsonData)
     await postCases(jsonData, selectedClientId)
     await fetchAllCasesCallback();
     handleClose();
@@ -66,7 +65,7 @@ const AllCases = () => {
       }
     }
     
-  }, [user]);
+  }, [currentClientId, user]);
 
   useEffect(() => {
     async function fetchClientsAndCases() {
@@ -92,7 +91,7 @@ const AllCases = () => {
 
   const onClientChange =(e) => {
     const clientId = e?.target?.value;
-    clientId ? setSelectedClientId(e.target.value) : setSelectedClientId('')
+    clientId ? setSelectedClientId(e.target.value) : setSelectedClientId(currentClientId || '');
   }
 
   const deleteSelectedCases = async() => {
