@@ -51,9 +51,9 @@ export const caseAllocation = async(cases, existingAllCases, clientId) => {
 
 export const mapCaseToApiFormat = (item, id) => ({
   project_id: parseInt(id),
-  casesOpen: item["Cases open"],
-  caseNumber: item["Case Number"],
-  initial_fup_fupToOpen: item["Initial/FUP/FUP to Open (FUOP)"],
+  casesOpen: item["Cases open"] || item["Days open"] || 0,
+  caseNumber: item["Case Number"] || item["Case ID"] || "",
+  initial_fup_fupToOpen: item["Initial/FUP/FUP to Open (FUOP)"] || item["Initial/FUP"] || "",
   ird_frd: item["IRD/FRD"],
   assignedDateDe: item["Assigned Date (DE)"] ? item["Assigned Date (DE)"] : null ,
   completedDateDE: null,
@@ -68,14 +68,19 @@ export const mapCaseToApiFormat = (item, id) => ({
   reportability: item["Reportability"] || "",
   seriousness: item["Seriousness"] || "",
   live_backlog: item["Live/backlog"] || "",
-  comments: item["Comments_1"] || "",
+  comments: item["Comments"] || item["Comments_1"] || "",
   isCaseOpen: true,
-  DestinationForReporting: item["Destination for Reporting"] || "",
+  DestinationForReporting: item["Destination for Reporting"] || item["Destination for reporting"] || "",
   ReportingComment: item["Reporting Comment"] || "",
-  SDEAObligation: item["SDEA Obligation"] || "",
+  SDEAObligation: item["SDEA Obligation"] || item["SDEA obligation"] || "",
   Source: item["Source"] || "",
-  ReportType: item["Report Type"] || "",
-  XML_Non_XML: item["XML/Non-XML"] || ""
+  ReportType: item["Report Type"] || item["Report type"] || "",
+  XML_Non_XML: item["XML/Non-XML"] || "",
+  ORD: item["ORD"] || "",
+  Country: item["Country"] || "",
+  Partner: item["Partner"] || "",
+  createdOn: formattedIST(),
+  createdBy: localStorage.getItem("userName") || "",
 });
 
 export const employeesToAssign = (assignees, cases, role, projectId) => {
@@ -100,6 +105,7 @@ export const employeesToAssign = (assignees, cases, role, projectId) => {
             deAssignedCases.push({
               ...currentCase,
               de: assignee.username,
+              deStatus: "Assigned",
               assignedDateDe: formattedIST(),
               assignedDateMr: currentCase.assignedDateMr ? formattedIST(currentCase.assignedDateMr) : null,
               assignedDateQr: currentCase.assignedDateQr ? formattedIST(currentCase.assignedDateQr) : null
@@ -139,6 +145,7 @@ export const employeesToAssign = (assignees, cases, role, projectId) => {
           qrAssignedCases.push({
             ...currentCase,
             qr: assignee.username,
+            qrStatus: "Assigned",
             assignedDateQr: formattedIST(),
             assignedDateDe : currentCase.assignedDateDe ? formattedIST(currentCase.assignedDateDe) : null,
             assignedDateMr : currentCase.assignedDateMr ? formattedIST(currentCase.assignedDateMr) : null
@@ -174,6 +181,7 @@ export const employeesToAssign = (assignees, cases, role, projectId) => {
       mrAssignedCases.push({
         ...currentCase,
         mr: assignees[mrCount].username,
+        mrStatus: "Assigned",
         assignedDateMr: formattedIST(),
         assignedDateDe : currentCase.assignedDateDe ? formattedIST(currentCase.assignedDateDe) : null,
         assignedDateQr: currentCase.assignedDateQr ? formattedIST(currentCase.assignedDateQr) : null
@@ -188,9 +196,9 @@ export const employeesToAssign = (assignees, cases, role, projectId) => {
 
 }
 
-export const getClientAssigniesOfRole = async (role) => {
+export const getClientAssigniesOfRole = async (role, clientId) => {
   const assignies = await getEmployees();
-  const clientAssigniesOfRole = assignies.filter((item) =>!item.onLeave && item.level.toLowerCase() === role.toLowerCase());
+  const clientAssigniesOfRole = assignies.filter((item) =>!item.onLeave && item.level.toLowerCase() === role.toLowerCase() && item.projectId.toString() === clientId.toString());
   
   if (clientAssigniesOfRole.length === 0) {
     console.error("No assignies found for the client to assign cases");
@@ -207,22 +215,25 @@ export const userAssignedCasesCount = (clientAssignies, existingAllCases) => {
   const deAssiniees = clientAssignies.filter((item) => item.level.toLowerCase() === "data entry".toLowerCase() && !item.onLeave);
  
    let deAvailabe = [];
+   const today = new Date()
     deAssiniees.forEach(assigny => {
-      const count = existingAllCases?.filter(item => item.de === assigny.username && !item.completedDateDE).length;
+      const count = existingAllCases?.filter(item => item.de === assigny.username && !item.completedDateDE && item.assignedDateDe.split("T")[0] === today.toISOString().split("T")[0]).length;
+      console.log("deCount", count);
+      
       count ? deAvailabe.push({ username: assigny.username, count, maxCount: 8 }) : deAvailabe.push({ username: assigny.username, count: 0, maxCount: 8 });
     });
 
     const qrAssignees = clientAssignies.filter((item) => item.level.toLowerCase() === "quality review".toLowerCase() && !item.onLeave);
     let qrAvailabe = [];
     qrAssignees.forEach(assigny => {
-      const count = existingAllCases?.filter(item => item.qr === assigny.username && !item.completedDateQR).length;
+      const count = existingAllCases?.filter(item => item.qr === assigny.username && !item.completedDateQR && item.assignedDateQr.split("T")[0] === today.toISOString().split("T")[0]).length;
       count ? qrAvailabe.push({ username: assigny.username, count, maxCount: 15 }) : qrAvailabe.push({ username: assigny.username, count: 0, maxCount: 15 });
     });
 
     const mrAssignees = clientAssignies.filter((item) => item.level.toLowerCase() === "medical review".toLowerCase() && !item.onLeave);
     let mrAvailable = [];
     mrAssignees.forEach(assigny => {
-      const count = existingAllCases?.filter(item => item.mr === assigny.username && !item.completedDateMR).length;
+      const count = existingAllCases?.filter(item => item.mr === assigny.username && !item.completedDateMR && item.assignedDateMr.split("T")[0] === today.toISOString().split("T")[0]).length;
       count ? mrAvailable.push({ username: assigny.username, count }) : mrAvailable.push({ username: assigny.username, count: 0 });
     });
 

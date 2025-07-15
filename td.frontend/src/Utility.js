@@ -22,10 +22,20 @@ export const parseExcelDate = (value) => {
       return null;
 };
 
+export const getDaysOpen = (row) => {
+  if (row.ird_frd) {
+    const today = new Date();
+    const irdFrdData = new Date(row.ird_frd);
+    const numberOfDaysCaseOpen = Math.floor((today - irdFrdData) / (1000 * 60 * 60 * 24));
+    return numberOfDaysCaseOpen;
+  }
+  return null;
+};
+
 export const jsonDataFromFile = async(file) =>{
   const data = await file.arrayBuffer();
   const workbook = XLSX.read(data, { type: 'buffer' });
-  const worksheet = workbook.Sheets["Open Cases"];
+  const worksheet = workbook.Sheets["Open Cases"] || workbook.Sheets["Current Status"];
   let jsonData = XLSX.utils.sheet_to_json(worksheet, {defval: "" });
   return jsonData
 }

@@ -43,7 +43,7 @@ export const GlobalProvider = ({ children }) => {
   }, [loggedUserName]);
 
   const user = users.find((user) => user.username === loggedUserName);  
-  const currentClientId = localStorage.getItem("currentClient") ? localStorage.getItem("currentClient") : user ? user.id : '';
+  const currentClientId = localStorage.getItem("currentClient") ? localStorage.getItem("currentClient") : user ? user.projectId : '';
 
   const value = {
     loggedUserName,
