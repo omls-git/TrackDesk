@@ -133,9 +133,7 @@ export const getClients = async () => {
 }
 
 export const updateCase = async (item) => {
-  const formatDate = (date) =>
-    date ? formattedIST(date)  : null;
-// new Date(date).toISOString().slice(0, 19).replace("T", " ")
+  const formatDate = (date) => date ? formattedIST(date) : null;
   const updatedCase = {
     project_id: item.project_id,
     casesOpen: item.casesOpen,
@@ -221,6 +219,7 @@ export const updateToNext = async (updatedCase) => {
       if(nextAvailableUserName.maxCount > nextAvailableUserName.count){
         updatedCase.de = nextAvailableUserName.username;
         updatedCase.assignedDateDe = formattedIST()
+        updatedCase.deStatus = "Assigned";
         updatedCase.isCaseOpen = true
         modifiedNameDate(updatedCase)
       }else{
@@ -232,8 +231,9 @@ export const updateToNext = async (updatedCase) => {
       if(nextAvailableUserName.maxCount > nextAvailableUserName.count){
       updatedCase.qr = nextAvailableUserName.username
       updatedCase.assignedDateQr = formattedIST()
-      updatedCase.completedDateDE = formattedIST()
+      updatedCase.completedDateDE = formattedIST()      
       updatedCase.isCaseOpen = true
+      updatedCase.qrStatus = "Assigned";
       modifiedNameDate(updatedCase)
       }else{
         isUpdated = false
@@ -245,12 +245,13 @@ export const updateToNext = async (updatedCase) => {
       updatedCase.assignedDateMr = formattedIST()
       updatedCase.completedDateQR = formattedIST()
       updatedCase.isCaseOpen = true
+      updatedCase.mrStatus = "Assigned";
       modifiedNameDate(updatedCase)
     }
    
     if(updatedCase.caseStatus.toLowerCase().trim() === "reporting"){
       updatedCase.completedDateMr = formattedIST()
-      updatedCase.isCaseOpen = false
+      updatedCase.isCaseOpen = false      
       modifiedNameDate(updatedCase)
     }
 
