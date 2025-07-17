@@ -217,7 +217,7 @@ export const userAssignedCasesCount = (clientAssignies, existingAllCases) => {
    let deAvailabe = [];
    const today = new Date()
     deAssiniees.forEach(assigny => {
-      const count = existingAllCases?.filter(item => item.de === assigny.username && !item.completedDateDE && item.assignedDateDe.split("T")[0] === today.toISOString().split("T")[0]).length;
+      const count = existingAllCases?.filter(item => item.de === assigny.username && !item.completedDateDE && item.assignedDateDe?.split("T")[0] === today.toISOString().split("T")[0]).length;
       console.log("deCount", count);
       
       count ? deAvailabe.push({ username: assigny.username, count, maxCount: 8 }) : deAvailabe.push({ username: assigny.username, count: 0, maxCount: 8 });
@@ -226,14 +226,14 @@ export const userAssignedCasesCount = (clientAssignies, existingAllCases) => {
     const qrAssignees = clientAssignies.filter((item) => item.level.toLowerCase() === "quality review".toLowerCase() && !item.onLeave);
     let qrAvailabe = [];
     qrAssignees.forEach(assigny => {
-      const count = existingAllCases?.filter(item => item.qr === assigny.username && !item.completedDateQR && item.assignedDateQr.split("T")[0] === today.toISOString().split("T")[0]).length;
+      const count = existingAllCases?.filter(item => item.qr === assigny.username && !item.completedDateQR && item.assignedDateQr?.split("T")[0] === today.toISOString().split("T")[0]).length;
       count ? qrAvailabe.push({ username: assigny.username, count, maxCount: 15 }) : qrAvailabe.push({ username: assigny.username, count: 0, maxCount: 15 });
     });
 
     const mrAssignees = clientAssignies.filter((item) => item.level.toLowerCase() === "medical review".toLowerCase() && !item.onLeave);
     let mrAvailable = [];
     mrAssignees.forEach(assigny => {
-      const count = existingAllCases?.filter(item => item.mr === assigny.username && !item.completedDateMR && item.assignedDateMr.split("T")[0] === today.toISOString().split("T")[0]).length;
+      const count = existingAllCases?.filter(item => item.mr === assigny.username && !item.completedDateMR && item.assignedDateMr?.split("T")[0] === today.toISOString().split("T")[0]).length;
       count ? mrAvailable.push({ username: assigny.username, count }) : mrAvailable.push({ username: assigny.username, count: 0 });
     });
 

@@ -2,10 +2,9 @@ import * as XLSX from 'xlsx';
 const loggedUserName = localStorage.getItem("userName");
 
 export const formattedIST = (value) => {
-  const date = value ?  new Date(value) : new Date();
-  const istDate = new Date(date.getTime() + (5.5 * 60 * 60 * 1000)); // UTC + 5:30
+  const date = value ?  new Date(value) : new Date();  
+  const istDate = new Date(date.getTime() + (5.5 * 60 * 60 * 1000)); // UTC + 5:30  
   const formattedIST = istDate.toISOString().slice(0, 19).replace("T", " ");
-
   return formattedIST;
 }
 
@@ -62,4 +61,11 @@ export const userInitials = (name) => {
   }else{
     return '';
   }
+}
+
+export const exportToCSV = (data, filename) => {
+  const ws = XLSX.utils.json_to_sheet(data)
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Cases");
+  XLSX.writeFile(wb, filename);
 }
