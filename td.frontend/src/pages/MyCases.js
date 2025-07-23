@@ -86,7 +86,7 @@ const MyCases = () => {
       {
         dataField: 'casesOpen',
         text: 'Days Open',
-        // sort: true,
+        sort: true,
         width: 100,
         editable: false,
         headerStyle: () => ({ width: '100px', minWidth: '100px' }),
@@ -178,13 +178,9 @@ const MyCases = () => {
       {
         dataField: 'assignedDateDe',
         text: 'Assigned Date (DE)',
-        // sort: true,
+        sort: true,
         width: 100,
         editable: false,
-        // editor : {
-        //   type: Type.DATE,
-        //   dateFormat: 'YYYY-MM-DD',
-        // },
         formatter: formateDates,
         headerStyle: () => ({ width: '110px', minWidth: '100px' }),
       },
@@ -225,7 +221,8 @@ const MyCases = () => {
       },
       {
         dataField: 'assignedDateQr',
-        text: 'Assigned Date (QR)',
+        text: 'Assigned Date (QR)',        
+        sort: true,
         width: 100,
         editable: false,
         formatter: formateDates,
@@ -269,6 +266,7 @@ const MyCases = () => {
       {
         dataField: 'assignedDateMr',
         text: 'Assigned Date (MR)',
+        sort: true,
         width: 100,
         editable: false,
         formatter: formateDates,

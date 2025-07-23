@@ -51,7 +51,7 @@ export const modifiedNameDate = (item) => {
   return item;
 }
 
-export const userInitials = (name) => {
+export const getInitials = (name) => {
   if(name){
     let bits = name.split(' ');
     let initails = bits.reduce((acc, val) => {

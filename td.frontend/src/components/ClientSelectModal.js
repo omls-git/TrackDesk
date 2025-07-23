@@ -1,11 +1,23 @@
 import Button from 'react-bootstrap/Button';
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import { useGlobalData } from '../services/GlobalContext';
+import { useEffect, useState } from 'react';
 
 function ClientSelectModal({ open, onClose, onSelect }) {
   
-  const {allClients, currentClientId} = useGlobalData(); 
+  const [clients, setClients] = useState([]);
+  const {allClients, currentClientId, isAdmin, users} = useGlobalData();
 
+  useEffect(() => {
+    let filteredUser = users?.filter((user) => user.username === localStorage.getItem('userName'));    
+    if (!isAdmin && filteredUser && filteredUser.length > 1) {
+      let clients = [...new Set(filteredUser.map((user) => user.projectId))];
+      clients = allClients.filter((client) => clients.includes(client.id));      
+      setClients(clients);
+    } else if (isAdmin) {
+      allClients && allClients.length > 0 && setClients(allClients);
+    }
+  }, [allClients, isAdmin, users]);
   return (
       <Offcanvas 
         show={open} 
@@ -18,8 +30,8 @@ function ClientSelectModal({ open, onClose, onSelect }) {
         </Offcanvas.Header>
         <Offcanvas.Body>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {
-              allClients.map((client) => (
+            { clients && clients.length > 0 ?
+              clients.map((client) => (
                 <Button
                   key={client.id}
                   variant="outline-primary"
@@ -30,7 +42,7 @@ function ClientSelectModal({ open, onClose, onSelect }) {
                 >
                   {client.name}
                 </Button>
-              ))
+              )) : null
             }
           </div>
         </Offcanvas.Body>

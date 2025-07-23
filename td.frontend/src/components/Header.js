@@ -5,16 +5,17 @@ import { useMsal } from '@azure/msal-react';
 import { useEffect, useState } from 'react';
 import ClientSelectModal from './ClientSelectModal';
 import { useGlobalData } from '../services/GlobalContext';
-import { userInitials } from '../Utility';
+import { getInitials } from '../Utility';
 import ToolTipOverlay from './ToolTipOverlay';
 
 const Header = () => {
   const { accounts } = useMsal();
   const [show, setShow] = useState(false);
-  const [clientName, setClientName] = useState('')
+  const [clientName, setClientName] = useState('');
+  const [user, setUser] = useState([]);
   const pathName = window.location.pathname;
-  const initials = accounts.length > 0 ? userInitials(accounts[0].name) : '';
-  const {allClients, currentClientId, isAdmin} = useGlobalData(); 
+  const initials = accounts.length > 0 ? getInitials(accounts[0].name) : '';
+  const {allClients, currentClientId, isAdmin, users} = useGlobalData(); 
   useEffect(() => {
     localStorage.setItem("userName", accounts[0].name);
     localStorage.setItem("userEmail", accounts[0].username);
@@ -22,7 +23,11 @@ const Header = () => {
       const client = allClients.find((client) => client.id.toString() === currentClientId.toString())
       if (client) setClientName(client.name);
     }
-  },[accounts, allClients, currentClientId])
+    const currentUser = users.filter((user) => user.email === accounts[0].username);
+    if (currentUser && currentUser.length > 0) {
+      setUser(currentUser);
+    }
+  },[accounts, allClients, currentClientId, users])
 
   const handleModalClick = (client) => {
     setShow(!show);
@@ -112,7 +117,7 @@ const Header = () => {
         </Navbar.Collapse>
       </Container>
       {
-        isAdmin ?
+        isAdmin || (user && user.length > 1) ?
           <ClientSelectModal open={show} onSelect={handleModalClick} onClose={handleModalClick} /> : null
       }
     </Navbar>

@@ -3,6 +3,7 @@ import { Accordion, Button, Modal } from 'react-bootstrap';
 import { useGlobalData } from '../services/GlobalContext';
 import { addClient, deleteClients, getClients } from '../services/API';
 import AddClientModal from '../components/AddClientModal';
+import { getInitials } from '../Utility';
 
 const Admin = () => {
   const [selectedClient, setSelectedClient] = useState(null);
@@ -86,7 +87,7 @@ const Admin = () => {
       </Accordion>
 
       {/* Modal */}
-      <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
+      <Modal show={showModal} onHide={() => setShowModal(false)} size="lg" centered>
         <Modal.Header closeButton>
           <Modal.Title>Client Details - {selectedClient?.name}</Modal.Title>
         </Modal.Header>
@@ -96,11 +97,13 @@ const Admin = () => {
               <p><strong>Client ID:</strong> {selectedClient.id}</p>
               <p><strong>Is Active:</strong> {selectedClient.isActive ? "Yes" : "No"}</p>
               <p><strong>Employees:</strong></p>
-              <ol>
+              <div className="row">
                 {selectedClient.employees.map((emp, index) => (
-                  <li key={index}>{emp.username}</li>
+                  <div key={index} className="col-6 mb-3">
+                  {index + 1}. {emp.username} {"(" + getInitials(emp.level)+ ")"}
+                  </div>
                 ))}
-              </ol>
+              </div>
             </>
           )}
         </Modal.Body>

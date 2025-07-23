@@ -61,6 +61,9 @@ const AllCases = () => {
       } finally{
         setLoading(false)
       }
+    }else{
+      setMasterData([]);
+      setLoading(false);
     }
     
   }, [currentClientId, user]);
