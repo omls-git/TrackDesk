@@ -34,8 +34,16 @@ export const getDaysOpen = (row) => {
 export const jsonDataFromFile = async(file) =>{
   const data = await file.arrayBuffer();
   const workbook = XLSX.read(data, { type: 'buffer' });
-  const worksheet = workbook.Sheets["Open Cases"] || workbook.Sheets["Current Status"];
+  const worksheet = workbook.Sheets["Open Cases"] || workbook.Sheets["Current Status"];  
+  if(!worksheet){
+    alert(`No "Open Cases" or "Current Status" sheet were found in the imported file. Please check the file content and try again.`);
+    return
+  }
   let jsonData = XLSX.utils.sheet_to_json(worksheet, {defval: "" });
+  if(jsonData.length === 0){
+    alert("No Cases found in selected file")
+    return
+  }
   return jsonData
 }
 

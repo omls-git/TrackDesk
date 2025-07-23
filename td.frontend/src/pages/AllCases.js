@@ -19,8 +19,8 @@ const AllCases = () => {
   const [loading, setLoading] = useState(false)
   const handleImportFile = async (file) => {
     if (!file) return;
-    let jsonData = await jsonDataFromFile(file);
-
+    let jsonData = await jsonDataFromFile(file);    
+    if(!jsonData || jsonData.length === 0)return;
     const isProbablyDate = (val) =>
       typeof val === 'number' && val > 25569 && val < 60000; // Excel date serial range
     jsonData = jsonData.map(row => {
