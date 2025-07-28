@@ -33,9 +33,11 @@ const AllCases = () => {
         })
       );
     });
+    console.log(jsonData);
+    
     await postCases(jsonData, selectedClientId)
-    await fetchAllCasesCallback();
-    handleClose();
+    // await fetchAllCasesCallback();
+    // handleClose();
   };
 
   const handleExport = () => {

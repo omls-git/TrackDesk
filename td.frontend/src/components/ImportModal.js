@@ -60,7 +60,7 @@ const ImportModal = (props) => {
               type="file"
               className="form-control"
               id="excelFile"
-              accept=".xlsx, .xls"
+              accept=".xlsx, .xls, .csv"
               onChange={(e) => setFile(e.target.files[0])}
             />
           </div>  

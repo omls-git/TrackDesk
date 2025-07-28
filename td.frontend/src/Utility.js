@@ -32,16 +32,29 @@ export const getDaysOpen = (row) => {
 };
 
 export const jsonDataFromFile = async(file) =>{
+  const fileExtension = file.name.split('.').pop().toLowerCase();
   const data = await file.arrayBuffer();
-  const workbook = XLSX.read(data, { type: 'buffer' });
-  const worksheet = workbook.Sheets["Open Cases"] || workbook.Sheets["Current Status"];  
+  let workbook;
+  if(fileExtension === 'csv'){
+    const text = new TextDecoder("utf-8").decode(data);
+    workbook = XLSX.read(text, { type: "string" });
+  }else{
+    workbook = XLSX.read(data, { type: 'buffer' });  
+  } 
+  // const worksheet = workbook.Sheets["Open Cases"] || workbook.Sheets["Current Status"] || workbook.SheetNames[0];
+  const sheetName = workbook.SheetNames.includes("Open Cases")
+  ? "Open Cases"
+  : workbook.SheetNames.includes("Current Status")
+  ? "Current Status"
+  : workbook.SheetNames[0];
+  const worksheet = workbook.Sheets[sheetName]
   if(!worksheet){
     alert(`No "Open Cases" or "Current Status" sheet were found in the imported file. Please check the file content and try again.`);
     return
   }
   let jsonData = XLSX.utils.sheet_to_json(worksheet, {defval: "" });
   if(jsonData.length === 0){
-    alert("No Cases found in selected file")
+    alert("No Cases found in selected file.")
     return
   }
   return jsonData
