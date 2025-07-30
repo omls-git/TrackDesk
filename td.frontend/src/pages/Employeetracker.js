@@ -119,7 +119,6 @@ function EmployeeTracker() {
             refreshData={fetchEmployees} 
             selectedEmployeeIds={selectedEmployeeIds} 
             setSelectedEmployeeIds={setSelectedEmployeeIds} />
-            {/* Show Modal if modalIsOpen is true */}
             {modalIsOpen && (
                 <EmployeeModal
                     show={modalIsOpen}

@@ -145,6 +145,26 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: true
     },
+    triageAssignedTo: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    triageStatus: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    triageAssignedAt: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    triageStartedAt: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    triageCompletedAt: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
     createdOn: {
       type: DataTypes.DATE,
       defaultValue: null,

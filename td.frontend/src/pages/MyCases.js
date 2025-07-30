@@ -6,10 +6,14 @@ import Skeleton from '../components/Skeleton'
 import { getDaysOpen } from '../Utility'
 import { Type } from 'react-bootstrap-table2-editor'
 import { getClientAssigniesOfRole } from '../services/Common'
+import { Tabs, Tab } from 'react-bootstrap';
+import '../styles/MyCases.css'; 
 
 const MyCases = () => {
   const [myCases, setMyCases] = useState([])
+  const [myTriageCases, setMyTriageCases] = useState([])
   const [selectedMyCases, setSelectedMyCases] = useState([]);
+  const [activeTab, setActiveTab] = useState('cases')
   const { loggedUserName, allClients, currentClientId,isAdmin, isManager, users,user } = useGlobalData();
   const [loading, setLoading] = useState(false);
   const [des, setDes] = useState([]);
@@ -39,6 +43,10 @@ const MyCases = () => {
             const myCases = allCases.filter(caseItem => caseItem.mr === loggedUserName
             && (caseItem.completedDateMr === null || caseItem.completedDateMr === ''));
             setMyCases(myCases);
+          }
+          if(user.assignTriage){
+            const triageCases = allCases.filter(caseItem => caseItem.triageAssignedTo === loggedUserName 
+              && (caseItem.triageCompletedAt === null || caseItem.triageCompletedAt === ''));
           }
         }
       }
@@ -341,19 +349,47 @@ const MyCases = () => {
       }
     ]; 
   return (
-    <div className='mt-2'>
-      <h4>My Cases</h4>
-      {loading && <Skeleton />}
-      {myCases.length > 0 && !loading ? (
-        <TrackTable data={myCases} cols={columns}
-        setSelectedCaseIds={setSelectedMyCases} 
-        selectedCaseIds={selectedMyCases}
-        clients={allClients}
-        setData={setMyCases}
-        refreshData={fetchData} />
-      ) : null}
-      {!loading && myCases.length === 0 &&  <h4 className="text-center mb-4">No Cases Assigned</h4>}
-    </div>
+      <Tabs
+        activeKey={activeTab}
+        onSelect={(k) => setActiveTab(k)}
+        className="cases-tabs mt-2"
+      >
+        <Tab eventKey="cases" title="Cases">
+          {loading && <Skeleton />}
+          {myCases.length > 0 && !loading ? (
+            <TrackTable
+              data={myCases}
+              cols={columns}
+              setSelectedCaseIds={setSelectedMyCases}
+              selectedCaseIds={selectedMyCases}
+              clients={allClients}
+              setData={setMyCases}
+              refreshData={fetchData}
+            />
+          ) : null}
+          {!loading && myCases.length === 0 && (
+            <h4 className="text-center mb-4">No Cases Assigned</h4>
+          )}
+        </Tab>
+        <Tab eventKey="triagecases" title="Triage Cases">
+          {/* <h4 className="text-center mb-4">Triage Cases Coming Soon</h4> */}
+          {loading && <Skeleton />}
+          {myCases.length > 0 && !loading ? (
+            <TrackTable
+              data={myCases.filter((myCase) => myCase.caseStatus === 'Triage')}
+              cols={columns}
+              setSelectedCaseIds={setSelectedMyCases}
+              selectedCaseIds={selectedMyCases}
+              clients={allClients}
+              setData={setMyCases}
+              refreshData={fetchData}
+            />
+          ) : null}
+          {!loading && myCases.length === 0 && (
+            <h4 className="text-center mb-4">No Cases Assigned</h4>
+          )}
+        </Tab>
+      </Tabs>
   )
 }
 

@@ -1,5 +1,5 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Navbar, Container, Nav, Button } from 'react-bootstrap';
+import { Navbar, Container, Nav } from 'react-bootstrap';
 import '../styles/Header.css'; 
 import { useMsal } from '@azure/msal-react';
 import { useEffect, useState } from 'react';
@@ -7,13 +7,13 @@ import ClientSelectModal from './ClientSelectModal';
 import { useGlobalData } from '../services/GlobalContext';
 import { getInitials } from '../Utility';
 import ToolTipOverlay from './ToolTipOverlay';
+import { NavLink } from 'react-router-dom';
 
 const Header = () => {
   const { accounts } = useMsal();
   const [show, setShow] = useState(false);
   const [clientName, setClientName] = useState('');
   const [user, setUser] = useState([]);
-  const pathName = window.location.pathname;
   const initials = accounts.length > 0 ? getInitials(accounts[0].name) : '';
   const {allClients, currentClientId, isAdmin, users} = useGlobalData(); 
   useEffect(() => {
@@ -42,14 +42,12 @@ const Header = () => {
       <Container fluid>
         <Navbar.Toggle aria-controls="responsive-navbar-nav" className="order-1" />
         <div className="d-flex d-sm-none ms-auto align-items-center order-2">
-          <Nav.Link
-            as={Button}
-            variant="outline-light"
-            className={(pathName === "/admin" ? "active": "") + " me-2"}
-            href="/admin"
+          <NavLink
+            className={({ isActive }) => (isActive ? 'active ' : '') + 'me-2'}
+            to="/admin"
           >
             Admin
-          </Nav.Link>
+          </NavLink>
           <span className="profile" >{initials}</span>
         </div>
         <Navbar.Collapse id="responsive-navbar-nav" className="order-3">
@@ -63,53 +61,48 @@ const Header = () => {
                 </h6>
               ) : null
             }
-          <Nav className="me-auto">
-            <Nav.Link
-              as={Button}
-              variant="outline-light"
-              className={(pathName === "/" ? "active": "") + " me-2 mb-2 mb-lg-0"}
-              href="/"
+          <Nav className="me-auto nav nav-tabs">
+            <NavLink
+              className={({ isActive }) => (isActive ? 'active ' : '') + 'mb-2 mb-lg-0 nav-item nav-link'}
+              to="/"
             >
               Dashboard
-            </Nav.Link>
-            <Nav.Link
-              as={Button}
-              variant="outline-light"
-              className={(pathName === "/all-cases" ? "active": "") + " me-2 mb-2 mb-lg-0"}
-              href="/all-cases"
+            </NavLink>
+            <NavLink
+              className={({ isActive }) => (isActive ? 'active ' : '') + 'mb-2 mb-lg-0 nav-item nav-link'}
+              to="/all-cases"
               
             >
               All Cases
-            </Nav.Link>
-            <Nav.Link
-              as={Button}
-              variant="outline-light"
-              className={(pathName === "/my-cases" ? "active": "") + " me-2 mb-2 mb-lg-0"}
-              href="/my-cases"
+            </NavLink>
+            <NavLink
+              className={({ isActive }) => (isActive ? 'active ' : '') + 'mb-2 mb-lg-0 nav-item nav-link'}
+              to="/my-cases"
               
             >
               My Cases
-            </Nav.Link>
-            <Nav.Link
-              as={Button}
-              variant="outline-light"
-              className={(pathName === "/employees" ? "active": "") + " me-2 mb-2 mb-lg-0"}
-              href="/employees"
-              
+            </NavLink>
+            <NavLink
+              className={({ isActive }) => (isActive ? 'active ' : '') + 'nav-item nav-link'}
+              to="/traige-cases"
+            >
+              Triage Cases
+            </NavLink>
+            <NavLink
+              className={({ isActive }) => (isActive ? 'active ' : '') + 'nav-item nav-link'}
+              to="/employees"              
             >
               Employee Tracker
-            </Nav.Link>
+            </NavLink>
           </Nav>
-          <Nav className="ms-auto align-items-center d-none d-sm-flex">
-            <Nav.Link
-              as={Button}
-              variant="outline-light"
-              className={(pathName === "/admin" ? "active" : "") + " me-2"}
-              href="/admin"
+          <Nav className="ms-auto align-items-center d-none d-sm-flex nav-tabs">
+            <NavLink
+              className={({ isActive }) => (isActive ? 'active ' : '') + 'nav-item nav-link'}
+              to="/admin"
               
             >
               Admin
-            </Nav.Link>
+            </NavLink>
             <span className="profile" >
               <ToolTipOverlay initials={initials} account={accounts[0]} />
             </span>
