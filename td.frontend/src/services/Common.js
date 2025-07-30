@@ -32,17 +32,26 @@ export const caseAllocation = async(cases, existingAllCases, clientId) => {
       count ? mr.push({ username: assigny.username, count }) : mr.push({ username: assigny.username, count: 0 });
     });
 
+    const triageAssignees = clientAssignies.filter((item) => item.assignTriage && !item.onLeave);
+    let triagees = [];
+    triageAssignees.forEach(assigny => {
+      const count = existingAllCases?.filter(item => item.triageAssignedTo === assigny.username && !item.triageCompletedAt).length;
+      count ? qr.push({ username: assigny.username, count, maxCount: 40 }) : qr.push({ username: assigny.username, count: 0, maxCount: 40 });
+    });
+
     const dataEntryCases = cases.filter(item => item["Case Status"].toLowerCase().trim() === "data entry");
     const qualityReviewCases = cases.filter(item => item["Case Status"].toLowerCase().trim() === "quality review");
     const medicalReviewCases = cases.filter(item => item["Case Status"].toLowerCase().trim() === "medical review");
-    const remainingCases = cases.filter(item => !["data entry", "quality review", "medical review"].includes(item["Case Status"].toLowerCase().trim()));
+    const triageCases = cases.filter(item => item["Case Status"].toLowerCase().trim() === "triage");
+    const remainingCases = cases.filter(item => !["data entry", "quality review", "medical review", "triage"].includes(item["Case Status"].toLowerCase().trim()));
 
     const dateEntryAssignedCases = employeesToAssign(de, dataEntryCases, "de", clientId);
     const qualityReviewAssignedCases = employeesToAssign(qr, qualityReviewCases, "qr", clientId);
     const medicalReviewAssignedCases = employeesToAssign(mr, medicalReviewCases, "mr", clientId);
+    const triageAssignedCases = employeesToAssign(triagees, triageCases, "triage", clientId)
 
 
-    const assignedCases = [...dateEntryAssignedCases, ...qualityReviewAssignedCases, ...medicalReviewAssignedCases, ...remainingCases.map(item => mapCaseToApiFormat(item, clientId))];
+    const assignedCases = [...dateEntryAssignedCases, ...qualityReviewAssignedCases, ...medicalReviewAssignedCases, triageAssignedCases, ...remainingCases.map(item => mapCaseToApiFormat(item, clientId))];
     console.log(assignedCases)
     return assignedCases;
 
@@ -192,6 +201,45 @@ export const employeesToAssign = (assignees, cases, role, projectId) => {
       }
     }
     return mrAssignedCases;
+  }
+
+  if(role === "triage"){
+    const triageCases = cases;
+    let triageAssignedCases = [];
+    let triageIndex = 0;
+    for (let i = 0; i < triageCases.length; i++) {
+      const currentCase = mapCaseToApiFormat(triageCases[i], projectId);
+      let assigned = false;
+      let attempts = 0;
+      while (!assigned && attempts < 40) {
+        const assignee = assignees[triageIndex];
+        if( assignee.count < assignee.maxCount) {
+          triageAssignedCases.push({
+            ...currentCase,
+            triageAssignedTo: assignee.username,
+            triageStatus: "Assigned",
+            triageAssignedAt: formattedIST(),
+          });
+          assignee.count++;
+          assigned = true;
+        }
+        triageIndex = (triageIndex + 1) % assignees.length;
+        attempts++;
+
+      }
+      if(!assigned){
+        triageAssignedCases.push({
+          ...currentCase,
+          triageAssignedTo: '',
+          triageStatus: '',
+          triageAssignedAt : null,
+        });
+        triageIndex = (triageIndex + 1) % assignees.length;
+      }
+      
+    }
+    return triageAssignedCases;
+  
   }
 
 }

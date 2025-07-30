@@ -1,0 +1,8 @@
+.cases-tabs .nav-link {
+  color: black;
+  background: transparent;
+  border-radius: 0.5rem 0.5rem 0 0;
+  transition: background-color 0.3s ease;
+  border-bottom: 1px solid rgb(212, 209, 209);
+  margin: 0;
+}

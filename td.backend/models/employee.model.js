@@ -29,6 +29,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false
     },
+    assignTriage:{
+      type: DataTypes.BOOLEAN,
+      defaultValue:false
+    },
     createdOn: {
       type: DataTypes.DATE,
       defaultValue: null,

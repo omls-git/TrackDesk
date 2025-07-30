@@ -1,0 +1,15 @@
+/* Remove hover background for the toggle */
+.role-dropdown .dropdown-toggle {
+  color: black;
+
+}
+
+/* Optional: Remove blue outline */
+.role-dropdown .dropdown-toggle:focus {
+  box-shadow: none;
+}
+
+/* Style dropdown items (checkboxes) to indent them */
+.role-dropdown .dropdown-checkbox {
+  padding-left: 2rem !important;
+}

@@ -165,6 +165,11 @@ export const updateCase = async (item) => {
     Partner: item.Partner,
     modifiedOn: formattedIST(),
     modifiedBy: localStorage.getItem("userName") || "",
+    triageAssignedTo: item.triageAssignedTo,
+    triageAssignedAt: formatDate(item.triageAssignedAt),
+    triageStatus: item.triageStatus,
+    triageStartedAt: formatDate(item.triageStartedAt),
+    triageCompletedAt: formatDate(item.triageCompletedAt),
     isCaseOpen: item.isCaseOpen
   }
   try {
