@@ -9,25 +9,28 @@ import { useGlobalData } from '../services/GlobalContext';
 function EmployeeTracker() {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [employees, setEmployees] = useState([]);
+  const [allEmployees, setAllEmployees] = useState([]);
    const [clients, setClients] = useState([]);
    const [searchTerm, setSearchTerm] = useState("");
    const [selectedEmployeeIds, setSelectedEmployeeIds] = useState([]);
    const [isAdminOrManager, setIsAdminOrManager] = useState(false);
-    const { loggedUserName } = useGlobalData();
+    const {  isAdmin, isManager, currentClientId } = useGlobalData();
 
   const fetchEmployees = useCallback(async () => {
     try {
-      const employeeList = await getEmployees();
-      const userDetails = employeeList.find((item) => item.username === loggedUserName);
-      console.log("User Details", userDetails, employeeList);
-      if(userDetails?.permission.trim() === "Admin" || userDetails?.permission.trim() === "Manager"){
+      let employeeList = await getEmployees();
+      if(isAdmin || isManager){
         setIsAdminOrManager(true)
       }
+      if(employeeList){
+        employeeList = employeeList.filter((employee) => employee.projectId.toString() === currentClientId.toString())
+      }
       setEmployees(employeeList);
+      setAllEmployees(employeeList);
     } catch (error) {
       console.error('Error fetching employees:', error);
     }
-  },[loggedUserName]);
+  },[currentClientId, isAdmin, isManager]);
 
   useEffect(() => {    
      async function fetchClients() {
@@ -47,12 +50,13 @@ function EmployeeTracker() {
     const term = e.target.value
     setSearchTerm(term);
     if (term.trim() === "") {
-      fetchEmployees();
+      setEmployees(allEmployees);
     } else {
-      const filtered = employees.filter(emp =>
+      const filtered = allEmployees.filter(emp =>
         Object.values(emp)
-          .some(value => String(value).toLocaleLowerCase().includes(term))
+          .some(value => String(value).toLocaleLowerCase().includes(term.toLocaleLowerCase()))
       );
+      
       setEmployees(filtered);
     }
   };
@@ -81,7 +85,7 @@ function EmployeeTracker() {
                 />
                 {searchTerm && (
                   <span
-                    onClick={() => setSearchTerm('')}
+                    onClick={() => {setSearchTerm('');fetchEmployees()}}
                     style={{
                       position: 'relative',
                       right: '40px',
@@ -115,7 +119,6 @@ function EmployeeTracker() {
             refreshData={fetchEmployees} 
             selectedEmployeeIds={selectedEmployeeIds} 
             setSelectedEmployeeIds={setSelectedEmployeeIds} />
-            {/* Show Modal if modalIsOpen is true */}
             {modalIsOpen && (
                 <EmployeeModal
                     show={modalIsOpen}

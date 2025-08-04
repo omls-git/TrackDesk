@@ -52,29 +52,30 @@ export const postCases = async (cases, clientId) => {
   const selectedClientAllCases = allCases?.filter((item) => item.project_id.toString() === clientId.toString());
 
   const assignedCases = await caseAllocation(sortCasesByPriority, selectedClientAllCases, clientId);
+console.log(assignedCases);
 
   // const clients = await getClients();
 
   // const selectedClient = clients.find((item) => item.id.toString() === clientId.toString());
 
-  assignedCases.map(async (item) => {
-  const caseNumber = item.caseNumber;
-  if(caseNumber){
-      const existingCase = selectedClientAllCases?.find((item) => item.caseNumber === caseNumber)
-      // console.log("Existed case", res.data)
-      if(existingCase){        
-        console.log(`case already exists in ${clientId} with`, caseNumber );
-      }else{
-        try {
-          const body = item; 
-          const res = await axios.post(`${API_URL}/cases/`, body)
-          return res
-        } catch (error) {
-          console.error('error', error);
-        }
-      }
-  }
- })
+//   assignedCases.map(async (item) => {
+//   const caseNumber = item.caseNumber;
+//   if(caseNumber){
+//       const existingCase = selectedClientAllCases?.find((item) => item.caseNumber === caseNumber)
+//       // console.log("Existed case", res.data)
+//       if(existingCase){        
+//         console.log(`case already exists in ${clientId} with`, caseNumber );
+//       }else{
+//         try {
+//           const body = item; 
+//           const res = await axios.post(`${API_URL}/cases/`, body)
+//           return res
+//         } catch (error) {
+//           console.error('error', error);
+//         }
+//       }
+//   }
+//  })
 }
 
 export const getEmployees = async () => {
@@ -133,9 +134,7 @@ export const getClients = async () => {
 }
 
 export const updateCase = async (item) => {
-  const formatDate = (date) =>
-    date ? formattedIST(date)  : null;
-// new Date(date).toISOString().slice(0, 19).replace("T", " ")
+  const formatDate = (date) => date ? formattedIST(date) : null;
   const updatedCase = {
     project_id: item.project_id,
     casesOpen: item.casesOpen,
@@ -145,17 +144,32 @@ export const updateCase = async (item) => {
     assignedDateDe: formatDate(item.assignedDateDe),
     completedDateDE: formatDate(item.completedDateDE),
     de: item.de,
+    deStatus: item.deStatus,
+    deStartedAt: formatDate(item.deStartedAt),
     assignedDateQr: formatDate(item.assignedDateQr),
     completedDateQR: formatDate(item.completedDateQR),
     qr: item.qr,
+    qrStartedAt: formatDate(item.qrStartedAt),
+    qrStatus: item.qrStatus,
     assignedDateMr: formatDate(item.assignedDateMr),
     completedDateMr: formatDate(item.completedDateMr),
     mr: item.mr,
+    mrStatus: item.mrStatus,
+    mrStartedAt: formatDate(item.mrStartedAt),
     caseStatus: item.caseStatus,
     reportability: item.reportability,
     seriousness: item.seriousness,
     live_backlog: item.live_backlog,
     comments: item.comments,
+    Country : item.Country,
+    Partner: item.Partner,
+    modifiedOn: formattedIST(),
+    modifiedBy: localStorage.getItem("userName") || "",
+    triageAssignedTo: item.triageAssignedTo,
+    triageAssignedAt: formatDate(item.triageAssignedAt),
+    triageStatus: item.triageStatus,
+    triageStartedAt: formatDate(item.triageStartedAt),
+    triageCompletedAt: formatDate(item.triageCompletedAt),
     isCaseOpen: item.isCaseOpen
   }
   try {
@@ -211,6 +225,7 @@ export const updateToNext = async (updatedCase) => {
       if(nextAvailableUserName.maxCount > nextAvailableUserName.count){
         updatedCase.de = nextAvailableUserName.username;
         updatedCase.assignedDateDe = formattedIST()
+        updatedCase.deStatus = "Assigned";
         updatedCase.isCaseOpen = true
         modifiedNameDate(updatedCase)
       }else{
@@ -222,8 +237,9 @@ export const updateToNext = async (updatedCase) => {
       if(nextAvailableUserName.maxCount > nextAvailableUserName.count){
       updatedCase.qr = nextAvailableUserName.username
       updatedCase.assignedDateQr = formattedIST()
-      updatedCase.completedDateDE = formattedIST()
+      updatedCase.completedDateDE = formattedIST()      
       updatedCase.isCaseOpen = true
+      updatedCase.qrStatus = "Assigned";
       modifiedNameDate(updatedCase)
       }else{
         isUpdated = false
@@ -235,12 +251,13 @@ export const updateToNext = async (updatedCase) => {
       updatedCase.assignedDateMr = formattedIST()
       updatedCase.completedDateQR = formattedIST()
       updatedCase.isCaseOpen = true
+      updatedCase.mrStatus = "Assigned";
       modifiedNameDate(updatedCase)
     }
    
     if(updatedCase.caseStatus.toLowerCase().trim() === "reporting"){
       updatedCase.completedDateMr = formattedIST()
-      updatedCase.isCaseOpen = false
+      updatedCase.isCaseOpen = false      
       modifiedNameDate(updatedCase)
     }
 

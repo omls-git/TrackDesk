@@ -32,11 +32,23 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DATE,
       allowNull: true
     },
+    deStartedAt:{
+      type: DataTypes.DATE,
+      allowNull: true
+    },
     de: {
       type: DataTypes.STRING,
       allowNull: true
     },
+    deStatus:{
+      type: DataTypes.STRING,
+      allowNull: true
+    },
     assignedDateQr: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    qrStartedAt: {
       type: DataTypes.DATE,
       allowNull: true
     },
@@ -48,7 +60,15 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: true
     },
+    qrStatus: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
     assignedDateMr: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    mrStartedAt: {
       type: DataTypes.DATE,
       allowNull: true
     },
@@ -57,6 +77,10 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true
     },
     mr: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    mrStatus: {
       type: DataTypes.STRING,
       allowNull: true
     },
@@ -107,6 +131,38 @@ module.exports = (sequelize, DataTypes) => {
     },
     XML_Non_XML: {
       type: DataTypes.STRING(50),
+      allowNull: true
+    },
+    ORD:{
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    Country:{
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    Partner:{
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    triageAssignedTo: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    triageStatus: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    triageAssignedAt: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    triageStartedAt: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    triageCompletedAt: {
+      type: DataTypes.DATE,
       allowNull: true
     },
     createdOn: {

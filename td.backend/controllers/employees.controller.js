@@ -6,17 +6,24 @@ const Employees = dB.employeeTracker;
 exports.create = async (req, res) => {
   try {
     const createdOn = extractedDate;
-    const { username, email, projectId, level, permission, createdBy } = req.body;
-    // Assume formattedIST is a util function imported elsewhere
+    const { username, email, projectId, level, permission, createdBy, assignTriage } = req.body;
+    const existingEmployee = await Employees.findOne({
+      where: { email, projectId }
+    });
+    if (existingEmployee) {
+      return res.status(409).json({ message: "Employee in projectId already exists." });
+    }
     const employee = await Employees.create({
       username,
       email,
       projectId,
       level,
       permission,
+      assignTriage,
       createdBy,
       createdOn
     });
+    
     res.status(201).json(employee);
   } catch (error) {
     res.status(500).send(error.message);
@@ -28,7 +35,7 @@ exports.findAll = async (req, res) => {
     const employees = await Employees.findAll();
     res.json(employees);
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send(error);
   }
 };
 

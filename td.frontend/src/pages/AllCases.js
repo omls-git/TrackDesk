@@ -1,30 +1,26 @@
 import React, { useEffect, useState } from 'react'
-import * as XLSX from 'xlsx';
 import TrackTable from '../components/TrackTable';
 import ImportModal from '../components/ImportModal';
 import { deleteCases,fetchCasesByClientId, postCases } from '../services/API';
-import { jsonDataFromFile, parseExcelDate } from '../Utility';
+import { exportToCSV, jsonDataFromFile, parseExcelDate } from '../Utility';
 import { useGlobalData } from '../services/GlobalContext';
 import Skeleton from '../components/Skeleton';
 
 const AllCases = () => {
 
+  const { loggedUserName, users, user, allClients, currentClientId} = useGlobalData();
   const [masterData, setMasterData] = useState([]); 
   const [show, setShow] = useState(false);
-  // const [columns, setColumns] = useState([]);
-  const [selectedClientId, setSelectedClientId] = useState(null)
+  const [selectedClientId, setSelectedClientId] = useState(currentClientId || '');
   const [selectedCases, setSelectedCases] = useState([]); 
   const [searchTerm, setSearchTerm] = useState('');
   const [isAdminOrManager, setIsAdminOrManager] = useState(false);
   const [dateRange, setDateRange] = useState({ from: '', to: '' });
-  const { loggedUserName, users, user, allClients} = useGlobalData();
   const [loading, setLoading] = useState(false)
   const handleImportFile = async (file) => {
     if (!file) return;
-    let jsonData = await jsonDataFromFile(file)
-    // let headers = Object.keys(jsonData[0] || {});
-    // setColumns(headers);
-    // Convert Excel serial dates to JS date strings in all cells that look like dates
+    let jsonData = await jsonDataFromFile(file);    
+    if(!jsonData || jsonData.length === 0)return;
     const isProbablyDate = (val) =>
       typeof val === 'number' && val > 25569 && val < 60000; // Excel date serial range
     jsonData = jsonData.map(row => {
@@ -37,25 +33,28 @@ const AllCases = () => {
         })
       );
     });
-    // console.log(jsonData)
+    console.log(jsonData);
+    
     await postCases(jsonData, selectedClientId)
-    await fetchAllCasesCallback();
-    handleClose();
+    // await fetchAllCasesCallback();
+    // handleClose();
   };
 
   const handleExport = () => {
     if (!masterData.length) return;
-    const ws = XLSX.utils.json_to_sheet(masterData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Cases");
-    XLSX.writeFile(wb, "cases_export.xlsx");
+    let dataToDownload = masterData;
+
+    if(selectedCases && selectedCases.length > 0){
+      dataToDownload = dataToDownload.filter(item => selectedCases.includes(item.id));
+    }
+    exportToCSV(dataToDownload, `cases_${new Date().toISOString().slice(0, 10)}.csv`);
   };
 
   const fetchAllCasesCallback = React.useCallback(async () => {
     setLoading(true); 
     if(user){
       try {
-        const cases = await fetchCasesByClientId(user.projectId);
+        const cases = await fetchCasesByClientId(currentClientId);
         if (cases) {
            setMasterData(cases);
         }       
@@ -64,9 +63,12 @@ const AllCases = () => {
       } finally{
         setLoading(false)
       }
+    }else{
+      setMasterData([]);
+      setLoading(false);
     }
     
-  }, [user]);
+  }, [currentClientId, user]);
 
   useEffect(() => {
     async function fetchClientsAndCases() {
@@ -92,7 +94,7 @@ const AllCases = () => {
 
   const onClientChange =(e) => {
     const clientId = e?.target?.value;
-    clientId ? setSelectedClientId(e.target.value) : setSelectedClientId('')
+    clientId ? setSelectedClientId(e.target.value) : setSelectedClientId(currentClientId || '');
   }
 
   const deleteSelectedCases = async() => {
@@ -201,7 +203,7 @@ const AllCases = () => {
          >Delete {selectedCases.length ?'(' + selectedCases.length + ')' : ''}</button> : null }
         <button className="btn btn-success ms-auto"
          onClick={handleExport}
-         >Export</button>
+         >Export {selectedCases.length ?'(' + selectedCases.length + ')' : ''}</button>
          </div>
       </div>
       {loading && (
@@ -216,8 +218,14 @@ const AllCases = () => {
          setData={setMasterData}
          refreshData={fetchAllCasesCallback} />
       )}
-      <ImportModal show={show} onClose={handleClose} onShow={handleShow} title={"Import Master Tracker"} onFileChange={handleImportFile} selectedClient={selectedClientId}
-       onSelect={onClientChange} clients={allClients}/>
+      <ImportModal show={show}
+       onClose={handleClose}
+       onShow={handleShow}
+       title={"Import Master Tracker"}
+       onFileChange={handleImportFile} 
+       selectedClient={selectedClientId}
+       onSelect={onClientChange} clients={allClients}
+        />
     </div>
   )
 }

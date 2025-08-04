@@ -9,7 +9,7 @@ import { useGlobalData } from '../services/GlobalContext';
 
 const EmployeeTable = (props) => {
   const { data, clients } = props;
-  const { isManager, isAdmin, isUser, loggedUserName } = useGlobalData();
+  const { isManager, isAdmin } = useGlobalData();
   const isEditable = (cell,  row) => {
       const editable = (isManager|| isAdmin) ? true : false
       // console.log(isManager(row.project_id) , isAdmin(row.project_id))
@@ -25,16 +25,17 @@ const EmployeeTable = (props) => {
     },
     {
       dataField: 'level',
-      text: 'Level',
+      text: 'Role',
       width: 150,
       editable: isEditable,
-        editor : {
-          type: Type.SELECT,
-          options: [
-            { value: 'Data Entry', label: 'Data Entry' },
-            { value: 'Quality Review', label: 'Quality Review' },
-            { value: 'Medical Review', label: 'Medical Review' }
-          ],
+      editor : {
+        type: Type.SELECT,
+        options: [
+          { value: 'None', label: 'None' },
+          { value: 'Data Entry', label: 'Data Entry' },
+          { value: 'Quality Review', label: 'Quality Review' },
+          { value: 'Medical Review', label: 'Medical Review' }
+        ],
       },
     },
     {
@@ -74,6 +75,22 @@ const EmployeeTable = (props) => {
       }
     },
     {
+      dataField: 'assignTriage',
+      text: 'Assign Triage',
+      width: 150,
+      editable: true,
+      editor: {
+        type: Type.SELECT,
+        options: [
+          { value: 0, label: "No"},
+          { value: 1, label: 'Yes' }
+        ]
+      },
+      formatter: (cell, row) => {
+        return row.assignTriage ? 'Yes' : 'No';
+      }
+    },
+    ...(isAdmin || isManager ? [{
       dataField: 'permission',
       text: 'Permission',
       width: 150,
@@ -85,9 +102,8 @@ const EmployeeTable = (props) => {
           { value: 'Manager', label: 'Manager' },
           { value: 'User', label: 'User' }
         ]
-      }
-     
-    }
+      }     
+    }] : [])   
   ];
 
    const selectRowConfig = {

@@ -14,10 +14,10 @@ import Login from './Login';
 function App() {
   return (
     <div className="App">
-      <AuthenticatedTemplate>
-      <Header />
+      <AuthenticatedTemplate>      
       <div className="main-content">
         <Router>
+        <Header />
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/all-cases" element={<AllCases />} />

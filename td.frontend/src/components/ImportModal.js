@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 
 const ImportModal = (props) => {
- const {show, onClose, OnShow, title} = props;
+ const {show, onClose, title} = props;
  const [file, setFile] = useState(null); 
   const [error, setError] = useState('');
   const [warnMessage, setWarnMessage] = useState('');
@@ -43,7 +43,7 @@ const ImportModal = (props) => {
             <select
               className="form-select"
               id="clientSelect"
-              // value={props.selectedClient}
+              value={props.selectedClient}
               onChange={props.onSelect}
             >
               <option value="">Choose a client...</option>
@@ -60,7 +60,7 @@ const ImportModal = (props) => {
               type="file"
               className="form-control"
               id="excelFile"
-              accept=".xlsx, .xls"
+              accept=".xlsx, .xls, .csv"
               onChange={(e) => setFile(e.target.files[0])}
             />
           </div>  

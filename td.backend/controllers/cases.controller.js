@@ -45,9 +45,6 @@ exports.findByProject = async (req, res) => {
       return res.status(400).json({ error: 'project_id is required' });
     }
     const cases = await Cases.findAll({ where: { project_id } });
-    if (cases.length === 0) {
-      return res.status(404).json({ error: 'No cases found for this project_id' });
-    }
     res.json(cases);
   } catch (error) {
     res.status(500).send(error.message);
