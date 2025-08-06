@@ -185,6 +185,8 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: null,
       allowNull: true
     }
+  },{
+  timestamps: true
   });
 
   Cases.associate = (models) => {

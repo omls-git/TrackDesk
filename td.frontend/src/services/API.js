@@ -24,6 +24,16 @@ export const fetchAllOpenCases = async (isOpen) => {
   }
 };
 
+export const fetchClientOpenCases = async (isOpen,projectId) => {
+  try {
+    const response = await axios.get(`${API_URL}/cases`, {params:{data: isOpen, project_id : projectId}});
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching all open cases:', error);
+    // throw error;
+  }
+};
+
 export const fetchCaseById = async (id) => {
   try {
     const response = await axios.get(`${API_URL}/cases/${id}`);
@@ -44,15 +54,36 @@ export const fetchCasesByClientId = async (project_id) => {
   }
 };
 
-export const postCases = async (cases, clientId) => {
-  const sortCasesByPriority = cases.sort((a, b) => b["Cases open"] - a["Cases open"]);
+export const postCases = async (dataLL, clientId) => {
+ //Intake & Triage  -- Case Status --Case Status -- Case Num
+  let newCases = dataLL.filter((item) => item["Case Status"].toLowerCase().trim().includes('triage'))
+     
+  if(newCases.length){
+    const allCases = await fetchClientOpenCases(true, clientId); 
+    const existingTriageCases = allCases?.filter((item) => item.caseStatus.toLowerCase().trim().includes('triage'))
+    console.log(allCases);
+    
+    const assignedTriageCases = await caseAllocation(newCases, existingTriageCases, clientId);
+    
+    if(assignedTriageCases.length){      
+      try {
+        const res = await axios.post(`${API_URL}/cases/`, assignedTriageCases)
+       console.log(res);       
+      } catch (error) {
+        console.error('error', error);
+      }
+    }
+  }
 
-  const allCases = await fetchCasesByClientId(clientId);
 
-  const selectedClientAllCases = allCases?.filter((item) => item.project_id.toString() === clientId.toString());
+  // const sortCasesByPriority = importedLL.sort((a, b) => b["Cases open"] - a["Cases open"]);
 
-  const assignedCases = await caseAllocation(sortCasesByPriority, selectedClientAllCases, clientId);
-console.log(assignedCases);
+  // const allCases = await fetchCasesByClientId(clientId);
+
+//   const selectedClientAllCases = allCases?.filter((item) => item.project_id.toString() === clientId.toString());
+
+//   const assignedCases = await caseAllocation(sortCasesByPriority, selectedClientAllCases, clientId);
+// console.log(assignedCases);
 
   // const clients = await getClients();
 
@@ -170,6 +201,7 @@ export const updateCase = async (item) => {
     triageStatus: item.triageStatus,
     triageStartedAt: formatDate(item.triageStartedAt),
     triageCompletedAt: formatDate(item.triageCompletedAt),
+    ORD:formatDate(item.ORD),    
     isCaseOpen: item.isCaseOpen
   }
   try {
@@ -217,8 +249,21 @@ export const updateToNext = async (updatedCase) => {
   const selectedClientOpenCases = allOpenCases.filter(
     (item) => item.project_id.toString() === updatedCase.project_id.toString());
     // console.log(selectedClientOpenCases)
-  const [deAvailabe, qrAvailabe, mrAvailable] = userAssignedCasesCount(clientAssignies, selectedClientOpenCases);
-  console.log(deAvailabe, qrAvailabe, mrAvailable)
+  const [deAvailabe, qrAvailabe, mrAvailable, triageesAvailable] = userAssignedCasesCount(clientAssignies, selectedClientOpenCases);
+  console.log(deAvailabe, qrAvailabe, mrAvailable, triageesAvailable)
+
+   if(updatedCase.caseStatus.toLowerCase().trim().includes('triage')){
+      const nextAvailableUserName = triageesAvailable.sort((a,b) => a.count - b.count)[0]
+      if(nextAvailableUserName.maxCount > nextAvailableUserName.count){
+      updatedCase.triageAssignedTo = nextAvailableUserName.username
+      updatedCase.triageAssignedAt = formattedIST()    
+      updatedCase.isCaseOpen = true
+      updatedCase.triageStatus = "Assigned";
+      modifiedNameDate(updatedCase)
+      }else{
+        isUpdated = false
+      }
+    }
 
     if(updatedCase.caseStatus.toLowerCase().trim() === "data entry"){
       const nextAvailableUserName = deAvailabe.sort((a,b) => a.count - b.count)[0]
@@ -227,6 +272,7 @@ export const updateToNext = async (updatedCase) => {
         updatedCase.assignedDateDe = formattedIST()
         updatedCase.deStatus = "Assigned";
         updatedCase.isCaseOpen = true
+        updatedCase.triageCompletedAt = formattedIST()
         modifiedNameDate(updatedCase)
       }else{
         isUpdated = false

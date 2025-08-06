@@ -85,7 +85,8 @@ export const getInitials = (name) => {
 }
 
 export const exportToCSV = (data, filename) => {
-  const ws = XLSX.utils.json_to_sheet(data)
+  let mappedData = data.map((item) => {return{...item,casesOpen: getDaysOpen(item)} })
+  const ws = XLSX.utils.json_to_sheet(mappedData)
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Cases");
   XLSX.writeFile(wb, filename);

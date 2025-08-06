@@ -9,6 +9,7 @@ import MyCases from './pages/MyCases';
 import Employeetracker from './pages/Employeetracker';
 import Admin from './pages/Admin';
 import Login from './Login';
+import TriageCases from './pages/TriageCases';
 
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
             <Route path="/my-cases" element={<MyCases />} />
             <Route path="/employees" element={<Employeetracker />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/traige-cases" element={<TriageCases />} />
           </Routes>
         </Router>
       </div>

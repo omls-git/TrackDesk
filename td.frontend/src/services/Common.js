@@ -9,6 +9,8 @@ export const caseAllocation = async(cases, existingAllCases, clientId) => {
     console.error("No assignies found for the client to assign cases", clientId);
     return [];
   }
+
+  const today = new Date()
   
   const deAssiniees = clientAssignies.filter((item) => item.level.toLowerCase() === "data entry".toLowerCase() && !item.onLeave);
 
@@ -32,36 +34,42 @@ export const caseAllocation = async(cases, existingAllCases, clientId) => {
       count ? mr.push({ username: assigny.username, count }) : mr.push({ username: assigny.username, count: 0 });
     });
 
-    const triageAssignees = clientAssignies.filter((item) => item.assignTriage && !item.onLeave);
+    const triageAssignees = clientAssignies.filter((item) => item.assignTriage && !item.onLeave);    
+    
     let triagees = [];
     triageAssignees.forEach(assigny => {
-      const count = existingAllCases?.filter(item => item.triageAssignedTo === assigny.username && !item.triageCompletedAt).length;
-      count ? qr.push({ username: assigny.username, count, maxCount: 40 }) : qr.push({ username: assigny.username, count: 0, maxCount: 40 });
+      const count = existingAllCases?.filter(item => 
+        item.triageAssignedTo === assigny.username 
+        && !item.triageCompletedAt 
+        && item.triageAssignedAt?.split("T")[0] === today.toISOString().split("T")[0]).length;
+      count ? triagees.push({ username: assigny.username, count, maxCount: 40 }) : triagees.push({ username: assigny.username, count: 0, maxCount: 40 });
     });
 
     const dataEntryCases = cases.filter(item => item["Case Status"].toLowerCase().trim() === "data entry");
     const qualityReviewCases = cases.filter(item => item["Case Status"].toLowerCase().trim() === "quality review");
     const medicalReviewCases = cases.filter(item => item["Case Status"].toLowerCase().trim() === "medical review");
-    const triageCases = cases.filter(item => item["Case Status"].toLowerCase().trim() === "triage");
-    const remainingCases = cases.filter(item => !["data entry", "quality review", "medical review", "triage"].includes(item["Case Status"].toLowerCase().trim()));
+    const triageCases = cases.filter(item => item["Case Status"].toLowerCase().trim().includes('triage'));
+    const remainingCases = cases.filter(item => !["data entry", "quality review", "medical review", "triage", "intake & triage"].includes(item["Case Status"].toLowerCase().trim()));
 
     const dateEntryAssignedCases = employeesToAssign(de, dataEntryCases, "de", clientId);
     const qualityReviewAssignedCases = employeesToAssign(qr, qualityReviewCases, "qr", clientId);
     const medicalReviewAssignedCases = employeesToAssign(mr, medicalReviewCases, "mr", clientId);
     const triageAssignedCases = employeesToAssign(triagees, triageCases, "triage", clientId)
-
-
-    const assignedCases = [...dateEntryAssignedCases, ...qualityReviewAssignedCases, ...medicalReviewAssignedCases, triageAssignedCases, ...remainingCases.map(item => mapCaseToApiFormat(item, clientId))];
-    console.log(assignedCases)
+    const ramainingCasesToMap = remainingCases.map(item => mapCaseToApiFormat(item, clientId))
+    console.log(ramainingCasesToMap);
+    console.log(triageAssignedCases);    
+    
+    const assignedCases = [...dateEntryAssignedCases, ...qualityReviewAssignedCases, ...medicalReviewAssignedCases, ...triageAssignedCases, ...ramainingCasesToMap];
+    console.log(assignedCases);
+    
     return assignedCases;
-
 }
 
 
 export const mapCaseToApiFormat = (item, id) => ({
   project_id: parseInt(id),
   casesOpen: item["Cases open"] || item["Days open"] || 0,
-  caseNumber: item["Case Number"] || item["Case ID"] || "",
+  caseNumber: item["Case Number"] || item["Case ID"] || item["Case Num"] || "",
   initial_fup_fupToOpen: item["Initial/FUP/FUP to Open (FUOP)"] || item["Initial/FUP"] || "",
   ird_frd: item["IRD/FRD"],
   assignedDateDe: item["Assigned Date (DE)"] ? item["Assigned Date (DE)"] : null ,
@@ -85,7 +93,7 @@ export const mapCaseToApiFormat = (item, id) => ({
   Source: item["Source"] || "",
   ReportType: item["Report Type"] || item["Report type"] || "",
   XML_Non_XML: item["XML/Non-XML"] || "",
-  ORD: item["ORD"] || "",
+  ORD: item["ORD"] || null,
   Country: item["Country"] || "",
   Partner: item["Partner"] || "",
   createdOn: formattedIST(),
@@ -244,12 +252,22 @@ export const employeesToAssign = (assignees, cases, role, projectId) => {
 
 }
 
-export const getClientAssigniesOfRole = async (role, clientId) => {
-  const assignies = await getEmployees();
-  const clientAssigniesOfRole = assignies.filter((item) =>!item.onLeave && item.level.toLowerCase() === role.toLowerCase() && item.projectId.toString() === clientId.toString());
+export const getClientAssigniesOfRole = (role, clientId, assignies) => {
+  let clientAssigniesOfRole;
+  if(role === "triage"){
+    clientAssigniesOfRole = assignies.filter((item) => 
+    !item.onLeave 
+    && item.assignTriage
+    && item.projectId.toString() === clientId.toString());
+  }else {
+    clientAssigniesOfRole = assignies.filter((item) => 
+    !item.onLeave 
+    && item.level.toLowerCase() === role.toLowerCase() 
+    && item.projectId.toString() === clientId.toString());
+  }
   
   if (clientAssigniesOfRole.length === 0) {
-    console.error("No assignies found for the client to assign cases");
+    console.error("No assignies found for the client to assign cases", role);
     return [];
   }
 
@@ -266,7 +284,6 @@ export const userAssignedCasesCount = (clientAssignies, existingAllCases) => {
    const today = new Date()
     deAssiniees.forEach(assigny => {
       const count = existingAllCases?.filter(item => item.de === assigny.username && !item.completedDateDE && item.assignedDateDe?.split("T")[0] === today.toISOString().split("T")[0]).length;
-      console.log("deCount", count);
       
       count ? deAvailabe.push({ username: assigny.username, count, maxCount: 8 }) : deAvailabe.push({ username: assigny.username, count: 0, maxCount: 8 });
     });
@@ -285,5 +302,16 @@ export const userAssignedCasesCount = (clientAssignies, existingAllCases) => {
       count ? mrAvailable.push({ username: assigny.username, count }) : mrAvailable.push({ username: assigny.username, count: 0 });
     });
 
-    return [deAvailabe, qrAvailabe, mrAvailable]
+     const triageAssignees = clientAssignies.filter((item) => item.assignTriage && !item.onLeave);
+    
+    let triageesAvailable = [];
+    triageAssignees.forEach(assigny => {
+      const count = existingAllCases?.filter(item => 
+        item.triageAssignedTo === assigny.username 
+        && !item.triageCompletedAt 
+        && item.triageAssignedAt?.split("T")[0] === today.toISOString().split("T")[0]).length;
+      count ? triageesAvailable.push({ username: assigny.username, count, maxCount: 40 }) : triageesAvailable.push({ username: assigny.username, count: 0, maxCount: 40 });
+    });
+
+    return [deAvailabe, qrAvailabe, mrAvailable, triageesAvailable]
 }
