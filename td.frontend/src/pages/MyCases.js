@@ -8,12 +8,12 @@ import { Type } from 'react-bootstrap-table2-editor'
 import { getClientAssigniesOfRole } from '../services/Common'
 import { Tabs, Tab } from 'react-bootstrap';
 import '../styles/MyCases.css'; 
+import TriageCases from './TriageCases'
 
 const MyCases = () => {
   const [myCases, setMyCases] = useState([])
-  const [myTriageCases, setMyTriageCases] = useState([])
   const [selectedMyCases, setSelectedMyCases] = useState([]);
-  const [activeTab, setActiveTab] = useState('cases')
+  const [activeTab, setActiveTab] = useState('triagecases')
   const { loggedUserName, allClients, currentClientId,isAdmin, isManager, users,user } = useGlobalData();
   const [loading, setLoading] = useState(false);
   const [des, setDes] = useState([]);
@@ -44,10 +44,6 @@ const MyCases = () => {
             && (caseItem.completedDateMr === null || caseItem.completedDateMr === ''));
             setMyCases(myCases);
           }
-          if(user.assignTriage){
-            const triageCases = allCases.filter(caseItem => caseItem.triageAssignedTo === loggedUserName 
-              && (caseItem.triageCompletedAt === null || caseItem.triageCompletedAt === ''));
-          }
         }
       }
     } catch (error) {
@@ -60,19 +56,20 @@ const MyCases = () => {
     }
   }, [currentClientId, loggedUserName, user]);
 
-  const fetchAssignes = useCallback(async () => {
-        const assignies = await getClientAssigniesOfRole('data entry',currentClientId);
-        setDes(assignies);
-        const qrAssignies = await getClientAssigniesOfRole('quality review',currentClientId);
-        setQrs(qrAssignies);
-        const mrAssignies = await getClientAssigniesOfRole('medical review', currentClientId);
-        setMrs(mrAssignies);
-    }, [currentClientId]);
+  const fetchAssignes = useCallback(() => {
+    if(users.length){
+      const assignies = getClientAssigniesOfRole('data entry',currentClientId, users);
+      setDes(assignies);
+      const qrAssignies = getClientAssigniesOfRole('quality review',currentClientId, users);
+      setQrs(qrAssignies);
+      const mrAssignies = getClientAssigniesOfRole('medical review', currentClientId, users);
+      setMrs(mrAssignies);
+    }
+    }, [currentClientId, users]);
 
   useEffect(() => {
     fetchData();
     fetchAssignes();
-
   }, [fetchData, fetchAssignes, users, loggedUserName, currentClientId]);
 
   // const isEditable = (cell,  row) => {
@@ -83,14 +80,23 @@ const MyCases = () => {
     return cell ? cell.split('T')[0] : '';
   }
   
-    const columns = [ 
-      {
+    const columns = [
+       {
         dataField: 'id',
         text: 'ID',
         sort: true,
         editable: false,
+        hidden:true,
         headerStyle: () => ({ width: '80px', minWidth: '50px' }),
       }, 
+      {
+        dataField: 'caseNumber',
+        text: 'Case Number(ID)',
+        // sort: true,
+        width: 200,
+        editable: false,
+        headerStyle: () => ({ width: '150px', minWidth: '150px' }),
+      },
       {
         dataField: 'casesOpen',
         text: 'Days Open',
@@ -102,29 +108,6 @@ const MyCases = () => {
           const numberOfDaysCaseOpen = getDaysOpen(row);
           return numberOfDaysCaseOpen
         }
-      },
-      {
-        dataField: 'project_id',
-        text: 'Client ID',
-        // sort: true,
-        width: 100,
-        editable: false,
-        headerStyle: () => ({ width: '100px', minWidth: '100px' }),
-        formatter: (cell, row) => {
-          if (allClients && allClients.length > 0) {
-            const client = allClients.find(client => client.id === row.project_id);
-            return client ? client.name : row.project_id;
-          }
-          return row.project_id;
-        }
-      },
-      {
-        dataField: 'caseNumber',
-        text: 'Case Number(ID)',
-        // sort: true,
-        width: 200,
-        editable: false,
-        headerStyle: () => ({ width: '150px', minWidth: '150px' }),
       },
       {
         dataField: 'initial_fup_fupToOpen',
@@ -371,24 +354,12 @@ const MyCases = () => {
             <h4 className="text-center mb-4">No Cases Assigned</h4>
           )}
         </Tab>
+        {
+          user && user.assignTriage ? 
         <Tab eventKey="triagecases" title="Triage Cases">
-          {/* <h4 className="text-center mb-4">Triage Cases Coming Soon</h4> */}
-          {loading && <Skeleton />}
-          {myCases.length > 0 && !loading ? (
-            <TrackTable
-              data={myCases.filter((myCase) => myCase.caseStatus === 'Triage')}
-              cols={columns}
-              setSelectedCaseIds={setSelectedMyCases}
-              selectedCaseIds={selectedMyCases}
-              clients={allClients}
-              setData={setMyCases}
-              refreshData={fetchData}
-            />
-          ) : null}
-          {!loading && myCases.length === 0 && (
-            <h4 className="text-center mb-4">No Cases Assigned</h4>
-          )}
-        </Tab>
+          <TriageCases triageTab={true} />
+        </Tab> : null
+        }
       </Tabs>
   )
 }

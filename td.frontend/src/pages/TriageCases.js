@@ -1,0 +1,312 @@
+import React, { useEffect, useState } from 'react'
+import Skeleton from '../components/Skeleton'
+import TrackTable from '../components/TrackTable'
+import { useGlobalData } from '../services/GlobalContext';
+import { fetchCasesByClientId } from '../services/API';
+import { Type } from 'react-bootstrap-table2-editor';
+import { getClientAssigniesOfRole } from '../services/Common';
+import { getDaysOpen } from '../Utility';
+import DateEditor from '../components/DateEditor';
+
+const TriageCases = ({triageTab = false}) => {
+  const [loading, setLoading] = useState(false);
+  const [triageCases, setTriageCases] = useState([]);
+  const [filteredTriageCases, setFilteredTriageCases] = useState([]);
+  const [selectedTriageCaseIds, setSelectedTriageCaseIds] = useState([])
+  const [triagees, setTriagees] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const { loggedUserName, allClients, currentClientId, isAdmin, isManager, users } = useGlobalData();
+
+   const fetchData = React.useCallback(async () => {
+      setLoading(true)
+      try {
+        if(currentClientId){
+          const allCases = await fetchCasesByClientId(currentClientId);
+          if(allCases && allCases.length){
+            if(triageTab){
+              const myTriageCases = allCases.filter(caseItem => caseItem.triageAssignedTo === loggedUserName 
+              && !caseItem.triageCompletedAt);
+              setFilteredTriageCases(myTriageCases)
+              setTriageCases(myTriageCases)
+            }else{
+              const triageCases = allCases.filter(caseItem => caseItem.caseStatus.toLowerCase().trim().includes('triage'));
+              setFilteredTriageCases(triageCases)
+              setTriageCases(triageCases)
+            }
+          }
+          if(users && users.length){
+            const triageAssignies = getClientAssigniesOfRole('triage', currentClientId, users);
+            setTriagees(triageAssignies)
+          }        
+        }        
+      } catch (error) {
+        console.error(error)
+      } finally {
+          setLoading(false)
+      }
+    }, [currentClientId, loggedUserName, triageTab, users]);
+
+    useEffect(() => {
+      fetchData()
+    },[fetchData])
+
+    const formateDates = (cell, row) => {    
+      return cell ? cell.split('T')[0] : '';
+    };
+    const toolTipFormatter =(cell) => (
+    <span title={cell} 
+    style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'inline-block', maxWidth: 100 }}>
+      {cell}
+    </span>
+  );
+
+  const columns = [
+      {
+        dataField: 'id',
+        text: 'ID',
+        sort: true,
+        editable: false,
+        hidden:true,
+        headerStyle: () => ({ width: '80px', minWidth: '50px' }),
+      }, 
+      {
+        dataField: 'caseNumber',
+        text: 'Case Number',
+        width: 200,
+        editable: false,
+        headerStyle: () => ({ width: '150px', minWidth: '150px' }),
+        // formatter: (cell, row) => {
+        //   return (
+        //     <span 
+        //       style={{ cursor: 'pointer', color: 'blue' }} 
+        //       onClick={() => setSelectedCase(row)}
+        //     >
+        //       {cell}
+        //     </span>
+        //   );
+        // }
+      },
+      {
+        dataField: 'casesOpen',
+        text: 'Days Open',
+        sort: true,
+        width: 100,
+        editable: false,
+        headerStyle: () => ({ width: '100px', minWidth: '100px' }),
+        formatter: (cell, row) => {
+          const numberOfDaysCaseOpen = getDaysOpen(row);
+          return numberOfDaysCaseOpen
+        },
+      },
+      {
+        dataField: 'initial_fup_fupToOpen',
+        text: 'Initial/FUP',
+        width: 100,
+        editable: true,
+        editor : {
+          type: Type.TEXT
+        },
+        headerStyle: () => ({ width: '130px', minWidth: '130px' }),
+      },
+      {
+        dataField: 'ird_frd',
+        text: 'IRD/FRD',
+        width: 100,
+        editable: true,
+        editor : {
+          type: Type.DATE,
+          dateFormat: 'YYYY-MM-DD',
+        },
+        editorRenderer: (editorProps, value) => <DateEditor { ...editorProps } value={ value } />,
+        formatter: formateDates,
+        headerStyle: () => ({ width: '110px', minWidth: '100px' })
+      },
+      ...(currentClientId && allClients.find((client) => client.id.toString() === currentClientId)?.name?.toLowerCase() === "cipla" ? [{
+        dataField: 'ORD',
+        text: 'ORD',
+        width: 100,
+        editable: true,
+        editor : {
+          type: Type.DATE,
+          dateFormat: 'YYYY-MM-DD',
+        },
+        editorRenderer: (editorProps, value) => <DateEditor { ...editorProps } value={ value } />,
+        formatter: formateDates,
+        headerStyle: () => ({ width: '110px', minWidth: '100px' }),
+      },
+      {dataField: 'Source',
+        text: 'Source',
+        width: 100,
+        editable: true,
+        editor : {
+          type: Type.TEXTAREA,
+          rows: 3,
+        },
+        headerStyle: () => ({ width: '110px', minWidth: '100px' }),
+        formatter: toolTipFormatter
+      }
+    ] : []),
+      {
+        dataField: 'caseStatus',
+        text: 'Case Status',
+        width: 150,
+        editable: (cell, row) => {
+          const editable = (isManager || isAdmin) ? true : false;
+          return editable;
+        },
+        editor : {
+          type: Type.SELECT,
+          options: [
+            { value: 'Reporting', label: 'Reporting' },
+            { value: 'Data Entry', label: 'Data Entry' },
+            { value: 'Quality Review', label: 'Quality Review' },
+            { value: 'Medical Review', label: 'Medical Review' }
+          ],
+        },
+        headerStyle: () => ({ width: '150px', minWidth: '150px' }),
+      },
+      {
+        dataField: 'reportability',
+        text: 'Reportability',
+        width: 150,
+        editable: true,
+        editor : {
+          type: Type.TEXT
+        },
+        headerStyle: () => ({ width: '150px', minWidth: '150px' }),
+      },
+      {
+        dataField: 'seriousness',
+        text: 'Seriousness',
+        width: 100,
+        editable: true,
+        editor : {
+          type: Type.TEXT,
+        },
+        headerStyle: () => ({ width: '150px', minWidth: '150px' }),
+      },
+      {
+        dataField: 'comments',
+        text: 'Comments',
+        width: 200,
+        editable: (cell, row) => {
+          const userName = loggedUserName;
+          const isAnyUser = [row.de, row.qr, row.mr].includes(userName);
+          return isAnyUser || isAdmin || isManager
+        },
+        editor : {
+          type: Type.TEXTAREA,
+          rows: 3,
+        },
+        headerStyle: () => ({ width: '200px', minWidth: '200px' }),
+      },
+      {
+        dataField: 'triageAssignedTo',
+        text: 'Triage Assigned To',
+        width: 200,
+        editable: isAdmin || isManager,
+        editor : {
+          type: Type.SELECT,
+          options: triagees?.map(item => ({
+            value: item.username,
+            label: item.username
+          })),
+        },
+        headerStyle: () => ({ width: '150px', minWidth: '150px' }),
+      },
+      {
+        dataField: 'triageStatus',
+        text: 'Status',
+        width: 150,
+        editable: (cell, row) => {
+          const userName = loggedUserName;
+          const isAnyUser = row.triageAssignedTo === userName;
+          return isAnyUser || isAdmin || isManager
+        },
+        editor : {
+          type: Type.SELECT,
+          options: [
+            { value: 'Assigned', label: 'Assigned' },
+            { value: 'In Progress', label: 'In Progress' },
+            { value: 'Completed', label: 'Completed' }
+          ],
+        },
+        headerStyle: () => ({ width: '100px', minWidth: '100px' }),
+      }
+    ]
+  const handleSearch = (e) => {
+    const term = e.target.value
+    setSearchTerm(term);
+    if (term.trim() === "") {
+      setFilteredTriageCases(triageCases);
+    } else {
+      const filtered = triageCases.filter(triageCase => triageCase.caseNumber.toLocaleLowerCase().includes(term.toLocaleLowerCase()));      
+      setFilteredTriageCases(filtered);
+    }
+  };
+
+  const handleDelete = () => {
+
+  }
+  return (
+    <div>
+      {
+        !triageTab ?
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '16px 0' }}>              
+        <input
+          type="text"
+          placeholder="Search Case Number..."
+            className="form-control"
+          value={searchTerm}
+          onChange={handleSearch}
+          style={{ flex: 1, marginRight: '16px', maxWidth: '300px', paddingRight: '30px' }}
+          />
+          {searchTerm && (
+            <span
+              onClick={() => {setSearchTerm('');fetchData()}}
+              style={{
+                position: 'relative',
+                right: '40px',
+                cursor: 'pointer',
+                color: '#aaa',
+                fontWeight: 'bold',
+                fontSize: '20px',
+                zIndex: 2,
+                userSelect: 'none'
+              }}
+              aria-label="Clear search"
+              tabIndex={0}
+              role="button"
+              onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && setSearchTerm('')}
+            >
+              ×
+            </span>
+          )}
+        {
+          isAdmin || isManager ? 
+        <button className="btn btn-danger" style={{ marginLeft: 'auto'}} onClick={handleDelete}>
+          Delete {selectedTriageCaseIds.length ?'('+ selectedTriageCaseIds.length + ')' : ''}
+        </button> : null
+        }
+      </div>: null
+      }
+      {loading && <Skeleton />}
+          {triageCases.length > 0 && !loading ? (
+            <TrackTable
+              data={filteredTriageCases}
+              cols={columns}
+              setSelectedCaseIds={setSelectedTriageCaseIds}
+              selectedCaseIds={selectedTriageCaseIds}
+              clients={allClients}
+              setData={setTriageCases}
+              refreshData={fetchData}
+            />
+          ) : null}
+          {!loading && triageCases.length === 0 && (
+            <h4 className="text-center mb-4">No Cases Assigned</h4>
+          )}
+    </div>
+  )
+}
+
+export default TriageCases

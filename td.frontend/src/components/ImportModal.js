@@ -38,6 +38,8 @@ const ImportModal = (props) => {
               {error}
             </div>
           )}
+          {
+            props.selectedClient ? null :
           <div className="mb-3">
             <label htmlFor="clientSelect" className="form-label">Select Client</label>
             <select
@@ -54,6 +56,7 @@ const ImportModal = (props) => {
               ))}
             </select>
           </div>
+        }
           <div className="mb-3">
             <label htmlFor="excelFile" className="form-label">{title}</label>
             <input

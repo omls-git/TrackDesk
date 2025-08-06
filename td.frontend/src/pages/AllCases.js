@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import TrackTable from '../components/TrackTable';
 import ImportModal from '../components/ImportModal';
 import { deleteCases,fetchCasesByClientId, postCases } from '../services/API';
-import { exportToCSV, jsonDataFromFile, parseExcelDate } from '../Utility';
+import { exportToCSV, jsonDataFromFile } from '../Utility';
 import { useGlobalData } from '../services/GlobalContext';
 import Skeleton from '../components/Skeleton';
 
@@ -17,27 +17,28 @@ const AllCases = () => {
   const [isAdminOrManager, setIsAdminOrManager] = useState(false);
   const [dateRange, setDateRange] = useState({ from: '', to: '' });
   const [loading, setLoading] = useState(false)
+
   const handleImportFile = async (file) => {
     if (!file) return;
     let jsonData = await jsonDataFromFile(file);    
     if(!jsonData || jsonData.length === 0)return;
-    const isProbablyDate = (val) =>
-      typeof val === 'number' && val > 25569 && val < 60000; // Excel date serial range
+    //const isProbablyDate = (val) => typeof val === 'number' && val > 25569 && val < 60000; // Excel date serial range
     jsonData = jsonData.map(row => {
       return Object.fromEntries(
         Object.entries(row).map(([key, value]) => {
-          if (isProbablyDate(value)) {
-            return [key, parseExcelDate(value)];
-          }
+          // if (isProbablyDate(value)) {
+          //   return [key, parseExcelDate(value)];
+          // }
           return [key, value];
         })
       );
     });
-    console.log(jsonData);
+    if(jsonData.length){
+      await postCases(jsonData, selectedClientId)
+    await fetchAllCasesCallback();
+    handleClose();
+    }
     
-    await postCases(jsonData, selectedClientId)
-    // await fetchAllCasesCallback();
-    // handleClose();
   };
 
   const handleExport = () => {
@@ -86,7 +87,6 @@ const AllCases = () => {
     const { name, value } = e.target;
     setDateRange((prev) => ({ ...prev, [name]: value }));
   };
-
 
   const handleClose = () => setShow(false);
 
@@ -221,7 +221,7 @@ const AllCases = () => {
       <ImportModal show={show}
        onClose={handleClose}
        onShow={handleShow}
-       title={"Import Master Tracker"}
+       title={"Import Line Listing"}
        onFileChange={handleImportFile} 
        selectedClient={selectedClientId}
        onSelect={onClientChange} clients={allClients}

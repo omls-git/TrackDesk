@@ -5,7 +5,6 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 // import paginationFactory from 'react-bootstrap-table2-paginator';
 import { getClientAssigniesOfRole } from '../services/Common';
-import { useCallback } from 'react';
 import {updateCase, updateToNext } from '../services/API';
 import { useGlobalData } from '../services/GlobalContext';
 import { formattedIST, getDaysOpen } from '../Utility';
@@ -17,7 +16,7 @@ const TrackTable = (props) => {
   const [qrs, setQrs] = useState([]);
   const [mrs, setMrs] = useState([]);  
   const [selectedCase, setSelectedCase] = useState(null);
-  const { loggedUserName, isAdmin, isManager, isUser, currentClientId, allClients } = useGlobalData();  
+  const { loggedUserName, isAdmin, isManager, users, currentClientId, allClients } = useGlobalData();  
   const toolTipFormatter = (cell) => (
     <span title={cell} 
     style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'inline-block', maxWidth: 100 }}>
@@ -25,20 +24,16 @@ const TrackTable = (props) => {
     </span>
   )
 
-  const fetchAssignes = useCallback(async () => {
-    if (data && data.length > 0) {
-      const assignies = await getClientAssigniesOfRole('data entry',currentClientId);
+  useEffect(() => {
+     if (data && data.length > 0) {
+      const assignies = getClientAssigniesOfRole('data entry',currentClientId, users);
       setDes(assignies);
-      const qrAssignies = await getClientAssigniesOfRole('quality review',currentClientId);
+      const qrAssignies = getClientAssigniesOfRole('quality review',currentClientId, users);
       setQrs(qrAssignies);
-      const mrAssignies = await getClientAssigniesOfRole('medical review', currentClientId);
+      const mrAssignies = getClientAssigniesOfRole('medical review', currentClientId, users);
       setMrs(mrAssignies);
     }
-  }, [data, currentClientId]);
-
-  useEffect(() => {
-    fetchAssignes();
-  }, [fetchAssignes]);
+  }, [currentClientId, data, users]);
 
   const isEditable = (cell,  row) => {
     const editable = (isManager || isAdmin) ? true : false
@@ -54,6 +49,7 @@ const TrackTable = (props) => {
       text: 'ID',
       sort: true,
       editable: false,
+      hidden:true,
       headerStyle: () => ({ width: '80px', minWidth: '50px' }),
     }, 
     {
@@ -66,21 +62,6 @@ const TrackTable = (props) => {
       formatter: (cell, row) => {
         const numberOfDaysCaseOpen = getDaysOpen(row);
         return numberOfDaysCaseOpen
-      }
-    },
-    {
-      dataField: 'project_id',
-      text: 'Client ID',
-      // sort: true,
-      width: 100,
-      editable: false,
-      headerStyle: () => ({ width: '100px', minWidth: '100px' }),
-      formatter: (cell, row) => {
-        if (clients && clients.length > 0) {
-          const client = clients.find(c => c.id === row.project_id);
-          return client ? client.name : row.project_id;
-        }
-        return row.project_id;
       }
     },
     {
@@ -325,7 +306,7 @@ const TrackTable = (props) => {
         cellEdit={cellEditFactory({
           mode: 'click',
           blurToSave: true,
-           beforeSaveCell: async(
+          beforeSaveCell: async(
               oldValueIn,
               newValueIn,
               row,
@@ -340,14 +321,13 @@ const TrackTable = (props) => {
               return;
             }
             let updatedCase = row;
-
+            
             if(column.dataField === "caseStatus"){
               updatedCase[column.dataField] = newValue.trim();
               if((newValue.toLowerCase().trim() === "quality review" && oldValue.toLowerCase().trim() === "data entry") || 
                 (newValue.toLowerCase().trim() === "medical review" && oldValue.toLowerCase().trim() === "quality review") || 
                 (newValue.toLowerCase().trim() === "reporting" && oldValue.toLowerCase().trim() === "medical review")){
                 const caseUpdated = await updateToNext(updatedCase)
-                console.log(caseUpdated)
                 props.setData((prevData) =>
                 prevData.map((item) => (item.id === caseUpdated.id ? { ...item, ...caseUpdated } : item))
                 );              
@@ -385,39 +365,52 @@ const TrackTable = (props) => {
               }
             }
 
-            if(column.dataField === "deStatus" || column.dataField === "qrStatus" || column.dataField === "mrStatus"){
+            if(column.dataField === "deStatus" || column.dataField === "qrStatus" || column.dataField === "mrStatus" || column.dataField === 'triageStatus'){
               updatedCase[column.dataField] = newValue.trim();
               if(column.dataField === "deStatus"){
                 updatedCase.deStartedAt = newValue.trim() === "In Progress" ? formattedIST() : updatedCase.deStartedAt;
                 if(newValue.trim() === "Completed"){
                   updatedCase.caseStatus = "Quality Review";
-                   updatedCase = await updateToNext(updatedCase)
                 }
               } else if(column.dataField === "qrStatus"){
                 updatedCase.qrStartedAt = newValue.trim() === "In Progress" ? formattedIST() : updatedCase.qrStartedAt;
                 if(newValue.trim() === "Completed"){
                   updatedCase.caseStatus = "Medical Review";
-                   updatedCase = await updateToNext(updatedCase)
                 }
               } else if(column.dataField === "mrStatus"){
                 updatedCase.mrStartedAt = newValue.trim() === "In Progress" ? formattedIST() : updatedCase.mrStartedAt;
                 if(newValue.trim() === "Completed"){
                   updatedCase.caseStatus = "Reporting";
                   updatedCase.isCaseOpen = false;
-                  updatedCase = await updateToNext(updatedCase)
                 }
-              }
+              } else if(column.dataField === "triageStatus"){
+                updatedCase.triageStartedAt = newValue.trim() === "In Progress" ? formattedIST() : updatedCase.triageStartedAt;
+                if(newValue.trim() === "Completed"){
+                  updatedCase.caseStatus = "Data Entry";
+                  updatedCase.isCaseOpen = true;
+                }
+              }              
+            }
+
+            if(newValue.trim() === "Completed"){
+              updatedCase = await updateToNext(updatedCase)
               props.setData((prevData) =>
                 prevData.map((item) => (item.id === updatedCase.id ? { ...item, ...updatedCase } : item))
               );
-              done(true);
+              done(true)
               return;
             }
 
+            if(column.dataField === "ird_frd"){              
+              updatedCase.casesOpen = getDaysOpen(updatedCase)
+            }
+
             updatedCase[column.dataField] = newValue.trim();
+
             props.setData((prevData) =>
                 prevData.map((item) => (item.id === updatedCase.id ? { ...item, ...updatedCase } : item))
               );
+            
             if(newValue !== oldValue){
               await updateCase(updatedCase);
             }            
