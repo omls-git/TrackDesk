@@ -10,6 +10,7 @@ const AllCases = () => {
 
   const { loggedUserName, users, user, allClients, currentClientId} = useGlobalData();
   const [masterData, setMasterData] = useState([]); 
+  const [dupMasterData, setDupMasterData] = useState([]); 
   const [show, setShow] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState(currentClientId || '');
   const [selectedCases, setSelectedCases] = useState([]); 
@@ -34,7 +35,7 @@ const AllCases = () => {
       );
     });
     if(jsonData.length){
-      await postCases(jsonData, selectedClientId)
+    await postCases(jsonData, selectedClientId)
     await fetchAllCasesCallback();
     handleClose();
     }
@@ -58,6 +59,7 @@ const AllCases = () => {
         const cases = await fetchCasesByClientId(currentClientId);
         if (cases) {
            setMasterData(cases);
+           setDupMasterData(cases)
         }       
       } catch (error) {
         console.error("Error fetching cases:", error);
@@ -66,6 +68,7 @@ const AllCases = () => {
       }
     }else{
       setMasterData([]);
+      setDupMasterData([])
       setLoading(false);
     }
     
@@ -107,10 +110,10 @@ const AllCases = () => {
     const searchTerm = e?.target?.value?.toLowerCase();
     setSearchTerm(searchTerm);
     if (!searchTerm) {
-      fetchAllCasesCallback();
+      setMasterData(dupMasterData)
       return;
     }    
-    const filteredData = masterData.filter(item =>
+    const filteredData = dupMasterData.filter(item =>
       Object.values(item).some(value =>
         String(value).toLowerCase().includes(searchTerm)
       )

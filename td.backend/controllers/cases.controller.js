@@ -66,6 +66,9 @@ exports.findOne = async (req, res) => {
 };
 
 exports.update = async (req, res) => {
+  if (Array.isArray(req.body)) {
+    await bulkUpdate(req, res);
+  }else{
   try {
     const id = req.params.id;
     const [updated] = await Cases.update(req.body, { where: { id } });
@@ -78,6 +81,7 @@ exports.update = async (req, res) => {
   } catch (error) {
     res.status(500).send(error.message);
   }
+}
 };
 
 exports.deleteMany = async (req, res) => {
@@ -105,5 +109,40 @@ exports.deleteMany = async (req, res) => {
     }
   } catch (error) {
     res.status(500).send(error.message);
+  }
+};
+
+
+const bulkUpdate = async (req, res) => {
+  const casesToUpdate = req.body;  
+  if (!Array.isArray(casesToUpdate)) {
+    return res.status(400).json({ error: 'Request body must be an array of cases' });
+  }
+
+  try {
+    const results = [];
+
+    for (const caseData of casesToUpdate) {
+      const { id, ...updateFields } = caseData;
+
+      if (!id) {
+        results.push({ error: 'Missing ID', caseData });
+        continue;
+      }
+
+      const [updated] = await Cases.update(updateFields, { where: { id } });
+
+      if (updated) {
+        const updatedCase = await Cases.findByPk(id);
+        results.push(updatedCase);
+      } else {
+        results.push({ error: 'Case not found oo', id });
+      }
+    }
+
+    res.status(200).json(results);
+  } catch (error) {
+    console.error('Bulk update error:', error);
+    res.status(500).send(error);
   }
 };

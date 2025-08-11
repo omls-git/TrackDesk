@@ -91,3 +91,50 @@ export const exportToCSV = (data, filename) => {
   XLSX.utils.book_append_sheet(wb, ws, "Cases");
   XLSX.writeFile(wb, filename);
 }
+
+export const formatToCases = (item) => {
+  const formatDate = (date) => date ? formattedIST(date) : null;
+  const formatedCase ={
+    project_id: item.project_id,
+    casesOpen: item.casesOpen,
+    caseNumber: item.caseNumber,
+    initial_fup_fupToOpen: item.initial_fup_fupToOpen,
+    ird_frd: formatDate(item.ird_frd),
+    assignedDateDe: formatDate(item.assignedDateDe),
+    completedDateDE: formatDate(item.completedDateDE),
+    de: item.de,
+    deStatus: item.deStatus,
+    deStartedAt: formatDate(item.deStartedAt),
+    assignedDateQr: formatDate(item.assignedDateQr),
+    completedDateQR: formatDate(item.completedDateQR),
+    qr: item.qr,
+    qrStartedAt: formatDate(item.qrStartedAt),
+    qrStatus: item.qrStatus,
+    assignedDateMr: formatDate(item.assignedDateMr),
+    completedDateMr: formatDate(item.completedDateMr),
+    mr: item.mr,
+    mrStatus: item.mrStatus,
+    mrStartedAt: formatDate(item.mrStartedAt),
+    caseStatus: item.caseStatus,
+    reportability: item.reportability,
+    seriousness: item.seriousness,
+    live_backlog: item.live_backlog,
+    comments: item.comments,
+    Country: item.Country,
+    Partner: item.Partner,
+    modifiedOn: formattedIST(),
+    modifiedBy: localStorage.getItem("userName") || "",
+    triageAssignedTo: item.triageAssignedTo,
+    triageAssignedAt: formatDate(item.triageAssignedAt),
+    triageStatus: item.triageStatus,
+    triageStartedAt: formatDate(item.triageStartedAt),
+    triageCompletedAt: formatDate(item.triageCompletedAt),
+    ORD: formatDate(item.ORD),
+    Source: item?.Source,
+    ReportType: item?.ReportType,
+    isCaseOpen: item.isCaseOpen,
+    XML_Non_XML : item.XML_Non_XML,
+    id: item.id
+  }
+  return formatedCase
+}

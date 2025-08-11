@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import Skeleton from '../components/Skeleton'
 import TrackTable from '../components/TrackTable'
 import { useGlobalData } from '../services/GlobalContext';
-import { fetchCasesByClientId } from '../services/API';
+import { deleteCases, fetchCasesByClientId } from '../services/API';
 import { Type } from 'react-bootstrap-table2-editor';
 import { getClientAssigniesOfRole } from '../services/Common';
 import { getDaysOpen } from '../Utility';
@@ -245,8 +245,10 @@ const TriageCases = ({triageTab = false}) => {
     }
   };
 
-  const handleDelete = () => {
-
+  const handleDelete = async () => {
+    await deleteCases(selectedTriageCaseIds);
+    setSelectedTriageCaseIds([]);
+    await fetchData();
   }
   return (
     <div>

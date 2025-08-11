@@ -11,7 +11,7 @@ import { formattedIST, getDaysOpen } from '../Utility';
 import CaseDetailsModal from './CaseDetailsModal';
 
 const TrackTable = (props) => {
-  const { data, clients } = props;
+  const { data } = props;
   const [des, setDes] = useState([]);
   const [qrs, setQrs] = useState([]);
   const [mrs, setMrs] = useState([]);  
@@ -49,7 +49,7 @@ const TrackTable = (props) => {
       text: 'ID',
       sort: true,
       editable: false,
-      hidden:true,
+      hidden:false,
       headerStyle: () => ({ width: '80px', minWidth: '50px' }),
     }, 
     {
