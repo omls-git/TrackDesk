@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { caseAllocation, userAssignedCasesCount } from './Common';
-import { formattedIST, modifiedNameDate } from '../Utility';
+import { formattedIST, formatToCases, getDaysOpen, modifiedNameDate } from '../Utility';
 
 const API_URL = 'http://localhost:5000/api';
 
@@ -54,59 +54,104 @@ export const fetchCasesByClientId = async (project_id) => {
   }
 };
 
-export const postCases = async (dataLL, clientId) => {
- //Intake & Triage  -- Case Status --Case Status -- Case Num
-  let newCases = dataLL.filter((item) => item["Case Status"].toLowerCase().trim().includes('triage'))
+export const postCases = async (dataFromLL, clientId) => {
+  let importedTriageCases = dataFromLL.filter((item) => item["Case Status"].toLowerCase().trim().includes('triage'))
+  let deQrMrCases = dataFromLL.filter(item => ["data entry", "quality review", "medical review"].includes(item["Case Status"].toLowerCase().trim()))
+
+  const allOpenCases = await fetchClientOpenCases(true, clientId);
+  let allOpenCasesMapDays = allOpenCases.map((ongoingCase) => {return{...ongoingCase, casesOpen: getDaysOpen(ongoingCase)}})
+  const assignies = await getEmployees();
      
-  if(newCases.length){
-    const allCases = await fetchClientOpenCases(true, clientId); 
-    const existingTriageCases = allCases?.filter((item) => item.caseStatus.toLowerCase().trim().includes('triage'))
-    console.log(allCases);
+  if(importedTriageCases && importedTriageCases.length){//only new triage cases are assigned and created, existing unassigned triage cases also to be assigned and updated
+    const existingTriageCases = allOpenCasesMapDays?.filter((item) => item.caseStatus.toLowerCase().trim().includes('triage'));
+    const assignedTriageCases = caseAllocation(importedTriageCases, existingTriageCases, assignies, clientId);
     
-    const assignedTriageCases = await caseAllocation(newCases, existingTriageCases, clientId);
-    
-    if(assignedTriageCases.length){      
-      try {
-        const res = await axios.post(`${API_URL}/cases/`, assignedTriageCases)
-       console.log(res);       
-      } catch (error) {
-        console.error('error', error);
+    if(assignedTriageCases && assignedTriageCases.length){
+      let newTriageCases = []
+      for (let i = 0; i < assignedTriageCases.length; i++) {
+        const triageCase = assignedTriageCases[i];
+        const activeTriageCase = allOpenCasesMapDays.find((item) => item.caseNumber === triageCase.caseNumber)
+        if(activeTriageCase){
+          activeTriageCase.caseStatus = triageCase.caseStatus         
+          await updateCase(activeTriageCase)
+        }else{
+          newTriageCases.push(triageCase)
+        }
+      }
+      if(newTriageCases && newTriageCases.length){        
+        try {
+          await axios.post(`${API_URL}/cases/`, newTriageCases)        
+        } catch (error) {
+          console.error('error', error);
+          alert("Failed to asign cases.")
+        }
       }
     }
   }
 
+  if(deQrMrCases && deQrMrCases.length){ //all open cases in workflow are asigned and updated with status as well as assignee
+    const activeWorkFlowCases = allOpenCasesMapDays?.filter((item) => 
+      ["data entry", "quality review", "medical review"].includes(item.caseStatus.toLowerCase().trim()))
+    
+    if(activeWorkFlowCases && activeWorkFlowCases.length){//vlookup
+      let openCasesWithUpdatedStatus = activeWorkFlowCases.map((activeCase) => {
+        let caseFromLL = deQrMrCases?.find((item) => findIsActiveCase(item, activeCase))
+        if(findIsActiveCase(caseFromLL, activeCase)){
+          activeCase.caseStatus = caseFromLL["Case Status"]
+          console.log("active case from ll",activeCase.caseNumber, activeCase.caseStatus, caseFromLL);          
+          return activeCase
+        }else{
+          return activeCase
+        }
+      })
 
-  // const sortCasesByPriority = importedLL.sort((a, b) => b["Cases open"] - a["Cases open"]);
+      let unAssignedCases = openCasesWithUpdatedStatus.filter(
+        (unAssignedCase) => (unAssignedCase.caseStatus.toLowerCase().trim() === "data entry" && !unAssignedCase.de) 
+        || (unAssignedCase.caseStatus.toLowerCase().trim() === "quality review" && !unAssignedCase.qr) 
+        || (unAssignedCase.caseStatus.toLowerCase().trim() === "medical review" && !unAssignedCase.mr))
+      .sort((a, b) => a.casesOpen - b.casesOpen);
 
-  // const allCases = await fetchCasesByClientId(clientId);
+      if(unAssignedCases && unAssignedCases.length){ 
+        const assignUnAssignedCases = caseAllocation(unAssignedCases, openCasesWithUpdatedStatus, assignies, clientId)
+        .filter((unAssignedCase) => (unAssignedCase.caseStatus.toLowerCase().trim() === "data entry" && !unAssignedCase.de) 
+        || (unAssignedCase.caseStatus.toLowerCase().trim() === "quality review" && !unAssignedCase.qr) 
+        || (unAssignedCase.caseStatus.toLowerCase().trim() === "medical review" && !unAssignedCase.mr))
+        if(assignUnAssignedCases && assignUnAssignedCases.length){
+          await updateCase(assignUnAssignedCases);
+        }
+      }
 
-//   const selectedClientAllCases = allCases?.filter((item) => item.project_id.toString() === clientId.toString());
+      let assignedCases = openCasesWithUpdatedStatus.filter(
+        (unAssignedCase) => (unAssignedCase.caseStatus.toLowerCase().trim() === "data entry" && unAssignedCase.de) 
+        || (unAssignedCase.caseStatus.toLowerCase().trim() === "quality review" && unAssignedCase.qr) 
+        || (unAssignedCase.caseStatus.toLowerCase().trim() === "medical review" && unAssignedCase.mr));
 
-//   const assignedCases = await caseAllocation(sortCasesByPriority, selectedClientAllCases, clientId);
-// console.log(assignedCases);
+      if (assignedCases && assignedCases.length){
+        for (let i = 0; i < assignedCases.length; i++) {
+        const workFlowCase = assignedCases[i];
+        let LLWorkFlowCase = deQrMrCases?.find((item) => findIsActiveCase(item, workFlowCase))
+        if(LLWorkFlowCase){
+           workFlowCase.caseStatus = LLWorkFlowCase["Case Status"]
+          await updateCase(workFlowCase)
+        }
+      }
 
-  // const clients = await getClients();
+      }
 
-  // const selectedClient = clients.find((item) => item.id.toString() === clientId.toString());
+    }
+    
+  }
 
-//   assignedCases.map(async (item) => {
-//   const caseNumber = item.caseNumber;
-//   if(caseNumber){
-//       const existingCase = selectedClientAllCases?.find((item) => item.caseNumber === caseNumber)
-//       // console.log("Existed case", res.data)
-//       if(existingCase){        
-//         console.log(`case already exists in ${clientId} with`, caseNumber );
-//       }else{
-//         try {
-//           const body = item; 
-//           const res = await axios.post(`${API_URL}/cases/`, body)
-//           return res
-//         } catch (error) {
-//           console.error('error', error);
-//         }
-//       }
-//   }
-//  })
+}
+
+const findIsActiveCase = (llCase, activeCase) => {
+  if(llCase && activeCase){
+    let llCaseNumber = llCase["Case Number"] || llCase["Case ID"] || llCase["Case Num"] || ""
+    let isActive = llCaseNumber.toLowerCase().trim() === activeCase.caseNumber.toLowerCase().trim()
+    return isActive
+  }else{
+    return false
+  }  
 }
 
 export const getEmployees = async () => {
@@ -165,51 +210,20 @@ export const getClients = async () => {
 }
 
 export const updateCase = async (item) => {
-  const formatDate = (date) => date ? formattedIST(date) : null;
-  const updatedCase = {
-    project_id: item.project_id,
-    casesOpen: item.casesOpen,
-    caseNumber: item.caseNumber,
-    initial_fup_fupToOpen: item.initial_fup_fupToOpen,
-    ird_frd: formatDate(item.ird_frd),
-    assignedDateDe: formatDate(item.assignedDateDe),
-    completedDateDE: formatDate(item.completedDateDE),
-    de: item.de,
-    deStatus: item.deStatus,
-    deStartedAt: formatDate(item.deStartedAt),
-    assignedDateQr: formatDate(item.assignedDateQr),
-    completedDateQR: formatDate(item.completedDateQR),
-    qr: item.qr,
-    qrStartedAt: formatDate(item.qrStartedAt),
-    qrStatus: item.qrStatus,
-    assignedDateMr: formatDate(item.assignedDateMr),
-    completedDateMr: formatDate(item.completedDateMr),
-    mr: item.mr,
-    mrStatus: item.mrStatus,
-    mrStartedAt: formatDate(item.mrStartedAt),
-    caseStatus: item.caseStatus,
-    reportability: item.reportability,
-    seriousness: item.seriousness,
-    live_backlog: item.live_backlog,
-    comments: item.comments,
-    Country : item.Country,
-    Partner: item.Partner,
-    modifiedOn: formattedIST(),
-    modifiedBy: localStorage.getItem("userName") || "",
-    triageAssignedTo: item.triageAssignedTo,
-    triageAssignedAt: formatDate(item.triageAssignedAt),
-    triageStatus: item.triageStatus,
-    triageStartedAt: formatDate(item.triageStartedAt),
-    triageCompletedAt: formatDate(item.triageCompletedAt),
-    ORD:formatDate(item.ORD),    
-    isCaseOpen: item.isCaseOpen
+  let formattedItems;
+  let id;
+  if(Array.isArray(item)){
+    formattedItems = item.map(value => formatToCases(value));
+    id = 'bulk-update'
+  }else{
+    formattedItems = formatToCases(item)
+    id = item.id
   }
   try {
-    const response = await axios.put(`${API_URL}/cases/${item.id}`, updatedCase);
+    const response = await axios.put(`${API_URL}/cases/${id}`, formattedItems);
     return response.data;
   } catch (error) {
     console.error('Error updating cases:', error);
-    // throw error;
   }
 }
 
@@ -336,3 +350,5 @@ export const deleteClients = async (clientIds) =>{
     console.error("Error deleting client(s)", error);
   }
 }
+
+

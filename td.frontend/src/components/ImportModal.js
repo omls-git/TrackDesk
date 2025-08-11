@@ -9,7 +9,7 @@ const ImportModal = (props) => {
 
   const handleConfirm = async () => {
     if (!props.selectedClient || !file) {
-      setError('Please select a client and upload a file.');
+      setError('Please select a file.');
       return;
     }
     setError('');
