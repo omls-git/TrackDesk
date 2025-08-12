@@ -2,11 +2,13 @@ import Button from 'react-bootstrap/Button';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
 
-function ToolTipOverlay({ initials, account}) {
+function ToolTipOverlay({ initials}) {
+  const userEmail = localStorage.getItem('userEmail')
+  const userName = localStorage.getItem('userName')
   const renderTooltip = (props) => (
     <Tooltip id="button-tooltip" {...props}>
-      <b>{account ? account.name : ''}</b> <br/>
-      <b>{account ? account.username : ''}</b>
+      <b>{userName ? userName : ''}</b> <br/>
+      <b>{userEmail ? userEmail : ''}</b>
     </Tooltip>
   );
 

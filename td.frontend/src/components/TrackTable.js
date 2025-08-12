@@ -3,7 +3,7 @@ import BootstrapTable from 'react-bootstrap-table-next';
 import cellEditFactory, { Type } from 'react-bootstrap-table2-editor';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
-// import paginationFactory from 'react-bootstrap-table2-paginator';
+import paginationFactory from 'react-bootstrap-table2-paginator';
 import { getClientAssigniesOfRole } from '../services/Common';
 import {updateCase, updateToNext } from '../services/API';
 import { useGlobalData } from '../services/GlobalContext';
@@ -17,9 +17,10 @@ const TrackTable = (props) => {
   const [mrs, setMrs] = useState([]);  
   const [selectedCase, setSelectedCase] = useState(null);
   const { loggedUserName, isAdmin, isManager, users, currentClientId, allClients } = useGlobalData();  
+
   const toolTipFormatter = (cell) => (
     <span title={cell} 
-    style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'inline-block', maxWidth: 100 }}>
+    style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'inline-block', maxWidth: 150 }}>
       {cell}
     </span>
   )
@@ -260,6 +261,7 @@ const TrackTable = (props) => {
         rows: 3,
       },
       headerStyle: () => ({ width: '200px', minWidth: '200px' }),
+      formatter: toolTipFormatter
     }
   ]; 
 
@@ -292,8 +294,9 @@ const TrackTable = (props) => {
       }
     }
   };
+  const pageSize = 50;
   return (
-    <div className="mt-4 text-center">
+    <div className="mt-4 text-center table-responsive">
       <BootstrapTable
         keyField="id"
         data={data}
@@ -417,15 +420,16 @@ const TrackTable = (props) => {
             done(true);
           },
         })}
-        // pagination={paginationFactory({
-        //   sizePerPage: 30,
-        //   hideSizePerPage: true,
-        //   showTotal: data.length > 30,
-        //   totalSize: data.length,
-        //   paginationTotalRenderer: (from, to, size) => {
-        //     return ("Showing " + from + " to " + to + " of " + size + " entries")
-        //     }
-        // })}
+        pagination={ 
+          data.length > pageSize ? paginationFactory({
+          sizePerPage: pageSize,
+          hideSizePerPage: true,
+          showTotal: data.length > pageSize,
+          totalSize: data.length,
+          paginationTotalRenderer: (from, to, size) => {
+            return ("Showing " + from + " to " + to + " of " + size + " entries")
+            }
+        }) : undefined}
       /> 
        <CaseDetailsModal show={!!selectedCase} onClose={() => setSelectedCase(null)} caseData={selectedCase} />
     </div>
