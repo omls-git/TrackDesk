@@ -134,6 +134,9 @@ export const formatToCases = (item) => {
     ReportType: item?.ReportType,
     isCaseOpen: item.isCaseOpen,
     XML_Non_XML : item.XML_Non_XML,
+    DestinationForReporting: item.DestinationForReporting,
+    SDEAObligation: item.SDEAObligation,
+    ReportingComment: item.ReportingComment,
     id: item.id
   }
   return formatedCase

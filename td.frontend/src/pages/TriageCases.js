@@ -121,7 +121,20 @@ const TriageCases = ({triageTab = false}) => {
         formatter: formateDates,
         headerStyle: () => ({ width: '110px', minWidth: '100px' })
       },
-      ...(currentClientId && allClients.find((client) => client.id.toString() === currentClientId)?.name?.toLowerCase() === "cipla" ? [{
+      ...(currentClientId && allClients.find((client) => client.id.toString() === currentClientId)?.name?.toLowerCase() === "cipla" ? [
+      {
+        dataField: 'ReportType',
+        text: 'Report Type',
+        width: 100,
+        editable: true,
+        editor : {
+          type: Type.TEXT,
+          rows: 3,
+        },
+        headerStyle: () => ({ width: '110px', minWidth: '100px' }),
+        formatter: toolTipFormatter
+      },
+      {
         dataField: 'ORD',
         text: 'ORD',
         width: 100,
@@ -134,12 +147,70 @@ const TriageCases = ({triageTab = false}) => {
         formatter: formateDates,
         headerStyle: () => ({ width: '110px', minWidth: '100px' }),
       },
-      {dataField: 'Source',
+      {
+        dataField: 'Source',
         text: 'Source',
         width: 100,
         editable: true,
         editor : {
           type: Type.TEXTAREA,
+          rows: 3,
+        },
+        headerStyle: () => ({ width: '110px', minWidth: '100px' }),
+        formatter: toolTipFormatter
+      },
+      {
+        dataField: 'Country',
+        text: 'Country',
+        width: 100,
+        editable: true,
+        editor : {
+          type: Type.TEXT,
+          rows: 3,
+        },
+        headerStyle: () => ({ width: '110px', minWidth: '100px' }),
+        formatter: toolTipFormatter
+      },
+      {
+        dataField: 'DestinationForReporting',
+        text: 'Destination for Reporting',
+        width: 100,
+        editable: true,
+        editor : {
+          type: Type.TEXT,
+          rows: 3,
+        },
+        headerStyle: () => ({ width: '110px', minWidth: '100px' }),
+        formatter: toolTipFormatter
+      },
+      {dataField: 'SDEAObligation',
+        text: 'SDEA Obligation',
+        width: 100,
+        editable: true,
+        editor : {
+          type: Type.TEXT,
+          rows: 3,
+        },
+        headerStyle: () => ({ width: '110px', minWidth: '100px' }),
+        formatter: toolTipFormatter
+      },
+      {dataField: 'Partner',
+        text: 'Partner',
+        width: 100,
+        editable: true,
+        editor : {
+          type: Type.TEXT,
+          rows: 3,
+        },
+        headerStyle: () => ({ width: '110px', minWidth: '100px' }),
+        formatter: toolTipFormatter
+      },
+      {dataField: 'ReportingComment',
+        text: 'Reporting Comment',
+        width: 100,
+        editable: true,
+        editor : {
+          type: Type.TEXT,
           rows: 3,
         },
         headerStyle: () => ({ width: '110px', minWidth: '100px' }),
@@ -184,6 +255,17 @@ const TriageCases = ({triageTab = false}) => {
           type: Type.TEXT,
         },
         headerStyle: () => ({ width: '150px', minWidth: '150px' }),
+      },
+      {dataField: 'live_backlog',
+        text: 'Live/Backlog',
+        width: 100,
+        editable: true,
+        editor : {
+          type: Type.TEXT,
+          rows: 3,
+        },
+        headerStyle: () => ({ width: '110px', minWidth: '100px' }),
+        formatter: toolTipFormatter
       },
       {
         dataField: 'comments',
