@@ -98,7 +98,7 @@ export const formatToCases = (item) => {
     project_id: item.project_id,
     casesOpen: item.casesOpen,
     caseNumber: item.caseNumber,
-    initial_fup_fupToOpen: item.initial_fup_fupToOpen,
+    inital_fup: item.inital_fup,
     ird_frd: formatDate(item.ird_frd),
     assignedDateDe: formatDate(item.assignedDateDe),
     completedDateDE: formatDate(item.completedDateDE),

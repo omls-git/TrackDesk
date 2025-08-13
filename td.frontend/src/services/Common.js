@@ -38,7 +38,7 @@ export const mapCaseToApiFormat = (item, id) => ({
   project_id: parseInt(id),
   casesOpen: item["Cases open"] || item["Days open"] || 0,
   caseNumber: item["Case Number"] || item["Case ID"] || item["Case Num"] || "",
-  initial_fup_fupToOpen: item["Initial/FUP/FUP to Open (FUOP)"] || item["Initial/FUP"] || "",
+  inital_fup: item["Initial/FUP/FUP to Open (FUOP)"] || item["Initial/FUP"] || "",
   ird_frd: item["IRD/FRD"],
   assignedDateDe: item["Assigned Date (DE)"] ? item["Assigned Date (DE)"] : null ,
   completedDateDE: null,

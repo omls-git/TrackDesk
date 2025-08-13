@@ -14,9 +14,9 @@ module.exports = (sequelize, DataTypes) => {
     },
     caseNumber: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: true
     },
-    initial_fup_fupToOpen: {
+    inital_fup: {
       type: DataTypes.STRING,
       allowNull: true
     },

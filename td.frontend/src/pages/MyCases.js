@@ -110,7 +110,7 @@ const MyCases = () => {
         }
       },
       {
-        dataField: 'initial_fup_fupToOpen',
+        dataField: 'inital_fup',
         text: 'Initial/FUP',
         // sort: true,
         width: 100,
@@ -130,7 +130,17 @@ const MyCases = () => {
         formatter: formateDates,
         headerStyle: () => ({ width: '110px', minWidth: '100px' }),
       },
-      ...(currentClientId && allClients.find((client) => client.id.toString() === currentClientId)?.name?.toLowerCase() === "cipla" ? [{
+      ...(currentClientId && allClients.find((client) => client.id.toString() === currentClientId)?.name?.toLowerCase() === "cipla" ? [
+        {
+        dataField: 'ReportType',
+        text: 'Report Type',
+        // sort: true,
+        width: 100,
+        editable: false,
+        headerStyle: () => ({ width: '110px', minWidth: '100px' }),
+        formatter: toolTipFormatter
+      },
+      {
         dataField: 'ORD',
         text: 'ORD',
         // sort: true,
@@ -144,6 +154,60 @@ const MyCases = () => {
         // sort: true,
         width: 100,
         editable: false,
+        headerStyle: () => ({ width: '110px', minWidth: '100px' }),
+        formatter: toolTipFormatter
+      },
+       {
+        dataField: 'Country',
+        text: 'Country',
+        // sort: true,
+        width: 100,
+        editable: false,
+        headerStyle: () => ({ width: '110px', minWidth: '100px' }),
+        // formatter: toolTipFormatter
+      },
+      {
+        dataField: 'DestinationForReporting',
+        text: 'Destination for Reporting',
+        width: 100,
+        editable: false,
+        editor : {
+          type: Type.TEXT,
+          rows: 3,
+        },
+        headerStyle: () => ({ width: '110px', minWidth: '100px' }),
+        formatter: toolTipFormatter
+      },
+      {dataField: 'SDEAObligation',
+        text: 'SDEA Obligation',
+        width: 100,
+        editable: false,
+        editor : {
+          type: Type.TEXT,
+          rows: 3,
+        },
+        headerStyle: () => ({ width: '110px', minWidth: '100px' }),
+        formatter: toolTipFormatter
+      },
+      {dataField: 'Partner',
+        text: 'Partner',
+        width: 100,
+        editable: false,
+        editor : {
+          type: Type.TEXT,
+          rows: 3,
+        },
+        headerStyle: () => ({ width: '110px', minWidth: '100px' }),
+        formatter: toolTipFormatter
+      },
+      {dataField: 'ReportingComment',
+        text: 'Reporting Comment',
+        width: 100,
+        editable: false,
+        editor : {
+          type: Type.TEXT,
+          rows: 3,
+        },
         headerStyle: () => ({ width: '110px', minWidth: '100px' }),
         formatter: toolTipFormatter
       }

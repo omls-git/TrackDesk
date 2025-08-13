@@ -99,7 +99,7 @@ const TriageCases = ({triageTab = false}) => {
         },
       },
       {
-        dataField: 'initial_fup_fupToOpen',
+        dataField: 'inital_fup',
         text: 'Initial/FUP',
         width: 100,
         editable: true,

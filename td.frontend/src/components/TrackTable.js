@@ -16,7 +16,7 @@ const TrackTable = (props) => {
   const [qrs, setQrs] = useState([]);
   const [mrs, setMrs] = useState([]);  
   const [selectedCase, setSelectedCase] = useState(null);
-  const { loggedUserName, isAdmin, isManager, users, currentClientId, allClients } = useGlobalData();  
+  const { loggedUserName, isAdmin, isManager, users, currentClientId, allClients, user } = useGlobalData();  
 
   const toolTipFormatter = (cell) => (
     <span title={cell} 
@@ -72,19 +72,19 @@ const TrackTable = (props) => {
       width: 200,
       editable: false,
       headerStyle: () => ({ width: '150px', minWidth: '150px' }),
-      // formatter: (cell, row) => {
-      //   return (
-      //     <span 
-      //       style={{ cursor: 'pointer', color: 'blue' }} 
-      //       onClick={() => setSelectedCase(row)}
-      //     >
-      //       {cell}
-      //     </span>
-      //   );
-      // }
+      formatter: (cell, row) => {
+        return (
+          <span 
+            style={{ cursor: 'pointer', color: 'blue' }} 
+            onClick={() => setSelectedCase(row)}
+          >
+            {cell}
+          </span>
+        );
+      }
     },
     {
-      dataField: 'initial_fup_fupToOpen',
+      dataField: 'inital_fup',
       text: 'Initial/FUP',
       // sort: true,
       width: 100,
@@ -104,7 +104,17 @@ const TrackTable = (props) => {
       formatter: formateDates,
       headerStyle: () => ({ width: '110px', minWidth: '100px' }),
     },
-    ...(currentClientId && allClients.find((client) => client.id.toString() === currentClientId)?.name?.toLowerCase() === "cipla" ? [{
+    ...(currentClientId && allClients.find((client) => client.id.toString() === currentClientId)?.name?.toLowerCase() === "cipla" ? [
+      {
+        dataField: 'ReportType',
+        text: 'Report Type',
+        // sort: true,
+        width: 100,
+        editable: false,
+        headerStyle: () => ({ width: '160px', minWidth: '150px' }),
+        formatter: toolTipFormatter
+      },
+      {
       dataField: 'ORD',
       text: 'ORD',
       // sort: true,
@@ -118,9 +128,63 @@ const TrackTable = (props) => {
       // sort: true,
       width: 100,
       editable: false,
-      headerStyle: () => ({ width: '110px', minWidth: '100px' }),
+      headerStyle: () => ({ width: '160px', minWidth: '100px' }),
       formatter: toolTipFormatter
-    }
+    },
+    {
+    dataField: 'Country',
+    text: 'Country',
+    // sort: true,
+    width: 100,
+    editable: false,
+    headerStyle: () => ({ width: '120px', minWidth: '100px' }),
+    formatter: toolTipFormatter
+  },
+  {
+    dataField: 'DestinationForReporting',
+    text: 'Destination for Reporting',
+    width: 100,
+    editable: false,
+    editor : {
+      type: Type.TEXT,
+      rows: 3,
+    },
+    headerStyle: () => ({ width: '160px', minWidth: '100px' }),
+    formatter: toolTipFormatter
+  },
+  {dataField: 'SDEAObligation',
+    text: 'SDEA Obligation',
+    width: 100,
+    editable: false,
+    editor : {
+      type: Type.TEXT,
+      rows: 3,
+    },
+    headerStyle: () => ({ width: '160px', minWidth: '100px' }),
+    formatter: toolTipFormatter
+  },
+  {dataField: 'Partner',
+    text: 'Partner',
+    width: 100,
+    editable: false,
+    editor : {
+      type: Type.TEXT,
+      rows: 3,
+    },
+    headerStyle: () => ({ width: '150px', minWidth: '100px' }),
+    formatter: toolTipFormatter
+  },
+  {dataField: 'ReportingComment',
+    text: 'Reporting Comment',
+    width: 100,
+    editable: false,
+    editor : {
+      type: Type.TEXT,
+      rows: 3,
+    },
+    headerStyle: () => ({ width: '160px', minWidth: '100px' }),
+    formatter: toolTipFormatter
+  }
   ] : []),
     {
       dataField: 'de',
@@ -218,17 +282,18 @@ const TrackTable = (props) => {
       text: 'Case Status',
       // sort: true,
       width: 150,
-      editable: isEditable,
+      editable: isEditable || user?.assignTriage ? true : false,
       editor : {
         type: Type.SELECT,
         options: [
-          { value: 'Reporting', label: 'Reporting' },
+          { value: 'Triage', label: 'Triage'},
           { value: 'Data Entry', label: 'Data Entry' },
           { value: 'Quality Review', label: 'Quality Review' },
-          { value: 'Medical Review', label: 'Medical Review' }
+          { value: 'Medical Review', label: 'Medical Review' },
+          { value: 'Reporting', label: 'Reporting' },
         ],
       },
-      headerStyle: () => ({ width: '150px', minWidth: '150px' }),
+      headerStyle: () => ({ width: '160px', minWidth: '150px' }),
     },
     {
       dataField: 'reportability',

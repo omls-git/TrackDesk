@@ -42,7 +42,10 @@ export const GlobalProvider = ({ children }) => {
     fetchData();
   }, [loggedUserName]);
 
-  const user = users.find((user) => user.username === loggedUserName && user.projectId?.toString() === localStorage.getItem("currentClient"));  
+  const user = localStorage.getItem("currentClient") ? 
+  users.find((user) => user.username === loggedUserName && user.projectId?.toString() === localStorage.getItem("currentClient")) 
+  : users.find((user) => user.username === loggedUserName);
+  
   const currentClientId = localStorage.getItem("currentClient") ? localStorage.getItem("currentClient") : user ? user.projectId : '';
 
   const value = {
