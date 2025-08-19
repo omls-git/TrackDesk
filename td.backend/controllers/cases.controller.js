@@ -65,6 +65,23 @@ exports.findOne = async (req, res) => {
   }
 };
 
+exports.findOneByNumber = async (req, res) => {
+  console.log(req.query.project_id, "case number in findOneByNumber");
+  const project_id = req.query.project_id;
+
+  try {
+    const caseNumber = req.params.caseNumber;
+    const foundCase = await Cases.findOne({ where: { caseNumber, project_id } });
+    if (foundCase) {
+      res.json(foundCase);
+    } else {
+      res.json({ message: 'Case not found', status: 404});
+    }
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+};
+
 exports.update = async (req, res) => {
   if (Array.isArray(req.body)) {
     await bulkUpdate(req, res);

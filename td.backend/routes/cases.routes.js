@@ -9,5 +9,6 @@ casesRouter.get("/by-project/:project_id", casesController.findByProject);
 casesRouter.get("/:id", casesController.findOne);
 casesRouter.put("/:id", casesController.update);
 casesRouter.delete("/", casesController.deleteMany);
+casesRouter.get("/by-number/:caseNumber", casesController.findOneByNumber);
 
 module.exports = casesRouter;

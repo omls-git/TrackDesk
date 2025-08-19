@@ -1,10 +1,18 @@
 import React from 'react'
 import { useState } from 'react';
 import AddBookInCaseModal from '../components/AddBookInCaseModal';
+// import { fetchByCaseNumber } from '../services/API';
 
 const BookIn = () => {
    const [searchTerm, setSearchTerm] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
+
+  const addBookInCase = async () =>{ 
+    // const response = await fetchByCaseNumber('2025US08772', 13)
+    // console.log(response);
+    
+    setShowAddModal(true)
+  }
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '16px 0' }}>              
         <input
@@ -39,7 +47,7 @@ const BookIn = () => {
           <div>
           {/* {
           isAdmin || isManager ?  */}
-        <button className="btn btn-success" style={{ marginRight: '10px'}} onClick={() => setShowAddModal(true)}>
+        <button className="btn btn-success" style={{ marginRight: '10px'}} onClick={addBookInCase}>
           Book In New Case
         </button> 
         {/* : null} */}

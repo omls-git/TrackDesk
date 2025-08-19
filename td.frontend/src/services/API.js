@@ -1,6 +1,6 @@
 import axios from 'axios';
-import { caseAllocation, userAssignedCasesCount } from './Common';
-import { formattedIST, formatToCases, getDaysOpen, modifiedNameDate } from '../Utility';
+import { caseAllocation, mapCaseToApiFormat, userAssignedCasesCount } from './Common';
+import { formattedIST, formatToCases, getDaysOpen, modifiedNameDate, parseExcelDate } from '../Utility';
 
 const API_URL = 'http://localhost:5000/api';
 
@@ -26,7 +26,7 @@ export const fetchAllOpenCases = async (isOpen) => {
 
 export const fetchClientOpenCases = async (isOpen,projectId) => {
   try {
-    const response = await axios.get(`${API_URL}/cases`, {params:{data: isOpen, project_id : projectId}});
+    const response = await axios.get(`${API_URL}/cases`, {params:{isOpen: isOpen, project_id : projectId}});
     return response.data;
   } catch (error) {
     console.error('Error fetching all open cases:', error);
@@ -41,6 +41,19 @@ export const fetchCaseById = async (id) => {
   } catch (error) {
     console.error('Error fetching all cases:', error);
     // throw error;
+  }
+};
+
+export const fetchByCaseNumber = async (caseNumber, project_id) => {
+  try {
+    const response = await axios.get(`${API_URL}/cases/by-number/${caseNumber}`, { params: { project_id } });
+    if (response.data.status === 404) {
+      console.error('No case found with the given case number or id');
+      return null;
+    }      
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching all cases:', error);
   }
 };
 
@@ -61,8 +74,8 @@ export const postCases = async (dataFromLL, clientId) => {
   const allOpenCases = await fetchClientOpenCases(true, clientId);
   let allOpenCasesMapDays = allOpenCases.map((ongoingCase) => {return{...ongoingCase, casesOpen: getDaysOpen(ongoingCase)}})
   const assignies = await getEmployees();
-     
-  if(importedTriageCases && importedTriageCases.length){//only new triage cases are assigned and created, existing unassigned triage cases also to be assigned and updated
+
+  if(importedTriageCases && importedTriageCases.length){//only new triage cases are assigned and created, existing unassigned triage cases are updated with latest status from LL and also existing triage cases has to be assigned and updated
     const existingTriageCases = allOpenCasesMapDays?.filter((item) => item.caseStatus.toLowerCase().trim().includes('triage'));
     const assignedTriageCases = caseAllocation(importedTriageCases, existingTriageCases, assignies, clientId);
     
@@ -89,16 +102,16 @@ export const postCases = async (dataFromLL, clientId) => {
     }
   }
 
-  if(deQrMrCases && deQrMrCases.length){ //all open cases in workflow are asigned and updated with status as well as assignee
+  if(deQrMrCases && deQrMrCases.length){ //all open cases in workflow are asigned and updated with status as well as assigned
     const activeWorkFlowCases = allOpenCasesMapDays?.filter((item) => 
       ["data entry", "quality review", "medical review"].includes(item.caseStatus.toLowerCase().trim()))
     
-    if(activeWorkFlowCases && activeWorkFlowCases.length){//vlookup
+    if(activeWorkFlowCases && activeWorkFlowCases.length){
+      //vlookup - updating the status corresponding to ll status
       let openCasesWithUpdatedStatus = activeWorkFlowCases.map((activeCase) => {
         let caseFromLL = deQrMrCases?.find((item) => findIsActiveCase(item, activeCase))
         if(findIsActiveCase(caseFromLL, activeCase)){
-          activeCase.caseStatus = caseFromLL["Case Status"]
-          console.log("active case from ll",activeCase.caseNumber, activeCase.caseStatus, caseFromLL);          
+          activeCase.caseStatus = caseFromLL["Case Status"]        
           return activeCase
         }else{
           return activeCase
@@ -111,11 +124,12 @@ export const postCases = async (dataFromLL, clientId) => {
         || (unAssignedCase.caseStatus.toLowerCase().trim() === "medical review" && !unAssignedCase.mr))
       .sort((a, b) => a.casesOpen - b.casesOpen);
 
+      // Assign unassigned cases from existing open cases
       if(unAssignedCases && unAssignedCases.length){ 
         const assignUnAssignedCases = caseAllocation(unAssignedCases, openCasesWithUpdatedStatus, assignies, clientId)
-        .filter((unAssignedCase) => (unAssignedCase.caseStatus.toLowerCase().trim() === "data entry" && !unAssignedCase.de) 
-        || (unAssignedCase.caseStatus.toLowerCase().trim() === "quality review" && !unAssignedCase.qr) 
-        || (unAssignedCase.caseStatus.toLowerCase().trim() === "medical review" && !unAssignedCase.mr))
+        .filter((unAssignedCase) => (unAssignedCase.caseStatus.toLowerCase().trim() === "data entry" && unAssignedCase.de) 
+        || (unAssignedCase.caseStatus.toLowerCase().trim() === "quality review" && unAssignedCase.qr) 
+        || (unAssignedCase.caseStatus.toLowerCase().trim() === "medical review" && unAssignedCase.mr))
         if(assignUnAssignedCases && assignUnAssignedCases.length){
           await updateCase(assignUnAssignedCases);
         }
@@ -135,7 +149,47 @@ export const postCases = async (dataFromLL, clientId) => {
           await updateCase(workFlowCase)
         }
       }
+      }
 
+      let newWorkFlowCases = deQrMrCases.filter((item) => !openCasesWithUpdatedStatus.find((activeCase) => findIsActiveCase(item, activeCase)));
+      if(newWorkFlowCases && newWorkFlowCases.length){
+        console.log(newWorkFlowCases, "new workflow cases");
+        newWorkFlowCases = await Promise.all(
+          newWorkFlowCases.map(async (item) => {
+            let formattedItem = mapCaseToApiFormat(item, clientId);
+            const response = await fetchByCaseNumber(formattedItem.caseNumber, formattedItem.project_id);
+            if (response && response.id) {
+              formattedItem.isCaseOpen = true;
+              formattedItem.ird_frd = parseExcelDate(item["Case Followup Receipt Date"]) || parseExcelDate(item["Case Initial Receipt Date"]);
+              formattedItem.Country = response.Country;
+              formattedItem.Partner = response.Partner;
+              formattedItem.DestinationForReporting = response.DestinationForReporting;
+              formattedItem.Source = response.Source;
+              formattedItem.ReportType = response.ReportType;
+              formattedItem.SDEAObligation = response.SDEAObligation;
+              formattedItem.ReportingComment = response.ReportingComment;
+              formattedItem.XML_Non_XML = response.XML_Non_XML;
+              formattedItem.comments = response.comments;
+              formattedItem.inital_fup = "Follow-up";
+              formattedItem.live_backlog = response.live_backlog;
+              formattedItem.reportability = response.reportability;
+              formattedItem.seriousness = response.seriousness;
+              formattedItem.ORD = response.ORD;
+            }
+            return formattedItem;
+          })
+        );
+         //Case Followup Receipt Date, Case Initial Receipt Date -- cipla
+        const allOpenCases = await fetchClientOpenCases(true, clientId);
+        const assignNewWorkFlowCases = caseAllocation(newWorkFlowCases, allOpenCases, assignies, clientId);
+        console.log(newWorkFlowCases, "assigned new workflow cases", assignNewWorkFlowCases);
+        
+        try {
+          await axios.post(`${API_URL}/cases/`, newWorkFlowCases)
+        } catch (error) {
+          console.error('error', error);
+          alert("Failed to asign cases.")
+        }
       }
 
     }

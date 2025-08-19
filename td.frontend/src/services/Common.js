@@ -1,4 +1,4 @@
-import { formattedIST } from "../Utility";
+import { formattedIST, parseExcelDate } from "../Utility";
 
 export const caseAllocation = (cases, existingAllCases, assignies, clientId) => {
   const clientAssignies = assignies.filter((item) => item.projectId.toString() === clientId.toString() && !item.onLeave);
@@ -7,6 +7,8 @@ export const caseAllocation = (cases, existingAllCases, assignies, clientId) => 
     console.error("No assignies found for the client to assign cases", clientId);
     return [];
   }
+  console.log(cases);
+  
   let mappedCases;  
   const hasCaseStatus = cases.some(obj => 'caseStatus' in obj);
   if(hasCaseStatus){
@@ -14,8 +16,12 @@ export const caseAllocation = (cases, existingAllCases, assignies, clientId) => 
   }else {
     mappedCases = cases.map(item => mapCaseToApiFormat(item, clientId));
   } 
+  console.log(mappedCases);
+  
 
    const [deAvailabe, qrAvailabe, mrAvailable, triageesAvailable] = userAssignedCasesCount(clientAssignies, existingAllCases);
+   console.log(deAvailabe, qrAvailabe, mrAvailable, triageesAvailable, "available assignies");
+   
 
     const dataEntryCases = mappedCases.filter(item => item.caseStatus.toLowerCase().trim() === "data entry");
     const qualityReviewCases = mappedCases.filter(item => item.caseStatus.toLowerCase().trim() === "quality review");
@@ -39,8 +45,8 @@ export const mapCaseToApiFormat = (item, id) => ({
   casesOpen: item["Cases open"] || item["Days open"] || 0,
   caseNumber: item["Case Number"] || item["Case ID"] || item["Case Num"] || "",
   inital_fup: item["Initial/FUP/FUP to Open (FUOP)"] || item["Initial/FUP"] || "",
-  ird_frd: item["IRD/FRD"],
-  assignedDateDe: item["Assigned Date (DE)"] ? item["Assigned Date (DE)"] : null ,
+  ird_frd: item["IRD/FRD"] || parseExcelDate(item["Case Followup Receipt Date"]) || parseExcelDate(item["Case Initial Receipt Date"]) || null,
+  assignedDateDe: item["Assigned Date (DE)"] ? item["Assigned Date (DE)"] : null,
   completedDateDE: null,
   de: item["DE"] || "",
   assignedDateQr: item["Assigned Date (QR)"] ? item["Assigned Date (QR)"] : null,

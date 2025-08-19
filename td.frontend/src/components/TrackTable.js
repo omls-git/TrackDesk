@@ -486,12 +486,12 @@ const TrackTable = (props) => {
           },
         })}
         pagination={ 
-          data.length > pageSize ? paginationFactory({
+          data?.length > pageSize ? paginationFactory({
           sizePerPage: pageSize,
           hideSizePerPage: true,
-          showTotal: data.length > pageSize,
-          totalSize: data.length,
-          paginationTotalRenderer: (from, to, size) => {
+          showTotal: data?.length > pageSize,
+          hidePageListOnlyOnePage: true,
+          paginationTotalRenderer: (from,  to, size) => {
             return ("Showing " + from + " to " + to + " of " + size + " entries")
             }
         }) : undefined}
