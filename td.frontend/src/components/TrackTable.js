@@ -72,16 +72,16 @@ const TrackTable = (props) => {
       width: 200,
       editable: false,
       headerStyle: () => ({ width: '150px', minWidth: '150px' }),
-      formatter: (cell, row) => {
-        return (
-          <span 
-            style={{ cursor: 'pointer', color: 'blue' }} 
-            onClick={() => setSelectedCase(row)}
-          >
-            {cell}
-          </span>
-        );
-      }
+      // formatter: (cell, row) => {
+      //   return (
+      //     <span 
+      //       style={{ cursor: 'pointer', color: 'blue' }} 
+      //       onClick={() => setSelectedCase(row)}
+      //     >
+      //       {cell}
+      //     </span>
+      //   );
+      // }
     },
     {
       dataField: 'inital_fup',

@@ -90,9 +90,18 @@ const Header = () => {
               isAdmin || isManager ?
             <NavLink
               className={({ isActive }) => (isActive ? 'active ' : '') + 'nav-item nav-link'}
-              to="/traige-cases"
+              to="/triage-cases"
             >
               Triage Cases
+            </NavLink> : null
+            }
+            {
+              currentClientId && allClients && allClients.find((client) => client.id.toString() === currentClientId)?.name?.toLowerCase() === "cipla" ? 
+              <NavLink
+              className={({ isActive }) => (isActive ? 'active ' : '') + 'nav-item nav-link'}
+              to="/book-in"              
+            >
+              Book In
             </NavLink> : null
             }
             <NavLink

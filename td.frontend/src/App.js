@@ -10,6 +10,7 @@ import Employeetracker from './pages/Employeetracker';
 import Admin from './pages/Admin';
 import Login from './Login';
 import TriageCases from './pages/TriageCases';
+import BookIn from './pages/BookIn';
 
 
 function App() {
@@ -25,7 +26,8 @@ function App() {
             <Route path="/my-cases" element={<MyCases />} />
             <Route path="/employees" element={<Employeetracker />} />
             <Route path="/admin" element={<Admin />} />
-            <Route path="/traige-cases" element={<TriageCases />} />
+            <Route path="/triage-cases" element={<TriageCases />} />
+            <Route path="/book-in" element={<BookIn />} />
           </Routes>
         </Router>
       </div>
