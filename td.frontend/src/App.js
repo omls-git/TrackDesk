@@ -1,4 +1,4 @@
-
+"use client";
 import { AuthenticatedTemplate, UnauthenticatedTemplate} from '@azure/msal-react';
 import './App.css';
 import Header from './components/Header';
@@ -11,14 +11,14 @@ import Admin from './pages/Admin';
 import Login from './Login';
 import TriageCases from './pages/TriageCases';
 import BookIn from './pages/BookIn';
-
-
+import ErrorBoundary from './components/ErrorBoundary';
 function App() {
   return (
     <div className="App">
-      <AuthenticatedTemplate>      
+      <AuthenticatedTemplate>
       <div className="main-content">
         <Router>
+        <ErrorBoundary>
         <Header />
           <Routes>
             <Route path="/" element={<Dashboard />} />
@@ -29,6 +29,7 @@ function App() {
             <Route path="/triage-cases" element={<TriageCases />} />
             <Route path="/book-in" element={<BookIn />} />
           </Routes>
+          </ErrorBoundary >
         </Router>
       </div>
       </AuthenticatedTemplate>

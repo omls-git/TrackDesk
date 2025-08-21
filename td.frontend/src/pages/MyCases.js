@@ -13,7 +13,7 @@ import TriageCases from './TriageCases'
 const MyCases = () => {
   const [myCases, setMyCases] = useState([])
   const [selectedMyCases, setSelectedMyCases] = useState([]);
-  const [activeTab, setActiveTab] = useState('triagecases')
+  const [activeTab, setActiveTab] = useState('cases')
   const { loggedUserName, allClients, currentClientId,isAdmin, isManager, users,user } = useGlobalData();
   const [loading, setLoading] = useState(false);
   const [des, setDes] = useState([]);

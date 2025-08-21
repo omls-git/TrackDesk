@@ -21,7 +21,7 @@ export const GlobalProvider = ({ children }) => {
       const clientData = await getClients();      
       setUsers(empData);
       setAllClients(clientData);
-      const clientId = empData.find((user) => user.username === loggedUserName)?.projectId;
+      const clientId = empData?.find((user) => user.username === loggedUserName)?.projectId;
       if(empData && empData.length > 0){
         const userDetailes = empData?.find((item) => item.username === loggedUserName && item.projectId?.toString() === clientId.toString());
           if(userDetailes){
@@ -43,8 +43,8 @@ export const GlobalProvider = ({ children }) => {
   }, [loggedUserName]);
 
   const user = localStorage.getItem("currentClient") ? 
-  users.find((user) => user.username === loggedUserName && user.projectId?.toString() === localStorage.getItem("currentClient")) 
-  : users.find((user) => user.username === loggedUserName);
+    users?.find((user) => user.username === loggedUserName && user.projectId?.toString() === localStorage.getItem("currentClient")) 
+    : users?.find((user) => user.username === loggedUserName);
   
   const currentClientId = localStorage.getItem("currentClient") ? localStorage.getItem("currentClient") : user ? user.projectId : '';
 
