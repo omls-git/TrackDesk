@@ -56,10 +56,11 @@ const AllCases = () => {
     setLoading(true); 
     if(user){
       try {
-        const cases = await fetchCasesByClientId(currentClientId);
+        let cases = await fetchCasesByClientId(currentClientId);
         if (cases) {
+          cases = cases.filter((item) => !item.caseStatus.toLowerCase().trim().includes('triage'));
            setMasterData(cases);
-           setDupMasterData(cases)
+           setDupMasterData(cases);
         }       
       } catch (error) {
         console.error("Error fetching cases:", error);
@@ -97,7 +98,7 @@ const AllCases = () => {
 
   const onClientChange =(e) => {
     const clientId = e?.target?.value;
-    clientId ? setSelectedClientId(e.target.value) : setSelectedClientId(currentClientId || '');
+    clientId ? setSelectedClientId(clientId) : setSelectedClientId(currentClientId || '');
   }
 
   const deleteSelectedCases = async() => {

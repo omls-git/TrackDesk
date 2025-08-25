@@ -50,21 +50,9 @@ const TrackTable = (props) => {
       text: 'ID',
       sort: true,
       editable: false,
-      hidden:false,
+      hidden:true,
       headerStyle: () => ({ width: '80px', minWidth: '50px' }),
     }, 
-    {
-      dataField: 'casesOpen',
-      text: 'Days Open',
-      // sort: true,
-      width: 100,
-      editable: false,
-      headerStyle: () => ({ width: '100px', minWidth: '100px' }),
-      formatter: (cell, row) => {
-        const numberOfDaysCaseOpen = getDaysOpen(row);
-        return numberOfDaysCaseOpen
-      }
-    },
     {
       dataField: 'caseNumber',
       text: 'Case Number',
@@ -82,6 +70,18 @@ const TrackTable = (props) => {
       //     </span>
       //   );
       // }
+    },
+    {
+      dataField: 'casesOpen',
+      text: 'Days Open',
+      // sort: true,
+      width: 100,
+      editable: false,
+      headerStyle: () => ({ width: '100px', minWidth: '100px' }),
+      formatter: (cell, row) => {
+        const numberOfDaysCaseOpen = getDaysOpen(row);
+        return numberOfDaysCaseOpen
+      }
     },
     {
       dataField: 'inital_fup',

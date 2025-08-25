@@ -91,7 +91,7 @@ const MyCases = () => {
       }, 
       {
         dataField: 'caseNumber',
-        text: 'Case Number(ID)',
+        text: 'Case Number',
         // sort: true,
         width: 200,
         editable: false,

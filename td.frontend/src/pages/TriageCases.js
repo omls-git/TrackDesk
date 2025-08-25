@@ -222,8 +222,8 @@ const TriageCases = ({triageTab = false}) => {
         text: 'Case Status',
         width: 150,
         editable: (cell, row) => {
-          const editable = (isManager || isAdmin) ? true : false;
-          return editable;
+          // const editable = (isManager || isAdmin) ? true : false;
+          return false;
         },
         editor : {
           type: Type.SELECT,
@@ -231,7 +231,8 @@ const TriageCases = ({triageTab = false}) => {
             { value: 'Reporting', label: 'Reporting' },
             { value: 'Data Entry', label: 'Data Entry' },
             { value: 'Quality Review', label: 'Quality Review' },
-            { value: 'Medical Review', label: 'Medical Review' }
+            { value: 'Medical Review', label: 'Medical Review' },
+            // { value: 'Triage', label: 'Triage' }
           ],
         },
         headerStyle: () => ({ width: '150px', minWidth: '150px' }),
@@ -302,8 +303,8 @@ const TriageCases = ({triageTab = false}) => {
         width: 150,
         editable: (cell, row) => {
           const userName = loggedUserName;
-          const isAnyUser = row.triageAssignedTo === userName;
-          return isAnyUser || isAdmin || isManager
+          const isUser = row.triageAssignedTo === userName;
+          return isUser || isAdmin || isManager
         },
         editor : {
           type: Type.SELECT,
