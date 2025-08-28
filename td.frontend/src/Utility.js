@@ -141,3 +141,60 @@ export const formatToCases = (item) => {
   }
   return formatedCase
 }
+
+export const xmllabels = {
+    "authorityNumber": {type:"text", label: "Authority Number"}, //-new
+    "safetyReportId": {type:"text", label: "Safety Report ID"}, //-new
+    "ReportType": {type:"text", label: "Type of Report"},
+    "ird_frd": {type:"date", label: "IRD/FRD"},
+    "suspect_drug": {type:"text", label: "Suspect"}, //-new -- have to confirm
+    "validity": {type:"text", label: "Validity"}, //-new
+    "argusId": {type:"text", label: "Argus ID"}, //-new
+    "comments": {type:"text", label: "Comment"},
+    "literatureCitation": {type:"text", label: "Literature Citation"}, //-new
+    "linkedDeactivations": {type:"text", label: "Linked Deactivations"}, //new
+    "bookInAssignedTo": {type:"text", label: "Associate"},
+    "bookInDate": {type:"date", label: "Bookin Date"}, //new   
+    "bookInReceivedDate": {type:"text", label: "Receive Date"}, //new
+    "COI": {type:"text", label: "COI"},
+    "Comment2": {type:"text", label: "Comment2"},
+    "manualBookIn": {type:"checkbox", label: "Manual Bookin"}, //new
+    "openWorkflow": {type:"checkbox", label: "Open Workflow"}
+  }
+
+  export const nonXmlLabels = {
+    "OM_ID": {type:"text", label: "OM ID"},
+    "ird_frd": {type:"date", label: "IRD/FRD"},
+    "case_is_from": {type:"text", label: "CASE IS FROM"},
+    "subjectLine": {type:"text", label: "Subject Line"},
+    "title_of_the_article": {type:"text", label: "Title of the Article"},
+    "bookInAssignedTo": {type:"text", label: "Assigned To"},
+    "bookInReceiptDate": {type:"date", label: "Book in Receipt Date"},
+    "bookInDueDate": {type:"date", label: "Due Date"},
+    "bookInCompletedDate": {type:"date", label: "Completed Date"},
+    "inital_fup": {type:"text", label: "Initial/Follow-up"},
+    "bookInStatus": {type:"text", label: "Book-in status"},
+    "no_of_cases_created": {type:"number", label: "No. of cases created"},
+    "Days Open": {type:"number", label: "Days Open"},
+    "TAT_date": {type:"date", label: "TAT date"},
+    "allocation_Received_on": {type:"date", label: "Allocation Received on"},
+    "caseNumber": {type:"text", label: "Case ID"},
+    "COI": {type:"text", label: "COI"},
+    "SDEA Obligation": {type:"text", label: "SDEA Obligation"},
+    "suspect_drug": {type:"text", label: "Suspect drug"},
+    "event": {type:"text", label: "Event"},
+    "comments": {type:"text", label: "Comment"},   
+    "seriousness": {type:"text", label: "Seriousness (fatal/Life threatening)"},
+    "LOE": {type:"text", label: "LOE"},
+    "PQC": {type:"text", label: "PQC"},
+    "openWorkflow": {type:"text", label: "Open Workflow"}
+  }
+
+export const estimateWidth = (text) => {
+  const baseWidth = 10;
+  const padding = 20;
+  const textLength = text.length < 7 ? 10 : text.length;
+  return `${textLength * baseWidth + padding}px`;
+};
+
+

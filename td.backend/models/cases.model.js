@@ -130,7 +130,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true
     },
     XML_Non_XML: {
-      type: DataTypes.STRING(50),
+      type: DataTypes.STRING,
       allowNull: true
     },
     ORD:{
@@ -183,6 +183,62 @@ module.exports = (sequelize, DataTypes) => {
     modifiedOn: {
       type: DataTypes.DATE,
       defaultValue: null,
+      allowNull: true
+    },
+    authorityNumber: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    safetyReportId: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    validity: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    argusId: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    literatureCitation: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    linkedDeactivations: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    bookInDate: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    bookInReceivedDate: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    manualBookIn: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true
+    },
+    bookInAssignedDate: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    bookInStartedAt: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    bookInCompletedAt: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    bookInWorkStatus: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    bookInType: {
+      type: DataTypes.STRING,
       allowNull: true
     }
   },{
