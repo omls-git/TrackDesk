@@ -41,7 +41,7 @@ const BookIn = () => {
           <NonXmlTab addBookInCase={addBookInCase} nonXmlLabels={labels} />
         </Tab>
       </Tabs>      
-      <AddBookInCaseModal show={showAddModal} onClose={() => setShowAddModal(false)} labels={labels} />
+      <AddBookInCaseModal show={showAddModal} onClose={() => setShowAddModal(false)} labels={labels} tab={activeTab} />
     </div>
   )
 }

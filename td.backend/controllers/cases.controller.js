@@ -28,6 +28,9 @@ exports.findAll = async (req, res) => {
     if (req.query.project_id) {
       where.project_id = req.query.project_id;
     }
+    if (req.query.status) {
+      where.caseStatus = req.query.status;
+    }
     const cases = await Cases.findAll({ where });
     if (req.query.isOpen && cases.length === 0) {
       return res.status(404).json({ error: "Open Cases not found" });

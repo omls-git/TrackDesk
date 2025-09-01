@@ -12,7 +12,8 @@ export const parseExcelDate = (value) => {
       if (typeof value === "number") {
         const date = XLSX.SSF.parse_date_code(value);
         if (!date) return "";
-        const iso = formattedIST(Date.UTC(date.y, date.m - 1, date.d)) //new Date(Date.UTC(date.y, date.m - 1, date.d)).toISOString().slice(0, 19).replace("T", " ");
+        const iso = formattedIST(Date.UTC(date.y, date.m - 1, date.d)) 
+        //new Date(Date.UTC(date.y, date.m - 1, date.d)).toISOString().slice(0, 19).replace("T", " ");
         return iso
       }
       if (value instanceof Date) {
@@ -49,7 +50,7 @@ export const jsonDataFromFile = async(file) =>{
   : workbook.SheetNames[0];
   const worksheet = workbook.Sheets[sheetName]
   if(!worksheet){
-    alert(`No "Open Cases" or "Current Status" sheet were found in the imported file. Please check the file content and try again.`);
+    alert(`No sheet were found in the imported file. Please check the file content and try again.`);
     return
   }
   let jsonData = XLSX.utils.sheet_to_json(worksheet, {defval: "" });
@@ -155,7 +156,7 @@ export const xmllabels = {
     "linkedDeactivations": {type:"text", label: "Linked Deactivations"}, //new
     "bookInAssignedTo": {type:"text", label: "Associate"},
     "bookInDate": {type:"date", label: "Bookin Date"}, //new   
-    "bookInReceivedDate": {type:"text", label: "Receive Date"}, //new
+    "bookInReceivedDate": {type:"date", label: "Receive Date"}, //new
     "COI": {type:"text", label: "COI"},
     "Comment2": {type:"text", label: "Comment2"},
     "manualBookIn": {type:"checkbox", label: "Manual Bookin"}, //new

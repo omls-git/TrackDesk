@@ -405,4 +405,33 @@ export const deleteClients = async (clientIds) =>{
   }
 }
 
+export const postBookInCase = async (cases, clientId, xml_nonXml) => {
+  let bookInCases = cases
+  if (!Array.isArray(cases) || !clientId) {
+    bookInCases = { ...cases, caseStatus: "BookIn", project_id: clientId, bookInAssignedDate : formattedIST(), bookInWorkStatus: "Assigned", bookInType: xml_nonXml};
+  }else{
+    bookInCases = cases.map(item => {
+    let formattedItem = mapCaseToApiFormat(item, clientId);
+    formattedItem.isCaseOpen = true;    
+    formattedItem.ird_frd = parseExcelDate(item["Case Followup Receipt Date"]) || parseExcelDate(item["Case Initial Receipt Date"]);
+    return formattedItem;
+    })
+  }
+  try {
+    const res = await axios.post(`${API_URL}/cases/`, bookInCases);
+    return res.data;
+  } catch (error) {
+    console.error('Error posting book-in case:', error);
+    throw error.response;
+  }
+}
 
+export const fetchBookInCases = async (clientId) => {
+  try {
+    const res = await axios.get(`${API_URL}/cases/`,{params:{ status: "BookIn",project_id : clientId}});
+    return res.data;
+  } catch (error) {
+    console.error('Error fetching book-in cases:', error);
+    throw error.response;
+  }
+}

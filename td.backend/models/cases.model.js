@@ -104,6 +104,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.TEXT,
       allowNull: true
     },
+    comment2: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
     isCaseOpen: {
       type: DataTypes.BOOLEAN,
       allowNull: true,
@@ -219,7 +223,8 @@ module.exports = (sequelize, DataTypes) => {
     },
     manualBookIn: {
       type: DataTypes.BOOLEAN,
-      allowNull: true
+      allowNull: true,
+      defaultValue: false
     },
     bookInAssignedDate: {
       type: DataTypes.DATE,
@@ -240,9 +245,82 @@ module.exports = (sequelize, DataTypes) => {
     bookInType: {
       type: DataTypes.STRING,
       allowNull: true
+    },
+    OM_ID: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    case_is_from: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    subjectLine: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    title_of_the_article: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    bookInAssignedTo: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    bookInReceiptDate: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    bookInDueDate: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    bookInCompletedDate: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    bookInStatus: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    no_of_cases_created: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
+    TAT_date: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    allocation_Received_on: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    COI: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    suspect_drug: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    event: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    LOE: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    PQC: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    openWorkflow: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: false
     }
   },{
-  timestamps: true
+    timestamps: true
   });
 
   Cases.associate = (models) => {
