@@ -32,7 +32,7 @@ const PageTitle = (props) => {
     <div className="d-flex flex-wrap align-items-center my-3 gap-2">   
       {/* <div> */}
       {
-        (isAdmin || isManager) && title === "XML" ?         
+        (isAdmin || isManager) && title === "xml" ?         
         <button
           className="btn btn-primary"
           onClick={handleModal}
@@ -65,7 +65,7 @@ const PageTitle = (props) => {
           {/* {
           isAdmin || isManager ?  */}
         <button className="btn btn-success" onClick={addBookInCase}>
-          Book In New Case {"("+title+")"}
+          Book In New Case {"("+title.toUpperCase()+")"}
         </button> 
         {/* : null} */}
         <button className="btn btn-secondary" >

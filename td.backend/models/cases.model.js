@@ -206,11 +206,11 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true
     },
     literatureCitation: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.TEXT,
       allowNull: true
     },
     linkedDeactivations: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.TEXT,
       allowNull: true
     },
     bookInDate: {
@@ -259,7 +259,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true
     },
     title_of_the_article: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
       allowNull: true
     },
     bookInAssignedTo: {
@@ -303,15 +303,15 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true
     },
     event: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
       allowNull: true
     },
     LOE: {
-      type: DataTypes.STRING,
+      type: DataTypes.BOOLEAN,
       allowNull: true
     },
     PQC: {
-      type: DataTypes.STRING,
+      type: DataTypes.BOOLEAN,
       allowNull: true
     },
     openWorkflow: {

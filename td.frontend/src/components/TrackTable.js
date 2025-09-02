@@ -7,7 +7,7 @@ import paginationFactory from 'react-bootstrap-table2-paginator';
 import { getClientAssigniesOfRole } from '../services/Common';
 import {updateCase, updateToNext } from '../services/API';
 import { useGlobalData } from '../services/GlobalContext';
-import { formattedIST, getDaysOpen } from '../Utility';
+import { caseStatusOptions, caseStatusOptionsCipla, formattedIST, getDaysOpen } from '../Utility';
 import CaseDetailsModal from './CaseDetailsModal';
 
 const TrackTable = (props) => {
@@ -16,7 +16,7 @@ const TrackTable = (props) => {
   const [qrs, setQrs] = useState([]);
   const [mrs, setMrs] = useState([]);  
   const [selectedCase, setSelectedCase] = useState(null);
-  const { loggedUserName, isAdmin, isManager, users, currentClientId, allClients, user } = useGlobalData();  
+  const { loggedUserName, isAdmin, isManager, users, currentClientId, allClients, user, isCipla } = useGlobalData();  
 
   const toolTipFormatter = (cell) => (
     <span title={cell} 
@@ -104,7 +104,7 @@ const TrackTable = (props) => {
       formatter: formateDates,
       headerStyle: () => ({ width: '110px', minWidth: '100px' }),
     },
-    ...(currentClientId && allClients.find((client) => client.id.toString() === currentClientId)?.name?.toLowerCase() === "cipla" ? [
+    ...(currentClientId && isCipla? [
       {
         dataField: 'ReportType',
         text: 'Report Type',
@@ -285,13 +285,7 @@ const TrackTable = (props) => {
       editable: isEditable || user?.assignTriage ? true : false,
       editor : {
         type: Type.SELECT,
-        options: [
-          { value: 'Triage', label: 'Triage'},
-          { value: 'Data Entry', label: 'Data Entry' },
-          { value: 'Quality Review', label: 'Quality Review' },
-          { value: 'Medical Review', label: 'Medical Review' },
-          { value: 'Reporting', label: 'Reporting' },
-        ],
+        options: isCipla ? caseStatusOptionsCipla : caseStatusOptions
       },
       headerStyle: () => ({ width: '160px', minWidth: '150px' }),
     },
@@ -381,8 +375,8 @@ const TrackTable = (props) => {
               column,
               done
           ) =>{
-            const oldValue = oldValueIn?.trim();
-            const newValue = newValueIn?.trim();
+            const oldValue = typeof oldValueIn === 'boolean' || typeof oldValueIn === 'number' ? oldValueIn : oldValueIn?.trim();
+            const newValue = typeof newValueIn === 'boolean' || typeof newValueIn === 'number' ? newValueIn : newValueIn?.trim();
 
             if (oldValue === newValue || (!oldValue && !newValue)) {
               done(true); // No change, allow saving
@@ -460,7 +454,7 @@ const TrackTable = (props) => {
               }              
             }
 
-            if(newValue.trim() === "Completed"){
+            if(newValue && newValue.trim() === "Completed"){
               updatedCase = await updateToNext(updatedCase)
               props.setData((prevData) =>
                 prevData.map((item) => (item.id === updatedCase.id ? { ...item, ...updatedCase } : item))
@@ -473,13 +467,13 @@ const TrackTable = (props) => {
               updatedCase.casesOpen = getDaysOpen(updatedCase)
             }
 
-            updatedCase[column.dataField] = newValue.trim();
+            updatedCase[column.dataField] = typeof newValue === "string" ? newValue.trim() : newValue
 
             props.setData((prevData) =>
                 prevData.map((item) => (item.id === updatedCase.id ? { ...item, ...updatedCase } : item))
               );
             
-            if(newValue !== oldValue){
+            if(newValue !== oldValue){              
               await updateCase(updatedCase);
             }            
             done(true);

@@ -5,7 +5,7 @@ import { useGlobalData } from '../services/GlobalContext';
 import { deleteCases, fetchCasesByClientId } from '../services/API';
 import { Type } from 'react-bootstrap-table2-editor';
 import { getClientAssigniesOfRole } from '../services/Common';
-import { getDaysOpen } from '../Utility';
+import { caseStatusOptions, caseStatusOptionsCipla, getDaysOpen, inital_fupOptions, live_backlogOptions, reportTypeOptions, seriousnessOptions } from '../Utility';
 import DateEditor from '../components/DateEditor';
 
 const TriageCases = ({triageTab = false}) => {
@@ -15,7 +15,7 @@ const TriageCases = ({triageTab = false}) => {
   const [selectedTriageCaseIds, setSelectedTriageCaseIds] = useState([])
   const [triagees, setTriagees] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const { loggedUserName, allClients, currentClientId, isAdmin, isManager, users } = useGlobalData();
+  const { loggedUserName, allClients, currentClientId, isAdmin, isManager, users, isCipla } = useGlobalData();
 
    const fetchData = React.useCallback(async () => {
       setLoading(true)
@@ -104,7 +104,8 @@ const TriageCases = ({triageTab = false}) => {
         width: 100,
         editable: true,
         editor : {
-          type: Type.TEXT
+          type: Type.SELECT,
+          options: inital_fupOptions
         },
         headerStyle: () => ({ width: '130px', minWidth: '130px' }),
       },
@@ -121,15 +122,15 @@ const TriageCases = ({triageTab = false}) => {
         formatter: formateDates,
         headerStyle: () => ({ width: '110px', minWidth: '100px' })
       },
-      ...(currentClientId && allClients.find((client) => client.id.toString() === currentClientId)?.name?.toLowerCase() === "cipla" ? [
+      ...(currentClientId && isCipla ? [
       {
         dataField: 'ReportType',
         text: 'Report Type',
         width: 100,
         editable: true,
         editor : {
-          type: Type.TEXT,
-          rows: 3,
+          type: Type.SELECT,
+          options: reportTypeOptions
         },
         headerStyle: () => ({ width: '110px', minWidth: '100px' }),
         formatter: toolTipFormatter
@@ -227,13 +228,7 @@ const TriageCases = ({triageTab = false}) => {
         },
         editor : {
           type: Type.SELECT,
-          options: [
-            { value: 'Reporting', label: 'Reporting' },
-            { value: 'Data Entry', label: 'Data Entry' },
-            { value: 'Quality Review', label: 'Quality Review' },
-            { value: 'Medical Review', label: 'Medical Review' },
-            // { value: 'Triage', label: 'Triage' }
-          ],
+          options: isCipla ? caseStatusOptionsCipla : caseStatusOptions
         },
         headerStyle: () => ({ width: '150px', minWidth: '150px' }),
       },
@@ -243,7 +238,8 @@ const TriageCases = ({triageTab = false}) => {
         width: 150,
         editable: true,
         editor : {
-          type: Type.TEXT
+          type: Type.SELECT,
+          options: reportTypeOptions
         },
         headerStyle: () => ({ width: '150px', minWidth: '150px' }),
       },
@@ -253,7 +249,8 @@ const TriageCases = ({triageTab = false}) => {
         width: 100,
         editable: true,
         editor : {
-          type: Type.TEXT,
+          type: Type.SELECT,
+          options: seriousnessOptions
         },
         headerStyle: () => ({ width: '150px', minWidth: '150px' }),
       },
@@ -262,10 +259,10 @@ const TriageCases = ({triageTab = false}) => {
         width: 100,
         editable: true,
         editor : {
-          type: Type.TEXT,
-          rows: 3,
+          type: Type.SELECT,
+          options: live_backlogOptions
         },
-        headerStyle: () => ({ width: '110px', minWidth: '100px' }),
+        headerStyle: () => ({ width: '130px', minWidth: '100px' }),
         formatter: toolTipFormatter
       },
       {

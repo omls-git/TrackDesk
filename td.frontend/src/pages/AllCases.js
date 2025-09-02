@@ -205,7 +205,7 @@ const AllCases = () => {
         <button className="btn btn-danger ms-auto"
          onClick={deleteSelectedCases}
          >Delete {selectedCases.length ?'(' + selectedCases.length + ')' : ''}</button> : null }
-        <button className="btn btn-success ms-auto"
+        <button className="btn btn-secondary ms-auto"
          onClick={handleExport}
          >Export {selectedCases.length ?'(' + selectedCases.length + ')' : ''}</button>
          </div>

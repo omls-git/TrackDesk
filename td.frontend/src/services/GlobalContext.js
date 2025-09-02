@@ -47,6 +47,7 @@ export const GlobalProvider = ({ children }) => {
     : users?.find((user) => user.username === loggedUserName);
   
   const currentClientId = localStorage.getItem("currentClient") ? localStorage.getItem("currentClient") : user ? user.projectId : '';
+  const isCipla = currentClientId && allClients && allClients.length ? allClients.find((client) => client.id.toString() === currentClientId)?.name?.toLowerCase() === "cipla" : false;
 
   const value = {
     loggedUserName,
@@ -58,7 +59,8 @@ export const GlobalProvider = ({ children }) => {
     isManager,
     isUser,
     currentClientId,
-    loading
+    loading,
+    isCipla
   };
 
   return (

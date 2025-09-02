@@ -273,7 +273,7 @@ export const getClientAssigniesOfRole = (role, clientId, assignies) => {
   }
   
   if (clientAssigniesOfRole.length === 0) {
-    console.error("No assignies found for the client to assign cases", role);
+    console.error("No assignies found for the client to assign cases  of role", role);
     return [];
   }
 

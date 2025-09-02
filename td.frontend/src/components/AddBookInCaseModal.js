@@ -12,21 +12,12 @@ const AddBookInCaseModal = ({show, onClose, labels, tab}) => {
 
   const [formData, setFormData] = React.useState({"XML_Non_XML": tab});
 
-  const handleChange = (key, value, dataType) => {
-
-    // if(dataType === "date" && value){
-    //   value = formattedIST(value);
-    //   console.log(value);
-    // }     
-
-    setFormData(prev => ({ ...prev, [key]: value }));
-    console.log(key, value, formData, dataType);
-    
+  const handleChange = (key, value, dataType) => { 
+    setFormData(prev => ({ ...prev, [key]: value }));    
   };
 
   const handleSubmitCase = async() => {
     console.log("Submitting case:", formData);
-
     // Add your submit logic here
     const res = await postBookInCase(formData, currentClientId, tab);
     console.log("Response:", res);
@@ -44,6 +35,7 @@ const AddBookInCaseModal = ({show, onClose, labels, tab}) => {
               // const value = caseData[key];
               // const isDate = value && !isNaN(Date.parse(value)) && typeof value === 'string' && value.length >= 8;
               return (
+                labels[key].hide ? null :
                 <Col md={4} key={key} className="mb-3">
                   <Form.Group controlId={key}>
                     {labels[key].type === "checkbox" ? (
@@ -54,6 +46,8 @@ const AddBookInCaseModal = ({show, onClose, labels, tab}) => {
                           {labels[key].label}
                         </Form.Label>
                         <Form.Control
+                          as={labels[key].type === 'textarea' ? 'textarea' : 'input'}
+                          rows={labels[key].type === 'textarea' ? 1 : undefined}
                           type={labels[key].type}
                           value={formData[key] || ''}
                           onChange={(e) => handleChange(key, e.target.value, labels[key].type)}

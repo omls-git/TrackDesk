@@ -2,31 +2,30 @@ import React, { useState } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 
 const ImportModal = (props) => {
- const {show, onClose, title} = props;
+ const {show, onClose, title, selectedClient, onFileChange, onSelect, clients } = props;
  const [file, setFile] = useState(null); 
   const [error, setError] = useState('');
   const [warnMessage, setWarnMessage] = useState('');
 
   const handleConfirm = async () => {
-    if (!props.selectedClient || !file) {
+    if (!selectedClient || !file) {
       setError('Please select a file.');
       return;
     }
     setError('');
     setWarnMessage('Cases allocation is in progress. Please wait...');
-    await props.onFileChange(file);
+    await onFileChange(file);
     handleClose()
     setWarnMessage('');
   };
 
   const handleClose =() => {
     setError('');
-    props.onSelect()
+    onSelect()
     setFile(null)
     onClose();
   }
-
-
+  
   return (
       <Modal show={show} onHide={handleClose}>
         <Modal.Header closeButton>
@@ -39,17 +38,17 @@ const ImportModal = (props) => {
             </div>
           )}
           {
-            props.selectedClient ? null :
+            selectedClient ? null :
           <div className="mb-3">
             <label htmlFor="clientSelect" className="form-label">Select Client</label>
             <select
               className="form-select"
               id="clientSelect"
-              value={props.selectedClient}
-              onChange={props.onSelect}
+              value={selectedClient}
+              onChange={onSelect}
             >
               <option value="">Choose a client...</option>
-              {props.clients && props.clients.map(client => (
+              {clients && clients.map(client => (
                 <option key={client.id} value={client.id}>
                   {client.name}
                 </option>

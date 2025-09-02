@@ -2,8 +2,7 @@ import React from 'react'
 import { useState } from 'react';
 import AddBookInCaseModal from '../components/AddBookInCaseModal';
 import { Tab, Tabs } from 'react-bootstrap';
-import XmlTab from '../components/XmlTab';
-import NonXmlTab from '../components/NonXmlTab';
+import XmlNonXmlTab from '../components/Xml_NonXmlTab';
 import { nonXmlLabels, xmllabels } from '../Utility';
 // import { fetchByCaseNumber } from '../services/API';
 
@@ -35,10 +34,10 @@ const BookIn = () => {
         className="cases-tabs mt-2"
       >
         <Tab eventKey="xml" title="XML">
-          <XmlTab addBookInCase={addBookInCase} xmlLabels={labels} />
+         {labels && <XmlNonXmlTab addBookInCase={addBookInCase} labels={labels} tab={activeTab} />}
         </Tab>
         <Tab eventKey="non-xml" title="NON-XML">
-          <NonXmlTab addBookInCase={addBookInCase} nonXmlLabels={labels} />
+          {labels && <XmlNonXmlTab addBookInCase={addBookInCase} labels={labels} tab={activeTab} />}
         </Tab>
       </Tabs>      
       <AddBookInCaseModal show={showAddModal} onClose={() => setShowAddModal(false)} labels={labels} tab={activeTab} />
