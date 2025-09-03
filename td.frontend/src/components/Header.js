@@ -1,7 +1,6 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Navbar, Container, Nav } from 'react-bootstrap';
-import '../styles/Header.css'; 
-import { useMsal } from '@azure/msal-react';
+import '../styles/Header.css';
 import { useEffect, useState } from 'react';
 import ClientSelectModal from './ClientSelectModal';
 import { useGlobalData } from '../services/GlobalContext';
@@ -10,26 +9,25 @@ import ToolTipOverlay from './ToolTipOverlay';
 import { NavLink } from 'react-router-dom';
 
 const Header = () => {
-  const { accounts } = useMsal();
   const [show, setShow] = useState(false);
   const [clientName, setClientName] = useState('');
   const [user, setUser] = useState([]);
-  const initials = accounts.length > 0 ? getInitials(accounts[0].name) : '';
-  const {allClients, currentClientId, isAdmin, users} = useGlobalData(); 
+  const initials = getInitials(localStorage.getItem('userName'));
+  const {allClients, currentClientId, isAdmin, isManager, users} = useGlobalData(); 
   useEffect(() => {
-    localStorage.setItem("userName", accounts[0].name);
-    localStorage.setItem("userEmail", accounts[0].username);
     if(currentClientId){
       const client = allClients.find((client) => client.id.toString() === currentClientId.toString())
       if (client) setClientName(client.name);
     }
-    const currentUser = users.filter((user) => user.email === accounts[0].username);
+    const userEmail = localStorage.getItem('userEmail')
+    const currentUser = users.filter((user) => user.email === userEmail.toString());
+    
     if (currentUser && currentUser.length > 0) {
       setUser(currentUser);
     }
-  },[accounts, allClients, currentClientId, users])
+  },[allClients, currentClientId, users])
 
-  const handleModalClick = (client) => {
+  const handleClientClick = (client) => {
     setShow(!show);
     if(client && typeof client === 'number'){
       localStorage.setItem("currentClient", client);
@@ -41,6 +39,8 @@ const Header = () => {
     <Navbar bg="primary" variant="dark" expand="sm" fixed="top">
       <Container fluid>
         <Navbar.Toggle aria-controls="responsive-navbar-nav" className="order-1" />
+        {
+          isAdmin ?
         <div className="d-flex d-sm-none ms-auto align-items-center order-2">
           <NavLink
             className={({ isActive }) => (isActive ? 'active ' : '') + 'me-2'}
@@ -49,13 +49,14 @@ const Header = () => {
             Admin
           </NavLink>
           <span className="profile" >{initials}</span>
-        </div>
+        </div> : null 
+        }
         <Navbar.Collapse id="responsive-navbar-nav" className="order-3">
            {
               clientName ? (
                 <h6
                   className="clientName me-2 mb-2 mb-lg-0"
-                  onClick={handleModalClick}                  
+                  onClick={handleClientClick}                  
                 >
                   {clientName?.toLocaleUpperCase()}
                 </h6>
@@ -68,13 +69,16 @@ const Header = () => {
             >
               Dashboard
             </NavLink>
+            {
+              isAdmin || isManager ? 
             <NavLink
               className={({ isActive }) => (isActive ? 'active ' : '') + 'mb-2 mb-lg-0 nav-item nav-link'}
               to="/all-cases"
               
             >
               All Cases
-            </NavLink>
+            </NavLink> : null
+            }
             <NavLink
               className={({ isActive }) => (isActive ? 'active ' : '') + 'mb-2 mb-lg-0 nav-item nav-link'}
               to="/my-cases"
@@ -82,12 +86,24 @@ const Header = () => {
             >
               My Cases
             </NavLink>
+            {
+              isAdmin || isManager ?
             <NavLink
               className={({ isActive }) => (isActive ? 'active ' : '') + 'nav-item nav-link'}
-              to="/traige-cases"
+              to="/triage-cases"
             >
               Triage Cases
-            </NavLink>
+            </NavLink> : null
+            }
+            {
+              currentClientId && allClients && allClients.find((client) => client.id.toString() === currentClientId)?.name?.toLowerCase() === "cipla" ? 
+              <NavLink
+              className={({ isActive }) => (isActive ? 'active ' : '') + 'nav-item nav-link'}
+              to="/book-in"              
+            >
+              Book In
+            </NavLink> : null
+            }
             <NavLink
               className={({ isActive }) => (isActive ? 'active ' : '') + 'nav-item nav-link'}
               to="/employees"              
@@ -95,23 +111,25 @@ const Header = () => {
               Employee Tracker
             </NavLink>
           </Nav>
-          <Nav className="ms-auto align-items-center d-none d-sm-flex nav-tabs">
+          <Nav className="ms-auto align-items-center d-none d-sm-flex nav-tabs">            
+          {
+            isAdmin ?
             <NavLink
               className={({ isActive }) => (isActive ? 'active ' : '') + 'nav-item nav-link'}
-              to="/admin"
-              
+              to="/admin"              
             >
               Admin
             </NavLink>
+            : null }
             <span className="profile" >
-              <ToolTipOverlay initials={initials} account={accounts[0]} />
+              <ToolTipOverlay initials={initials} />
             </span>
           </Nav>
         </Navbar.Collapse>
       </Container>
       {
         isAdmin || (user && user.length > 1) ?
-          <ClientSelectModal open={show} onSelect={handleModalClick} onClose={handleModalClick} /> : null
+          <ClientSelectModal open={show} onSelect={handleClientClick} onClose={handleClientClick} /> : null
       }
     </Navbar>
   );

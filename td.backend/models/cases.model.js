@@ -14,9 +14,9 @@ module.exports = (sequelize, DataTypes) => {
     },
     caseNumber: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: true
     },
-    initial_fup_fupToOpen: {
+    inital_fup: {
       type: DataTypes.STRING,
       allowNull: true
     },
@@ -104,6 +104,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.TEXT,
       allowNull: true
     },
+    comment2: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
     isCaseOpen: {
       type: DataTypes.BOOLEAN,
       allowNull: true,
@@ -130,7 +134,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true
     },
     XML_Non_XML: {
-      type: DataTypes.STRING(50),
+      type: DataTypes.STRING,
       allowNull: true
     },
     ORD:{
@@ -184,7 +188,139 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DATE,
       defaultValue: null,
       allowNull: true
+    },
+    authorityNumber: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    safetyReportId: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    validity: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    argusId: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    literatureCitation: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    linkedDeactivations: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    bookInDate: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    bookInReceivedDate: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    manualBookIn: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: false
+    },
+    bookInAssignedDate: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    bookInStartedAt: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    bookInCompletedAt: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    bookInWorkStatus: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    bookInType: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    OM_ID: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    case_is_from: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    subjectLine: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    title_of_the_article: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    bookInAssignedTo: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    bookInReceiptDate: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    bookInDueDate: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    bookInCompletedDate: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    bookInStatus: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    no_of_cases_created: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
+    TAT_date: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    allocation_Received_on: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    COI: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    suspect_drug: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    event: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    LOE: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true
+    },
+    PQC: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true
+    },
+    openWorkflow: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: false
     }
+  },{
+    timestamps: true
   });
 
   Cases.associate = (models) => {

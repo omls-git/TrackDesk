@@ -3,42 +3,38 @@ import BootstrapTable from 'react-bootstrap-table-next';
 import cellEditFactory, { Type } from 'react-bootstrap-table2-editor';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
-// import paginationFactory from 'react-bootstrap-table2-paginator';
+import paginationFactory from 'react-bootstrap-table2-paginator';
 import { getClientAssigniesOfRole } from '../services/Common';
-import { useCallback } from 'react';
 import {updateCase, updateToNext } from '../services/API';
 import { useGlobalData } from '../services/GlobalContext';
-import { formattedIST, getDaysOpen } from '../Utility';
+import { caseStatusOptions, caseStatusOptionsCipla, formattedIST, getDaysOpen } from '../Utility';
 import CaseDetailsModal from './CaseDetailsModal';
 
 const TrackTable = (props) => {
-  const { data, clients } = props;
+  const { data } = props;
   const [des, setDes] = useState([]);
   const [qrs, setQrs] = useState([]);
   const [mrs, setMrs] = useState([]);  
   const [selectedCase, setSelectedCase] = useState(null);
-  const { loggedUserName, isAdmin, isManager, isUser, currentClientId, allClients } = useGlobalData();  
+  const { loggedUserName, isAdmin, isManager, users, currentClientId, allClients, user, isCipla } = useGlobalData();  
+
   const toolTipFormatter = (cell) => (
     <span title={cell} 
-    style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'inline-block', maxWidth: 100 }}>
+    style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'inline-block', maxWidth: 150 }}>
       {cell}
     </span>
   )
 
-  const fetchAssignes = useCallback(async () => {
-    if (data && data.length > 0) {
-      const assignies = await getClientAssigniesOfRole('data entry',currentClientId);
+  useEffect(() => {
+     if (data && data.length > 0) {
+      const assignies = getClientAssigniesOfRole('data entry',currentClientId, users);
       setDes(assignies);
-      const qrAssignies = await getClientAssigniesOfRole('quality review',currentClientId);
+      const qrAssignies = getClientAssigniesOfRole('quality review',currentClientId, users);
       setQrs(qrAssignies);
-      const mrAssignies = await getClientAssigniesOfRole('medical review', currentClientId);
+      const mrAssignies = getClientAssigniesOfRole('medical review', currentClientId, users);
       setMrs(mrAssignies);
     }
-  }, [data, currentClientId]);
-
-  useEffect(() => {
-    fetchAssignes();
-  }, [fetchAssignes]);
+  }, [currentClientId, data, users]);
 
   const isEditable = (cell,  row) => {
     const editable = (isManager || isAdmin) ? true : false
@@ -54,35 +50,9 @@ const TrackTable = (props) => {
       text: 'ID',
       sort: true,
       editable: false,
+      hidden:true,
       headerStyle: () => ({ width: '80px', minWidth: '50px' }),
     }, 
-    {
-      dataField: 'casesOpen',
-      text: 'Days Open',
-      // sort: true,
-      width: 100,
-      editable: false,
-      headerStyle: () => ({ width: '100px', minWidth: '100px' }),
-      formatter: (cell, row) => {
-        const numberOfDaysCaseOpen = getDaysOpen(row);
-        return numberOfDaysCaseOpen
-      }
-    },
-    {
-      dataField: 'project_id',
-      text: 'Client ID',
-      // sort: true,
-      width: 100,
-      editable: false,
-      headerStyle: () => ({ width: '100px', minWidth: '100px' }),
-      formatter: (cell, row) => {
-        if (clients && clients.length > 0) {
-          const client = clients.find(c => c.id === row.project_id);
-          return client ? client.name : row.project_id;
-        }
-        return row.project_id;
-      }
-    },
     {
       dataField: 'caseNumber',
       text: 'Case Number',
@@ -102,7 +72,19 @@ const TrackTable = (props) => {
       // }
     },
     {
-      dataField: 'initial_fup_fupToOpen',
+      dataField: 'casesOpen',
+      text: 'Days Open',
+      // sort: true,
+      width: 100,
+      editable: false,
+      headerStyle: () => ({ width: '100px', minWidth: '100px' }),
+      formatter: (cell, row) => {
+        const numberOfDaysCaseOpen = getDaysOpen(row);
+        return numberOfDaysCaseOpen
+      }
+    },
+    {
+      dataField: 'inital_fup',
       text: 'Initial/FUP',
       // sort: true,
       width: 100,
@@ -122,7 +104,17 @@ const TrackTable = (props) => {
       formatter: formateDates,
       headerStyle: () => ({ width: '110px', minWidth: '100px' }),
     },
-    ...(currentClientId && allClients.find((client) => client.id.toString() === currentClientId)?.name?.toLowerCase() === "cipla" ? [{
+    ...(currentClientId && isCipla? [
+      {
+        dataField: 'ReportType',
+        text: 'Report Type',
+        // sort: true,
+        width: 100,
+        editable: false,
+        headerStyle: () => ({ width: '160px', minWidth: '150px' }),
+        formatter: toolTipFormatter
+      },
+      {
       dataField: 'ORD',
       text: 'ORD',
       // sort: true,
@@ -136,9 +128,63 @@ const TrackTable = (props) => {
       // sort: true,
       width: 100,
       editable: false,
-      headerStyle: () => ({ width: '110px', minWidth: '100px' }),
+      headerStyle: () => ({ width: '160px', minWidth: '100px' }),
       formatter: toolTipFormatter
-    }
+    },
+    {
+    dataField: 'Country',
+    text: 'Country',
+    // sort: true,
+    width: 100,
+    editable: false,
+    headerStyle: () => ({ width: '120px', minWidth: '100px' }),
+    formatter: toolTipFormatter
+  },
+  {
+    dataField: 'DestinationForReporting',
+    text: 'Destination for Reporting',
+    width: 100,
+    editable: false,
+    editor : {
+      type: Type.TEXT,
+      rows: 3,
+    },
+    headerStyle: () => ({ width: '160px', minWidth: '100px' }),
+    formatter: toolTipFormatter
+  },
+  {dataField: 'SDEAObligation',
+    text: 'SDEA Obligation',
+    width: 100,
+    editable: false,
+    editor : {
+      type: Type.TEXT,
+      rows: 3,
+    },
+    headerStyle: () => ({ width: '160px', minWidth: '100px' }),
+    formatter: toolTipFormatter
+  },
+  {dataField: 'Partner',
+    text: 'Partner',
+    width: 100,
+    editable: false,
+    editor : {
+      type: Type.TEXT,
+      rows: 3,
+    },
+    headerStyle: () => ({ width: '150px', minWidth: '100px' }),
+    formatter: toolTipFormatter
+  },
+  {dataField: 'ReportingComment',
+    text: 'Reporting Comment',
+    width: 100,
+    editable: false,
+    editor : {
+      type: Type.TEXT,
+      rows: 3,
+    },
+    headerStyle: () => ({ width: '160px', minWidth: '100px' }),
+    formatter: toolTipFormatter
+  }
   ] : []),
     {
       dataField: 'de',
@@ -236,17 +282,12 @@ const TrackTable = (props) => {
       text: 'Case Status',
       // sort: true,
       width: 150,
-      editable: isEditable,
+      editable: isEditable || user?.assignTriage ? true : false,
       editor : {
         type: Type.SELECT,
-        options: [
-          { value: 'Reporting', label: 'Reporting' },
-          { value: 'Data Entry', label: 'Data Entry' },
-          { value: 'Quality Review', label: 'Quality Review' },
-          { value: 'Medical Review', label: 'Medical Review' }
-        ],
+        options: isCipla ? caseStatusOptionsCipla : caseStatusOptions
       },
-      headerStyle: () => ({ width: '150px', minWidth: '150px' }),
+      headerStyle: () => ({ width: '160px', minWidth: '150px' }),
     },
     {
       dataField: 'reportability',
@@ -279,6 +320,7 @@ const TrackTable = (props) => {
         rows: 3,
       },
       headerStyle: () => ({ width: '200px', minWidth: '200px' }),
+      formatter: toolTipFormatter
     }
   ]; 
 
@@ -311,8 +353,9 @@ const TrackTable = (props) => {
       }
     }
   };
+  const pageSize = 50;
   return (
-    <div className="mt-4 text-center">
+    <div className="mt-4 text-center table-responsive">
       <BootstrapTable
         keyField="id"
         data={data}
@@ -325,29 +368,28 @@ const TrackTable = (props) => {
         cellEdit={cellEditFactory({
           mode: 'click',
           blurToSave: true,
-           beforeSaveCell: async(
+          beforeSaveCell: async(
               oldValueIn,
               newValueIn,
               row,
               column,
               done
           ) =>{
-            const oldValue = oldValueIn?.trim();
-            const newValue = newValueIn?.trim();
+            const oldValue = typeof oldValueIn === 'boolean' || typeof oldValueIn === 'number' ? oldValueIn : oldValueIn?.trim();
+            const newValue = typeof newValueIn === 'boolean' || typeof newValueIn === 'number' ? newValueIn : newValueIn?.trim();
 
             if (oldValue === newValue || (!oldValue && !newValue)) {
               done(true); // No change, allow saving
               return;
             }
             let updatedCase = row;
-
+            
             if(column.dataField === "caseStatus"){
               updatedCase[column.dataField] = newValue.trim();
               if((newValue.toLowerCase().trim() === "quality review" && oldValue.toLowerCase().trim() === "data entry") || 
                 (newValue.toLowerCase().trim() === "medical review" && oldValue.toLowerCase().trim() === "quality review") || 
                 (newValue.toLowerCase().trim() === "reporting" && oldValue.toLowerCase().trim() === "medical review")){
                 const caseUpdated = await updateToNext(updatedCase)
-                console.log(caseUpdated)
                 props.setData((prevData) =>
                 prevData.map((item) => (item.id === caseUpdated.id ? { ...item, ...caseUpdated } : item))
                 );              
@@ -385,54 +427,68 @@ const TrackTable = (props) => {
               }
             }
 
-            if(column.dataField === "deStatus" || column.dataField === "qrStatus" || column.dataField === "mrStatus"){
+            if(column.dataField === "deStatus" || column.dataField === "qrStatus" || column.dataField === "mrStatus" || column.dataField === 'triageStatus'){
               updatedCase[column.dataField] = newValue.trim();
               if(column.dataField === "deStatus"){
                 updatedCase.deStartedAt = newValue.trim() === "In Progress" ? formattedIST() : updatedCase.deStartedAt;
                 if(newValue.trim() === "Completed"){
                   updatedCase.caseStatus = "Quality Review";
-                   updatedCase = await updateToNext(updatedCase)
                 }
               } else if(column.dataField === "qrStatus"){
                 updatedCase.qrStartedAt = newValue.trim() === "In Progress" ? formattedIST() : updatedCase.qrStartedAt;
                 if(newValue.trim() === "Completed"){
                   updatedCase.caseStatus = "Medical Review";
-                   updatedCase = await updateToNext(updatedCase)
                 }
               } else if(column.dataField === "mrStatus"){
                 updatedCase.mrStartedAt = newValue.trim() === "In Progress" ? formattedIST() : updatedCase.mrStartedAt;
                 if(newValue.trim() === "Completed"){
                   updatedCase.caseStatus = "Reporting";
                   updatedCase.isCaseOpen = false;
-                  updatedCase = await updateToNext(updatedCase)
                 }
-              }
+              } else if(column.dataField === "triageStatus"){
+                updatedCase.triageStartedAt = newValue.trim() === "In Progress" ? formattedIST() : updatedCase.triageStartedAt;
+                if(newValue.trim() === "Completed"){
+                  updatedCase.caseStatus = "Data Entry";
+                  updatedCase.isCaseOpen = true;
+                }
+              }              
+            }
+
+            if(newValue && newValue.trim() === "Completed"){
+              updatedCase = await updateToNext(updatedCase)
               props.setData((prevData) =>
                 prevData.map((item) => (item.id === updatedCase.id ? { ...item, ...updatedCase } : item))
               );
-              done(true);
+              done(true)
               return;
             }
 
-            updatedCase[column.dataField] = newValue.trim();
+            if(column.dataField === "ird_frd"){              
+              updatedCase.casesOpen = getDaysOpen(updatedCase)
+            }
+
+            updatedCase[column.dataField] = typeof newValue === "string" ? newValue.trim() : newValue
+
             props.setData((prevData) =>
                 prevData.map((item) => (item.id === updatedCase.id ? { ...item, ...updatedCase } : item))
               );
-            if(newValue !== oldValue){
+            
+            if(newValue !== oldValue){              
               await updateCase(updatedCase);
             }            
             done(true);
           },
         })}
-        // pagination={paginationFactory({
-        //   sizePerPage: 30,
-        //   hideSizePerPage: true,
-        //   showTotal: data.length > 30,
-        //   totalSize: data.length,
-        //   paginationTotalRenderer: (from, to, size) => {
-        //     return ("Showing " + from + " to " + to + " of " + size + " entries")
-        //     }
-        // })}
+        pagination={ 
+          data?.length > pageSize ? paginationFactory({
+          sizePerPage: pageSize,
+          hideSizePerPage: true,
+          showTotal: data?.length > pageSize,
+          hidePageListOnlyOnePage: true,
+          paginationTotalRenderer: (from,  to, size) => {
+            return ("Showing " + from + " to " + to + " of " + size + " entries")
+            }
+        }) : undefined}
       /> 
        <CaseDetailsModal show={!!selectedCase} onClose={() => setSelectedCase(null)} caseData={selectedCase} />
     </div>

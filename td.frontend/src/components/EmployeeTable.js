@@ -52,7 +52,7 @@ const EmployeeTable = (props) => {
       },
       formatter: (cell, row) => {
         if (clients && clients.length > 0) {
-          const client = clients.find(c => c.id === row.projectId);
+          const client = clients.find(c => c.id.toString() === row.projectId.toString());
           return client ? client.name : row.projectId;
         }
         return row.projectId;
@@ -66,12 +66,12 @@ const EmployeeTable = (props) => {
       editor: {
         type: Type.SELECT,
         options: [
-          { value: 0, label: "No"},
-          { value: 1, label: 'Yes' }
+          { value: true, label: 'Yes' },
+          { value: false, label: "No"}          
         ]
       },
       formatter: (cell, row) => {
-        return row.onLeave ? 'Yes' : 'No';
+        return cell ? "Yes" : "No";
       }
     },
     {
@@ -82,8 +82,8 @@ const EmployeeTable = (props) => {
       editor: {
         type: Type.SELECT,
         options: [
-          { value: 0, label: "No"},
-          { value: 1, label: 'Yes' }
+          { value: true, label: 'Yes' },
+          { value: false, label: "No"}
         ]
       },
       formatter: (cell, row) => {
@@ -153,7 +153,7 @@ const EmployeeTable = (props) => {
         cellEdit={cellEditFactory({
           mode: 'click',
           blurToSave: true,
-          beforeSaveCell: (
+          beforeSaveCell: async(
             oldValueIn,
             newValueIn,
             row,
@@ -167,16 +167,9 @@ const EmployeeTable = (props) => {
               return;
             }
             let updatedEmp = row;
-            if (column.dataField === 'onLeave') {
-              updatedEmp[column.dataField] = newValue === "1" ? true : false
-            } else {
-              updatedEmp[column.dataField] = newValue;
-            }
-
+            updatedEmp[column.dataField] = newValue;
             if (newValue !== oldValue) {
-              updateEmployee(updatedEmp).then(() => {
-                props.refreshData()
-              })
+             await updateEmployee(updatedEmp)
             }
             done(true);
           },

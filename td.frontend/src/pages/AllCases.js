@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import TrackTable from '../components/TrackTable';
 import ImportModal from '../components/ImportModal';
 import { deleteCases,fetchCasesByClientId, postCases } from '../services/API';
-import { exportToCSV, jsonDataFromFile, parseExcelDate } from '../Utility';
+import { exportToCSV, jsonDataFromFile } from '../Utility';
 import { useGlobalData } from '../services/GlobalContext';
 import Skeleton from '../components/Skeleton';
 
@@ -10,6 +10,7 @@ const AllCases = () => {
 
   const { loggedUserName, users, user, allClients, currentClientId} = useGlobalData();
   const [masterData, setMasterData] = useState([]); 
+  const [dupMasterData, setDupMasterData] = useState([]); 
   const [show, setShow] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState(currentClientId || '');
   const [selectedCases, setSelectedCases] = useState([]); 
@@ -17,27 +18,28 @@ const AllCases = () => {
   const [isAdminOrManager, setIsAdminOrManager] = useState(false);
   const [dateRange, setDateRange] = useState({ from: '', to: '' });
   const [loading, setLoading] = useState(false)
+
   const handleImportFile = async (file) => {
     if (!file) return;
     let jsonData = await jsonDataFromFile(file);    
     if(!jsonData || jsonData.length === 0)return;
-    const isProbablyDate = (val) =>
-      typeof val === 'number' && val > 25569 && val < 60000; // Excel date serial range
+    //const isProbablyDate = (val) => typeof val === 'number' && val > 25569 && val < 60000; // Excel date serial range
     jsonData = jsonData.map(row => {
       return Object.fromEntries(
         Object.entries(row).map(([key, value]) => {
-          if (isProbablyDate(value)) {
-            return [key, parseExcelDate(value)];
-          }
+          // if (isProbablyDate(value)) {
+          //   return [key, parseExcelDate(value)];
+          // }
           return [key, value];
         })
       );
     });
-    console.log(jsonData);
-    
+    if(jsonData.length){
     await postCases(jsonData, selectedClientId)
-    // await fetchAllCasesCallback();
-    // handleClose();
+    await fetchAllCasesCallback();
+    handleClose();
+    }
+    
   };
 
   const handleExport = () => {
@@ -54,9 +56,11 @@ const AllCases = () => {
     setLoading(true); 
     if(user){
       try {
-        const cases = await fetchCasesByClientId(currentClientId);
+        let cases = await fetchCasesByClientId(currentClientId);
         if (cases) {
+          cases = cases.filter((item) => !item.caseStatus.toLowerCase().trim().includes('triage'));
            setMasterData(cases);
+           setDupMasterData(cases);
         }       
       } catch (error) {
         console.error("Error fetching cases:", error);
@@ -65,6 +69,7 @@ const AllCases = () => {
       }
     }else{
       setMasterData([]);
+      setDupMasterData([])
       setLoading(false);
     }
     
@@ -87,14 +92,13 @@ const AllCases = () => {
     setDateRange((prev) => ({ ...prev, [name]: value }));
   };
 
-
   const handleClose = () => setShow(false);
 
   const handleShow = () => setShow(true);
 
   const onClientChange =(e) => {
     const clientId = e?.target?.value;
-    clientId ? setSelectedClientId(e.target.value) : setSelectedClientId(currentClientId || '');
+    clientId ? setSelectedClientId(clientId) : setSelectedClientId(currentClientId || '');
   }
 
   const deleteSelectedCases = async() => {
@@ -107,10 +111,10 @@ const AllCases = () => {
     const searchTerm = e?.target?.value?.toLowerCase();
     setSearchTerm(searchTerm);
     if (!searchTerm) {
-      fetchAllCasesCallback();
+      setMasterData(dupMasterData)
       return;
     }    
-    const filteredData = masterData.filter(item =>
+    const filteredData = dupMasterData.filter(item =>
       Object.values(item).some(value =>
         String(value).toLowerCase().includes(searchTerm)
       )
@@ -201,7 +205,7 @@ const AllCases = () => {
         <button className="btn btn-danger ms-auto"
          onClick={deleteSelectedCases}
          >Delete {selectedCases.length ?'(' + selectedCases.length + ')' : ''}</button> : null }
-        <button className="btn btn-success ms-auto"
+        <button className="btn btn-secondary ms-auto"
          onClick={handleExport}
          >Export {selectedCases.length ?'(' + selectedCases.length + ')' : ''}</button>
          </div>
@@ -221,7 +225,7 @@ const AllCases = () => {
       <ImportModal show={show}
        onClose={handleClose}
        onShow={handleShow}
-       title={"Import Master Tracker"}
+       title={"Import Line Listing"}
        onFileChange={handleImportFile} 
        selectedClient={selectedClientId}
        onSelect={onClientChange} clients={allClients}

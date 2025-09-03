@@ -3,3 +3,16 @@
   margin-top: 40px;
   padding: 20px;
 }
+.clear-search {
+  position: relative;
+  right: 50px;
+  cursor: pointer;
+  color: #6d6b6bff;
+  font-weight: bold;
+  font-size: 20px;
+  z-index: 2;
+  user-select: none;
+  background-color: rgb(240, 237, 237);
+  padding: 0 5px;
+  height: 32px;
+}

@@ -8,15 +8,17 @@ export const msalInstance = new PublicClientApplication(msalConfig);
 
 
 export const SignInButton = () => {
-  const {instance, accounts} = useMsal();
+  const {instance} = useMsal();
   const handleLogin = async() => {
     await msalInstance.initialize();
     try{
-      await instance.loginPopup(loginRequest)
-      console.log("Login successful",accounts);
-      
-      if (accounts && accounts.length > 0) {
-        localStorage.setItem('username', accounts[0].username);
+     const loginResponse = await instance.loginPopup(loginRequest)
+
+      if(loginResponse){
+        const userEmail = loginResponse.account.username;
+        const userName = loginResponse.account.name
+        localStorage.setItem("userName", userName);
+        localStorage.setItem("userEmail", userEmail);
       }
     } catch(err){
       console.error("Login error: ", err);
@@ -24,7 +26,6 @@ export const SignInButton = () => {
     
   };
 
-  //return <button onClick={handleLogin}>Sign In with Microsoft</button>;
   return (
     <div className="d-flex justify-content-center align-items-center p-4" onClick={handleLogin}>
       <button className="btn btn-dark  shadow-sm p-3">
@@ -49,7 +50,6 @@ const SignOutButton = () => {
 
 function Login() {
   const isAuthenticated = useIsAuthenticated();
- // You can also request scopes or handle token acquisition using acquireTokenSilent() or acquireTokenPopup() to call protected APIs like Microsoft Graph.
 
   return (
     <div>
