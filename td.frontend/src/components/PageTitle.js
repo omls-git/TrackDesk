@@ -1,27 +1,9 @@
 import React from 'react'
 import { useGlobalData } from '../services/GlobalContext';
-import ImportModal from './ImportModal';
 
 const PageTitle = (props) => {
-  const { searchTerm, setSearchTerm, addBookInCase, title } = props;  
-  const {isAdmin, isManager, allClients, currentClientId} = useGlobalData();
-  const [show, setShow] = React.useState(false);
-  const [selectedClientId, setSelectedClientId] = React.useState(currentClientId); // Add this line
-
-  // Handle client selection change
-  const onClientChange = (e) => {
-    const clientId = e?.target?.value;
-    clientId ? setSelectedClientId(clientId) : setSelectedClientId(currentClientId || '');
-  };
-
-  // Define handleClose function
-  const handleModal = () => setShow(!show);
-
-  // Define handleImportFile function
-  const handleImportFile = (file) => {
-    // TODO: implement file import logic here
-    console.log('Import file:', file);
-  };
+  const { searchTerm, setSearchTerm, addBookInCase, title, handleModal, selectedCases, onDelete, onExport } = props;  
+  const {isAdmin, isManager} = useGlobalData();
 
   // Define handleSearch function
   const handleSearch = (e) => {
@@ -68,27 +50,16 @@ const PageTitle = (props) => {
           Book In New Case {"("+title.toUpperCase()+")"}
         </button> 
         {/* : null} */}
-        <button className="btn btn-secondary" >
-          Export 
-           {/* {selectedTriageCaseIds.length ?'('+ selectedTriageCaseIds.length + ')' : ''} */}
+        <button className="btn btn-secondary" onClick={onExport} >
+          Export {selectedCases.length ?'('+ selectedCases.length + ')' : 'All'}
         </button> 
         {/* {
           isAdmin || isManager ?  */}
-        <button className="btn btn-danger">
-          Delete 
-           {/* {selectedTriageCaseIds.length ?'('+ selectedTriageCaseIds.length + ')' : ''} */}
+        <button className="btn btn-danger" onClick={onDelete}>
+          Delete {selectedCases.length ?'('+ selectedCases.length + ')' : ''}
         </button> 
         {/* : null} */}
          </div>
-         <ImportModal show={show}
-          onClose={handleModal}
-          onShow={handleModal}
-          title={"Import XML file (Intake & Triage)"}
-          onFileChange={handleImportFile} 
-          selectedClient={selectedClientId}
-          onSelect={onClientChange}
-          clients={allClients}
-        />
          </div>
   )
 }

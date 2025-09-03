@@ -72,8 +72,17 @@ export const postCases = async (dataFromLL, clientId) => {
   let deQrMrCases = dataFromLL.filter(item => ["data entry", "quality review", "medical review"].includes(item["Case Status"].toLowerCase().trim()))
 
   const allOpenCases = await fetchClientOpenCases(true, clientId);
-  let allOpenCasesMapDays = allOpenCases.map((ongoingCase) => {return{...ongoingCase, casesOpen: getDaysOpen(ongoingCase)}})
+
+  let allOpenCasesMapDays = [];
+  if(allOpenCases && allOpenCases.length){
+    allOpenCasesMapDays = allOpenCases.map((ongoingCase) => {return{...ongoingCase, casesOpen: getDaysOpen(ongoingCase)}})
+  }
   const assignies = await getEmployees();
+
+  if(!assignies || assignies.length === 0){
+    alert('No employees found for case assignment. Please add employees first.');
+    return;
+  }
 
   if(importedTriageCases && importedTriageCases.length){//only new triage cases are assigned and created, existing unassigned triage cases are updated with latest status from LL and also existing triage cases has to be assigned and updated
     const existingTriageCases = allOpenCasesMapDays?.filter((item) => item.caseStatus.toLowerCase().trim().includes('triage'));
@@ -83,7 +92,7 @@ export const postCases = async (dataFromLL, clientId) => {
       let newTriageCases = []
       for (let i = 0; i < assignedTriageCases.length; i++) {
         const triageCase = assignedTriageCases[i];
-        const activeTriageCase = allOpenCasesMapDays.find((item) => item.caseNumber === triageCase.caseNumber)
+        const activeTriageCase = allOpenCasesMapDays?.find((item) => item.caseNumber === triageCase.caseNumber)
         if(activeTriageCase){
           activeTriageCase.caseStatus = triageCase.caseStatus         
           await updateCase(activeTriageCase)
@@ -118,7 +127,7 @@ export const postCases = async (dataFromLL, clientId) => {
         }
       })
 
-      let unAssignedCases = openCasesWithUpdatedStatus.filter(
+      let unAssignedCases = openCasesWithUpdatedStatus?.filter(
         (unAssignedCase) => (unAssignedCase.caseStatus.toLowerCase().trim() === "data entry" && !unAssignedCase.de) 
         || (unAssignedCase.caseStatus.toLowerCase().trim() === "quality review" && !unAssignedCase.qr) 
         || (unAssignedCase.caseStatus.toLowerCase().trim() === "medical review" && !unAssignedCase.mr))
@@ -126,8 +135,7 @@ export const postCases = async (dataFromLL, clientId) => {
 
       // Assign unassigned cases from existing open cases
       if(unAssignedCases && unAssignedCases.length){ 
-        const assignUnAssignedCases = caseAllocation(unAssignedCases, openCasesWithUpdatedStatus, assignies, clientId)
-        .filter((unAssignedCase) => (unAssignedCase.caseStatus.toLowerCase().trim() === "data entry" && unAssignedCase.de) 
+        const assignUnAssignedCases = caseAllocation(unAssignedCases, openCasesWithUpdatedStatus, assignies, clientId)?.filter((unAssignedCase) => (unAssignedCase.caseStatus.toLowerCase().trim() === "data entry" && unAssignedCase.de) 
         || (unAssignedCase.caseStatus.toLowerCase().trim() === "quality review" && unAssignedCase.qr) 
         || (unAssignedCase.caseStatus.toLowerCase().trim() === "medical review" && unAssignedCase.mr))
         if(assignUnAssignedCases && assignUnAssignedCases.length){
@@ -135,7 +143,7 @@ export const postCases = async (dataFromLL, clientId) => {
         }
       }
 
-      let assignedCases = openCasesWithUpdatedStatus.filter(
+      let assignedCases = openCasesWithUpdatedStatus?.filter(
         (unAssignedCase) => (unAssignedCase.caseStatus.toLowerCase().trim() === "data entry" && unAssignedCase.de) 
         || (unAssignedCase.caseStatus.toLowerCase().trim() === "quality review" && unAssignedCase.qr) 
         || (unAssignedCase.caseStatus.toLowerCase().trim() === "medical review" && unAssignedCase.mr));
@@ -151,7 +159,7 @@ export const postCases = async (dataFromLL, clientId) => {
       }
       }
 
-      let newWorkFlowCases = deQrMrCases.filter((item) => !openCasesWithUpdatedStatus.find((activeCase) => findIsActiveCase(item, activeCase)));
+      let newWorkFlowCases = deQrMrCases?.filter((item) => !openCasesWithUpdatedStatus?.find((activeCase) => findIsActiveCase(item, activeCase)));
       if(newWorkFlowCases && newWorkFlowCases.length){
         console.log(newWorkFlowCases, "new workflow cases");
         newWorkFlowCases = await Promise.all(
@@ -183,13 +191,14 @@ export const postCases = async (dataFromLL, clientId) => {
         const allOpenCases = await fetchClientOpenCases(true, clientId);
         const assignNewWorkFlowCases = caseAllocation(newWorkFlowCases, allOpenCases, assignies, clientId);
         console.log(newWorkFlowCases, "assigned new workflow cases", assignNewWorkFlowCases);
-        
+        if(newWorkFlowCases && newWorkFlowCases.length){
         try {
           await axios.post(`${API_URL}/cases/`, newWorkFlowCases)
         } catch (error) {
           console.error('error', error);
           alert("Failed to asign cases.")
         }
+      }
       }
 
     }
@@ -318,7 +327,7 @@ export const updateToNext = async (updatedCase) => {
     (item) => item.project_id.toString() === updatedCase.project_id.toString());
     // console.log(selectedClientOpenCases)
   const [deAvailabe, qrAvailabe, mrAvailable, triageesAvailable] = userAssignedCasesCount(clientAssignies, selectedClientOpenCases);
-  console.log(deAvailabe, qrAvailabe, mrAvailable, triageesAvailable)
+  // console.log(deAvailabe, qrAvailabe, mrAvailable, triageesAvailable)
 
    if(updatedCase.caseStatus.toLowerCase().trim().includes('triage')){
       const nextAvailableUserName = triageesAvailable.sort((a,b) => a.count - b.count)[0]
@@ -405,23 +414,59 @@ export const deleteClients = async (clientIds) =>{
   }
 }
 
-export const postBookInCase = async (cases, clientId, xml_nonXml) => {
-  let bookInCases = cases
+export const postBookInCase = async (cases, clientId, xml_nonXmlTab, existingData) => {
+  let bookInCases = []
   if (!Array.isArray(cases) || !clientId) {
-    bookInCases = { ...cases, caseStatus: "BookIn", project_id: clientId, bookInAssignedDate : formattedIST(), bookInWorkStatus: "Assigned", bookInType: xml_nonXml};
-  }else{
-    bookInCases = cases.map(item => {
-    let formattedItem = mapCaseToApiFormat(item, clientId);
-    formattedItem.isCaseOpen = true;    
-    formattedItem.ird_frd = parseExcelDate(item["Case Followup Receipt Date"]) || parseExcelDate(item["Case Initial Receipt Date"]);
-    return formattedItem;
-    })
+    if(xml_nonXmlTab.toLowerCase() === 'xml') {
+      const existingCase = existingData.find(item => item.safetyReportId === cases.safetyReportId);
+      if(existingCase) {
+        alert("Case already exists with Safety Report ID: (" + existingCase.safetyReportId + ")");
+        return [];
+      }
+    }
+    if(xml_nonXmlTab.toLowerCase() === 'non-xml') {
+      const existingCase = existingData.find(item => item.OM_ID === cases.OM_ID);
+      if(existingCase) {
+        alert("Case already exists with OM ID: (" + existingCase.OM_ID + ")");
+        return [];
+      }
+    }
+
+    bookInCases = { ...cases, 
+      caseStatus: "BookIn", 
+      project_id: clientId, 
+      bookInAssignedDate : formattedIST(), 
+      bookInWorkStatus: "Assigned", 
+      bookInType: xml_nonXmlTab
+    };
+  }else{    
+    bookInCases = cases.reduce((acc, item) => {
+      const formattedItem = mapCaseToApiFormat(item, clientId);
+      const exists = existingData.some(
+        (existing) => existing.safetyReportId === formattedItem.safetyReportId
+      );
+
+      if (!exists) {
+        formattedItem.isCaseOpen = true;
+        formattedItem.bookInType = xml_nonXmlTab;
+        formattedItem.caseStatus = "BookIn";
+        formattedItem.project_id = clientId;
+        acc.push(formattedItem);
+      }
+
+      return acc;
+    }, []);
   }
+
+  if(!bookInCases || (Array.isArray(bookInCases) && bookInCases.length === 0)) {
+    return [];
+  }
+  
   try {
     const res = await axios.post(`${API_URL}/cases/`, bookInCases);
     return res.data;
   } catch (error) {
-    console.error('Error posting book-in case:', error);
+    console.error('Error posting book-in case(s):', error);
     throw error.response;
   }
 }

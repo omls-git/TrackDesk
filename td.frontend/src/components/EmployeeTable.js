@@ -34,7 +34,8 @@ const EmployeeTable = (props) => {
           { value: 'None', label: 'None' },
           { value: 'Data Entry', label: 'Data Entry' },
           { value: 'Quality Review', label: 'Quality Review' },
-          { value: 'Medical Review', label: 'Medical Review' }
+          { value: 'Medical Review', label: 'Medical Review' },
+          { value: 'Book In', label: 'Book In' }
         ],
       },
     },

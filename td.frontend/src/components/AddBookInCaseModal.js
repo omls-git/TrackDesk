@@ -2,7 +2,6 @@ import React from 'react'
 import { useGlobalData } from '../services/GlobalContext';
 import { Button, Col, Form, Modal, Row } from 'react-bootstrap';
 import { postBookInCase } from '../services/API';
-import { formattedIST } from '../Utility';
 
 const AddBookInCaseModal = ({show, onClose, labels, tab}) => {
 
@@ -17,10 +16,9 @@ const AddBookInCaseModal = ({show, onClose, labels, tab}) => {
   };
 
   const handleSubmitCase = async() => {
-    console.log("Submitting case:", formData);
-    // Add your submit logic here
-    const res = await postBookInCase(formData, currentClientId, tab);
+    const res = await postBookInCase(formData, currentClientId, tab);    
     console.log("Response:", res);
+    onClose()
   };
 
   return (

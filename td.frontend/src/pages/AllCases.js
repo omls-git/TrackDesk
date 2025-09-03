@@ -22,18 +22,18 @@ const AllCases = () => {
   const handleImportFile = async (file) => {
     if (!file) return;
     let jsonData = await jsonDataFromFile(file);    
-    if(!jsonData || jsonData.length === 0)return;
-    //const isProbablyDate = (val) => typeof val === 'number' && val > 25569 && val < 60000; // Excel date serial range
-    jsonData = jsonData.map(row => {
-      return Object.fromEntries(
-        Object.entries(row).map(([key, value]) => {
-          // if (isProbablyDate(value)) {
-          //   return [key, parseExcelDate(value)];
-          // }
-          return [key, value];
-        })
-      );
-    });
+    // if(!jsonData || jsonData.length === 0)return;
+    // //const isProbablyDate = (val) => typeof val === 'number' && val > 25569 && val < 60000; // Excel date serial range
+    // jsonData = jsonData.map(row => {
+    //   return Object.fromEntries(
+    //     Object.entries(row).map(([key, value]) => {
+    //       // if (isProbablyDate(value)) {
+    //       //   return [key, parseExcelDate(value)];
+    //       // }
+    //       return [key, value];
+    //     })
+    //   );
+    // });
     if(jsonData.length){
     await postCases(jsonData, selectedClientId)
     await fetchAllCasesCallback();
@@ -102,9 +102,12 @@ const AllCases = () => {
   }
 
   const deleteSelectedCases = async() => {
+    if(!selectedCases || selectedCases.length === 0)return;
     await deleteCases(selectedCases);
     setSelectedCases([]);
-    await fetchAllCasesCallback();
+    const refreshData = dupMasterData.filter(item => !selectedCases.includes(item.id));
+    setMasterData(refreshData);
+    setDupMasterData(refreshData);
   }
 
   const handleSearchChange = (e) => {
@@ -200,19 +203,17 @@ const AllCases = () => {
         >
           Clear Filters
         </button>          
-        <div className='d-flex flex-wrap align-items-center gap-2 ms-auto'>
-          {isAdminOrManager ? 
+        <div className='d-flex flex-wrap align-items-center gap-2 ms-auto'>          
+        <button className="btn btn-secondary ms-auto"
+         onClick={handleExport}
+         >Export {selectedCases.length ?'(' + selectedCases.length + ')' : 'All'}</button>
+         {isAdminOrManager ? 
         <button className="btn btn-danger ms-auto"
          onClick={deleteSelectedCases}
          >Delete {selectedCases.length ?'(' + selectedCases.length + ')' : ''}</button> : null }
-        <button className="btn btn-secondary ms-auto"
-         onClick={handleExport}
-         >Export {selectedCases.length ?'(' + selectedCases.length + ')' : ''}</button>
          </div>
       </div>
-      {loading && (
-        <Skeleton />
-      )}
+      {loading && (<Skeleton />)}
       {!loading && masterData.length === 0 && <div className="text-center">No data available</div>}
       {!loading && masterData && masterData.length > 0 && (
          <TrackTable data={masterData} cols={null} 

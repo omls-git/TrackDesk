@@ -326,9 +326,12 @@ const TriageCases = ({triageTab = false}) => {
   };
 
   const handleDelete = async () => {
+    if(!selectedTriageCaseIds || selectedTriageCaseIds.length === 0)return;
     await deleteCases(selectedTriageCaseIds);
     setSelectedTriageCaseIds([]);
-    await fetchData();
+    const refreshData = triageCases.filter(item => !selectedTriageCaseIds.includes(item.id));
+    setFilteredTriageCases(refreshData);
+    setTriageCases(refreshData);
   }
   return (
     <div>
