@@ -14,7 +14,8 @@ const TrackTable = (props) => {
   const { data } = props;
   const [des, setDes] = useState([]);
   const [qrs, setQrs] = useState([]);
-  const [mrs, setMrs] = useState([]);  
+  const [mrs, setMrs] = useState([]);
+  // const [bookInAssignies, setBookInAssignies] = useState([]);
   const [selectedCase, setSelectedCase] = useState(null);
   const { loggedUserName, isAdmin, isManager, users, currentClientId, allClients, user, isCipla } = useGlobalData();  
 
@@ -26,13 +27,15 @@ const TrackTable = (props) => {
   )
 
   useEffect(() => {
-     if (data && data.length > 0) {
+     if (data && data.length > 0 && currentClientId && users && users.length > 0) {      
       const assignies = getClientAssigniesOfRole('data entry',currentClientId, users);
       setDes(assignies);
       const qrAssignies = getClientAssigniesOfRole('quality review',currentClientId, users);
       setQrs(qrAssignies);
       const mrAssignies = getClientAssigniesOfRole('medical review', currentClientId, users);
       setMrs(mrAssignies);
+      // const bookInAssigniess = getClientAssigniesOfRole('book in', currentClientId, users);
+      // setBookInAssignies(bookInAssigniess);
     }
   }, [currentClientId, data, users]);
 
@@ -462,8 +465,7 @@ const TrackTable = (props) => {
               done(true)
               return;
             }
-
-            if(column.dataField === "ird_frd"){              
+            if(column.dataField === "ird_frd"){
               updatedCase.casesOpen = getDaysOpen(updatedCase)
             }
 

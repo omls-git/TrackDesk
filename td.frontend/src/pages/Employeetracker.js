@@ -62,6 +62,7 @@ function EmployeeTracker() {
   };
 
   const handleDeleteEmp = async() => {
+    if(!selectedEmployeeIds || selectedEmployeeIds.length === 0)return;
     await deleteEmployees(selectedEmployeeIds);
     setSelectedEmployeeIds([]);
     await fetchEmployees()

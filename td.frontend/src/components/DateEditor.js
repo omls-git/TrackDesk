@@ -1,4 +1,5 @@
 import React, { forwardRef, useImperativeHandle, useRef } from "react";
+import { formattedIST } from "../Utility";
 
 const DateEditor = forwardRef((editorProps, ref)=> {
   const { value, onUpdate, ...rest } = editorProps
@@ -15,7 +16,7 @@ const DateEditor = forwardRef((editorProps, ref)=> {
       type="date"
       ref={inputRef}
       defaultValue={date || ""}
-      onChange={(e) => onUpdate && onUpdate(inputRef.current.value)}
+      onChange={(e) => onUpdate && onUpdate(formattedIST(inputRef.current.value))}
       style={{ width: "100%" }}
     />
   );

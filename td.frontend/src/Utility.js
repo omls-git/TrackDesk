@@ -58,6 +58,18 @@ export const jsonDataFromFile = async(file) =>{
     alert("No Cases found in selected file.")
     return
   }
+  if(!jsonData || jsonData.length === 0) return;
+  // const isProbablyDate = (val) => typeof val === 'number' && val > 25569 && val < 60000; // Excel date serial range
+  jsonData = jsonData.map(row => {
+    return Object.fromEntries(
+      Object.entries(row).map(([key, value]) => {
+        // if (isProbablyDate(value)) {
+        //   return [key, parseExcelDate(value)];
+        // }
+        return [key, value];
+      })
+    );
+  });
   return jsonData
 }
 

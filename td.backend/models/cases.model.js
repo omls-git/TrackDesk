@@ -218,7 +218,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true
     },
     bookInReceivedDate: {
-      type: DataTypes.STRING,
+      type: DataTypes.DATE,
       allowNull: true
     },
     manualBookIn: {

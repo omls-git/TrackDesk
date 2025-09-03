@@ -1,20 +1,25 @@
 import React from 'react'
 import PageTitle from './PageTitle'
 import TrackTable from './TrackTable';
-import { getDaysOpen } from '../Utility';
-import { fetchBookInCases } from '../services/API';
+import { exportToCSV, getDaysOpen, jsonDataFromFile } from '../Utility';
+import { deleteCases, fetchBookInCases, postBookInCase } from '../services/API';
 import Skeleton from './Skeleton';
 import DateEditor from './DateEditor';
 import { Type } from 'react-bootstrap-table2-editor';
 import { useGlobalData } from '../services/GlobalContext';
+import ImportModal from './ImportModal';
+import { getClientAssigniesOfRole } from '../services/Common';
 
 const XmlNonXmlTab = (props) => {
   const { addBookInCase, labels, tab } = props;
   const [searchTerm, setSearchTerm] = React.useState('');
   const [xml_nonXmlData, setXml_nonXmlData] = React.useState([]);
+  const [dupXml_nonXmlData, setDupXml_nonXmlData] = React.useState([]);
   const [selectedXmlCases, setSelectedXmlCases] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
-  const {currentClientId} = useGlobalData();
+  const [show, setShow] = React.useState(false);
+  const {currentClientId, allClients, users} = useGlobalData();
+  const [selectedClientId, setSelectedClientId] = React.useState(currentClientId);
 
   // Fetch XML data
   const fetchXmlNonXmlData = React.useCallback(async () => {
@@ -24,6 +29,7 @@ const XmlNonXmlTab = (props) => {
       if (results && results.length > 0) {
         const xml_nonXmlData = results.filter(item => item.bookInType === tab);
         setXml_nonXmlData(xml_nonXmlData);
+        setDupXml_nonXmlData(xml_nonXmlData);
       }
     } catch (error) {
       console.error("Error fetching XML data:", error);
@@ -37,26 +43,51 @@ const XmlNonXmlTab = (props) => {
   }, [fetchXmlNonXmlData]);
 
    const toolTipFormatter = (cell, row, label) => {
-    if(label.type === "checkbox"){
-      
+    
+    if(label.type === "checkbox"){      
       return cell && (cell === 'true' || cell !== 'false') ? "Yes" : "No"
     }
-    let value = cell ? cell.toString() : ""
+    let value = cell ? cell : ""
     if(label.label === "Days Open"){
       const numberOfDaysCaseOpen = getDaysOpen(row);
       return numberOfDaysCaseOpen      
-    }   
-    
-    if(cell && typeof cell !== 'boolean' &&  typeof cell !== 'number' && cell.includes('T') ){
-      value = cell.split('T')[0]
+    }    
+    if(cell && label.type === 'date'){
+      value = cell.includes('T') ? cell.split('T')[0] : cell.split(' ')[0];
     }
     return (
     <span title={value}
-    style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'inline-block', maxWidth: 150 }}>
+    style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'inline-block', maxWidth: label.width - 5 + 'px' }}>
        {value}
     </span>
   )}
-  
+  const handleModal = () => setShow(!show);
+
+  const onClientChange = (e) => {
+    const clientId = e?.target?.value;
+    clientId ? setSelectedClientId(clientId) : setSelectedClientId(currentClientId || '');
+  };
+
+   // Define handleImportFile function
+  const handleImportFile = async(file) => {
+    // TODO: implement file import logic here
+    if (!file) return;
+    let jsonData = await jsonDataFromFile(file);
+    const response = await postBookInCase(jsonData, selectedClientId, tab, xml_nonXmlData);
+    setDupXml_nonXmlData((prev) => [...prev, ...response]);
+    setXml_nonXmlData((prev) => [...prev, ...response]);
+  };
+
+  const getBookInAssignies = () => {
+    if (!currentClientId || !users || users.length === 0) return [];
+    const assignies = getClientAssigniesOfRole('book in', currentClientId, users);
+    if(!assignies || assignies.length === 0) return [];
+    return assignies.map(item => ({
+      value: item.username,
+      label: item.username
+    }));
+  };
+
   // Define columns for TrackTable
   const columns = [
     { dataField: 'id', text: 'ID', type: 'text', editable: false, hidden:true, headerStyle: () => ({ width: '100px', minWidth: '100px' }) },
@@ -65,9 +96,9 @@ const XmlNonXmlTab = (props) => {
       text: labels[key].label,
       editable: labels[key].label === "Days Open" ? false : true,
       editor : {
-        type: labels[key].type === "textarea" ? Type.TEXTAREA : labels[key].type === "checkbox" ? Type.SELECT : Type.TEXT,
+        type: labels[key].type === "textarea" ? Type.TEXTAREA : labels[key].type === "checkbox" || key === 'bookInAssignedTo' ? Type.SELECT : Type.TEXT,
         rows: labels[key].type === "textarea" ? 3 : undefined,
-        options: labels[key].type === "checkbox" ? labels[key].options : undefined
+        options: labels[key].type === "checkbox" ? labels[key].options : key === 'bookInAssignedTo' ? getBookInAssignies() : undefined
       },
       headerStyle: () => ({ width: labels[key].width+'px', minWidth: '100px' }),
       ...(labels[key].type === 'date' ? { editorRenderer: (editorProps, value) => <DateEditor { ...editorProps } value={ value } /> } : {}),
@@ -76,9 +107,36 @@ const XmlNonXmlTab = (props) => {
     // Add more columns as needed
   ];
 
+  const handleDelete = async() => {
+    if(!selectedXmlCases || selectedXmlCases.length === 0)return;
+    await deleteCases(selectedXmlCases);
+    setSelectedXmlCases([]);
+    const refreshData = dupXml_nonXmlData.filter(item => !selectedXmlCases.includes(item.id));
+    setXml_nonXmlData(refreshData);
+    setDupXml_nonXmlData(refreshData);
+  };
+
+  const handleExport = () => {
+    if (!xml_nonXmlData.length) return;
+    let dataToDownload = xml_nonXmlData;
+
+    if(selectedXmlCases && selectedXmlCases.length > 0){
+      dataToDownload = dataToDownload.filter(item => selectedXmlCases.includes(item.id));
+    }
+    exportToCSV(dataToDownload, `${tab.toUpperCase()}_intake_cases_${new Date().toISOString().slice(0, 10)}.csv`);
+  };
+
   return (
     <div>
-      <PageTitle title={tab} searchTerm={searchTerm} setSearchTerm={setSearchTerm} addBookInCase={addBookInCase} />
+      <PageTitle title={tab} 
+      searchTerm={searchTerm} 
+      setSearchTerm={setSearchTerm} 
+      addBookInCase={addBookInCase} 
+      handleModal={handleModal}
+      selectedCases={selectedXmlCases}
+      onDelete={handleDelete}
+      onExport={handleExport}
+      />
       { loading ? <Skeleton /> : null}
       {
         xml_nonXmlData && xml_nonXmlData.length > 0 && !loading ?
@@ -93,6 +151,16 @@ const XmlNonXmlTab = (props) => {
       {!loading && xml_nonXmlData.length === 0 && (
         <h4 className="text-center mb-4">No Cases Assigned/Found</h4>
       )}
+      
+         <ImportModal show={show}
+          onClose={handleModal}
+          onShow={handleModal}
+          title={"Import XML file (Intake & Triage)"}
+          onFileChange={handleImportFile} 
+          selectedClient={selectedClientId}
+          onSelect={onClientChange}
+          clients={allClients}
+        />
     </div>
   )
 }

@@ -16,7 +16,7 @@ const EmployeeModal = ({ show, onClose, clients }) => {
   const [asignTriage, setAsignTriage] = useState(false)
 
   const clientOptions = clients;
-  const levelOptions = ['None','Data Entry', 'Quality Review', 'Medical Review'];
+  const levelOptions = ['None','Data Entry', 'Quality Review', 'Medical Review', 'Book In'];
   const permissionOptions = ['Admin', 'Manager', 'User'];
 
   useEffect(() => {
@@ -176,9 +176,9 @@ const EmployeeModal = ({ show, onClose, clients }) => {
             Please select a permission.
           </Form.Control.Feedback>
         </Form.Group>
-        <Form.Group className="mb-3">
+        <Form.Group className="mb-3 bg-light p-2 border rounded">
           <Form.Check
-            type="checkbox"
+            type="switch"
             id="checkbox-triage"
             label="Assign Triage cases"
             checked={asignTriage}
