@@ -94,7 +94,10 @@ export const postCases = async (dataFromLL, clientId) => {
         const triageCase = assignedTriageCases[i];
         const activeTriageCase = allOpenCasesMapDays?.find((item) => item.caseNumber === triageCase.caseNumber)
         if(activeTriageCase){
-          activeTriageCase.caseStatus = triageCase.caseStatus         
+          activeTriageCase.caseStatus = triageCase.caseStatus
+          activeTriageCase.triageStatus = activeTriageCase.triageStatus?.toLowerCase()?.trim() === 'completed' ? 'Assigned' : activeTriageCase.triageStatus
+          activeTriageCase.triageAssignedAt = activeTriageCase.triageStatus?.toLowerCase()?.trim() === 'completed' ? formattedIST() : activeTriageCase.triageAssignedAt
+          modifiedNameDate(activeTriageCase)
           await updateCase(activeTriageCase)
         }else{
           newTriageCases.push(triageCase)
@@ -451,6 +454,7 @@ export const postBookInCase = async (cases, clientId, xml_nonXmlTab, existingDat
         formattedItem.bookInType = xml_nonXmlTab;
         formattedItem.caseStatus = "BookIn";
         formattedItem.project_id = clientId;
+        formattedItem.bookInWorkStatus = "Assigned";
         acc.push(formattedItem);
       }
 

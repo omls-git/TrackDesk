@@ -21,25 +21,14 @@ const AllCases = () => {
 
   const handleImportFile = async (file) => {
     if (!file) return;
-    let jsonData = await jsonDataFromFile(file);    
-    // if(!jsonData || jsonData.length === 0)return;
-    // //const isProbablyDate = (val) => typeof val === 'number' && val > 25569 && val < 60000; // Excel date serial range
-    // jsonData = jsonData.map(row => {
-    //   return Object.fromEntries(
-    //     Object.entries(row).map(([key, value]) => {
-    //       // if (isProbablyDate(value)) {
-    //       //   return [key, parseExcelDate(value)];
-    //       // }
-    //       return [key, value];
-    //     })
-    //   );
-    // });
+    let jsonData = await jsonDataFromFile(file);   
     if(jsonData.length){
     await postCases(jsonData, selectedClientId)
     await fetchAllCasesCallback();
     handleClose();
-    }
-    
+    }else{
+      alert('No valid data found to import or the file is empty!');
+    }    
   };
 
   const handleExport = () => {

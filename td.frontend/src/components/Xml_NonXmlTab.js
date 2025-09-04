@@ -90,7 +90,7 @@ const XmlNonXmlTab = (props) => {
 
   // Define columns for TrackTable
   const columns = [
-    { dataField: 'id', text: 'ID', type: 'text', editable: false, hidden:true, headerStyle: () => ({ width: '100px', minWidth: '100px' }) },
+    { dataField: 'id', text: 'ID', editable: false, hidden:true, headerStyle: () => ({ width: '100px', minWidth: '100px' }) },
     ...Object.entries(labels).map(([key]) => ({
       dataField: key,
       text: labels[key].label,
@@ -103,7 +103,21 @@ const XmlNonXmlTab = (props) => {
       headerStyle: () => ({ width: labels[key].width+'px', minWidth: '100px' }),
       ...(labels[key].type === 'date' ? { editorRenderer: (editorProps, value) => <DateEditor { ...editorProps } value={ value } /> } : {}),
       formatter: (cell, row) => toolTipFormatter(cell, row, labels[key])
-    }))
+    })),
+    {
+      dataField: 'bookInWorkStatus', 
+      text: 'Status', 
+      editable: true,
+      editor: {
+        type: Type.SELECT,
+        options: [
+            { value: 'Assigned', label: 'Assigned' },
+            { value: 'In Progress', label: 'In Progress' },
+            { value: 'Completed', label: 'Completed' }
+          ]
+      },
+      headerStyle: () => ({ width: '100px', minWidth: '100px' })
+    }
     // Add more columns as needed
   ];
 

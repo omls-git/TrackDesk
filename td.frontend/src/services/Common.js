@@ -80,7 +80,7 @@ export const mapCaseToApiFormat = (item, id) => ({
   literatureCitation: item["Literature Citation"] || item["literature citation"]|| item["Literature citation"]|| item["Literaturecitation"] || "",
   linkedDeactivations: item["Linked Deactivations"] || item["Linked deactivations"] || item["linked deactivations"] || item["Linkeddeactivations"] || item["linkeddeactivations"] || "",
   bookInDate: item["Bookin Date"] ? parseExcelDate(item["Bookin Date"]) : null,
-  bookInReceivedDate: parseExcelDate(item["Book In Received Date"]) || parseExcelDate(item['Receive Date']) || parseExcelDate(item["Receive date"]) || parseExcelDate(item["receive date"]) || "",
+  bookInReceivedDate: parseExcelDate(item["Book In Received Date"]) || parseExcelDate(item['Receive Date']) || parseExcelDate(item["Receive date"]) || parseExcelDate(item["receive date"]) || null,
   manualBookIn: item["Manual Book In"] === "Yes" || item["Manual bookin"] === "Yes" || item["Manual Bookin"] === "Yes" || item["Manual BookIn"] === "Yes",
   bookInAssignedDate: item["Book In Assigned Date"] ? parseExcelDate(item["Book In Assigned Date"]) : null,
   bookInStartedAt: item["Book In Started At"] ? parseExcelDate(item["Book In Started At"]) : null,
