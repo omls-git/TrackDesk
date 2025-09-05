@@ -5,6 +5,7 @@ export const caseAllocation = (cases, existingAllCases, assignies, clientId) => 
 
   if (clientAssignies.length === 0) {
     console.error("No assignies found for the client to assign cases", clientId);
+    alert(`No assignies found for the client to assign cases.`)
     return [];
   }
   console.log(cases);
@@ -289,29 +290,40 @@ export const userAssignedCasesCount = (clientAssignies, existingAllCases) => {
  
    let deAvailabe = [];
    const today = new Date()
+   if(deAssiniees && deAssiniees.length > 0){
     deAssiniees.forEach(assigny => {
       const count = existingAllCases?.filter(item => item.de === assigny.username && !item.completedDateDE && item.assignedDateDe?.split("T")[0] === today.toISOString().split("T")[0]).length;
       
       count ? deAvailabe.push({ username: assigny.username, count, maxCount: 8 }) : deAvailabe.push({ username: assigny.username, count: 0, maxCount: 8 });
     });
+  }
 
     const qrAssignees = clientAssignies.filter((item) => item.level.toLowerCase() === "quality review".toLowerCase() && !item.onLeave);
     let qrAvailabe = [];
+
+  if (qrAssignees && qrAssignees.length > 0){
     qrAssignees.forEach(assigny => {
       const count = existingAllCases?.filter(item => item.qr === assigny.username && !item.completedDateQR && item.assignedDateQr?.split("T")[0] === today.toISOString().split("T")[0]).length;
       count ? qrAvailabe.push({ username: assigny.username, count, maxCount: 15 }) : qrAvailabe.push({ username: assigny.username, count: 0, maxCount: 15 });
     });
+  }
 
     const mrAssignees = clientAssignies.filter((item) => item.level.toLowerCase() === "medical review".toLowerCase() && !item.onLeave);
     let mrAvailable = [];
+  if (mrAssignees && mrAssignees.length > 0){
     mrAssignees.forEach(assigny => {
-      const count = existingAllCases?.filter(item => item.mr === assigny.username && !item.completedDateMR && item.assignedDateMr?.split("T")[0] === today.toISOString().split("T")[0]).length;
+      const count = existingAllCases?.filter(item => 
+        item.mr === assigny.username 
+        && !item.completedDateMR 
+        && item.assignedDateMr?.split("T")[0] === today.toISOString().split("T")[0]).length;
       count ? mrAvailable.push({ username: assigny.username, count }) : mrAvailable.push({ username: assigny.username, count: 0 });
     });
+  }
 
-     const triageAssignees = clientAssignies.filter((item) => item.assignTriage && !item.onLeave);
-    
+    const triageAssignees = clientAssignies.filter((item) => item.assignTriage && !item.onLeave);    
     let triageesAvailable = [];
+
+  if (triageAssignees && triageAssignees.length > 0){
     triageAssignees.forEach(assigny => {
       const count = existingAllCases?.filter(item => 
         item.triageAssignedTo === assigny.username 
@@ -319,6 +331,84 @@ export const userAssignedCasesCount = (clientAssignies, existingAllCases) => {
         && item.triageAssignedAt?.split("T")[0] === today.toISOString().split("T")[0]).length;
       count ? triageesAvailable.push({ username: assigny.username, count, maxCount: 40 }) : triageesAvailable.push({ username: assigny.username, count: 0, maxCount: 40 });
     });
+  }
 
-    return [deAvailabe, qrAvailabe, mrAvailable, triageesAvailable]
+  const bookInAssignies = clientAssignies.filter((item) => !item.onLeave && item.level.toLowerCase() === 'book in');
+  let bookInAvailable = [];
+  if (bookInAssignies && bookInAssignies.length > 0){
+    bookInAssignies.forEach(assigny => {
+      const count = existingAllCases?.filter(item => 
+        item.bookInAssignedTo === assigny.username 
+        && !item.bookInCompletedAt 
+        && item.bookInAssignedAt?.split("T")[0] === today.toISOString().split("T")[0]).length;
+      count ? bookInAvailable.push({ username: assigny.username, count, maxCount: 60 }) : bookInAvailable.push({ username: assigny.username, count:0, maxCount: 60 });
+    })
+  }
+
+  return [deAvailabe, qrAvailabe, mrAvailable, triageesAvailable, bookInAvailable]
+}
+
+export const bookInCaseAllocation = (newBookInCases, existingAllCases, assignies, clientId) => {
+    const clientAssignies = assignies.filter((item) => item.projectId.toString() === clientId.toString() && !item.onLeave);
+    if(clientAssignies && clientAssignies.length === 0) {
+      console.error("No assignies found for the client to assign cases", clientId)
+      alert('No assignies found for the client to assign cases.')
+      return [];
+    }
+
+  const [bookInAvailable] = userAssignedCasesCount(clientAssignies, existingAllCases);
+
+  if(bookInAvailable && bookInAvailable.length === 0) {
+    console.error("No assignies found for the client to assign cases", clientId)
+    alert('No available assignies found for the client to assign cases.')
+    return [];
+  }
+    
+    let bookInAssignedCases = [];
+    let bookInCount = 0;
+
+     for (let i = 0; i < newBookInCases.length; i++) {
+      const currentCase = newBookInCases[i];
+      let assigned = false;
+      let attempts = 0;
+      while (!assigned && attempts < 60) {
+        const assignee = bookInAvailable[bookInCount];
+        if( assignee.count < assignee.maxCount) {
+          bookInAssignedCases.push({
+            ...currentCase,
+            bookInAssignedTo: assignee.username,
+            bookInWorkStatus: "Assigned",
+            bookInAssignedDate: formattedIST(),
+          });
+          assignee.count++;
+          assigned = true;
+        }
+        bookInCount = (bookInCount + 1) % bookInAvailable.length;
+        attempts++;
+
+      }
+      if(!assigned){
+        bookInAssignedCases.push({
+          ...currentCase,
+          bookInAssignedTo: "",
+          bookInWorkStatus: "",
+          bookInAssignedDate: null,
+        });
+        bookInCount = (bookInCount + 1) % bookInAvailable.length;
+      }      
+    }
+    // for (let i = 0; i < newBookInCases.length; i++) {
+    //   const currentCase = newBookInCases[i];
+    //   bookInAssignedCases.push({
+    //     ...currentCase,
+    //     bookInAssignedTo: bookInAssignies[bookInCount].username,
+    //     bookInWorkStatus: "Assigned",
+    //     bookInAssignedDate: formattedIST(),
+    //   });
+    //   bookInCount++;
+    //   if (bookInCount >= bookInAssignies.length) {
+    //     bookInCount = 0;
+    //   }
+    // }
+    return bookInAssignedCases
 }

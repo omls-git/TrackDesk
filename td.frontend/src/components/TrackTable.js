@@ -7,8 +7,9 @@ import paginationFactory from 'react-bootstrap-table2-paginator';
 import { getClientAssigniesOfRole } from '../services/Common';
 import {updateCase, updateToNext } from '../services/API';
 import { useGlobalData } from '../services/GlobalContext';
-import { caseStatusOptions, caseStatusOptionsCipla, formattedIST, getDaysOpen } from '../Utility';
+import {formattedIST, getDaysOpen } from '../Utility';
 import CaseDetailsModal from './CaseDetailsModal';
+import { CV } from '../commonVariables/Variables';
 
 const TrackTable = (props) => {
   const { data } = props;
@@ -288,7 +289,7 @@ const TrackTable = (props) => {
       editable: isEditable || user?.assignTriage ? true : false,
       editor : {
         type: Type.SELECT,
-        options: isCipla ? caseStatusOptionsCipla : caseStatusOptions
+        options: isCipla ? CV.caseStatusOptionsCipla  : CV.caseStatusOptions
       },
       headerStyle: () => ({ width: '160px', minWidth: '150px' }),
     },

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import PageTitle from './PageTitle'
 import TrackTable from './TrackTable';
 import { exportToCSV, getDaysOpen, jsonDataFromFile } from '../Utility';
@@ -9,15 +9,17 @@ import { Type } from 'react-bootstrap-table2-editor';
 import { useGlobalData } from '../services/GlobalContext';
 import ImportModal from './ImportModal';
 import { getClientAssigniesOfRole } from '../services/Common';
+import AddBookInCaseModal from '../components/AddBookInCaseModal';
 
 const XmlNonXmlTab = (props) => {
-  const { addBookInCase, labels, tab } = props;
+  const {labels, tab } = props;
   const [searchTerm, setSearchTerm] = React.useState('');
+  const [showAddModal, setShowAddModal] = useState(false);
   const [xml_nonXmlData, setXml_nonXmlData] = React.useState([]);
   const [dupXml_nonXmlData, setDupXml_nonXmlData] = React.useState([]);
   const [selectedXmlCases, setSelectedXmlCases] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
-  const [show, setShow] = React.useState(false);
+  const [showImportModal, setShowImportModal] = React.useState(false);
   const {currentClientId, allClients, users} = useGlobalData();
   const [selectedClientId, setSelectedClientId] = React.useState(currentClientId);
 
@@ -61,7 +63,7 @@ const XmlNonXmlTab = (props) => {
        {value}
     </span>
   )}
-  const handleModal = () => setShow(!show);
+  const handleModal = () => setShowImportModal(!showImportModal);
 
   const onClientChange = (e) => {
     const clientId = e?.target?.value;
@@ -73,9 +75,13 @@ const XmlNonXmlTab = (props) => {
     // TODO: implement file import logic here
     if (!file) return;
     let jsonData = await jsonDataFromFile(file);
+    if(jsonData && jsonData.length > 0){
     const response = await postBookInCase(jsonData, selectedClientId, tab, xml_nonXmlData);
     setDupXml_nonXmlData((prev) => [...prev, ...response]);
     setXml_nonXmlData((prev) => [...prev, ...response]);
+    }else{
+      alert("No data found in the file.");
+    }
   };
 
   const getBookInAssignies = () => {
@@ -140,6 +146,22 @@ const XmlNonXmlTab = (props) => {
     exportToCSV(dataToDownload, `${tab.toUpperCase()}_intake_cases_${new Date().toISOString().slice(0, 10)}.csv`);
   };
 
+  const handleSubmitBokInCase = async(formData)=>{
+     const res = await postBookInCase(formData, currentClientId, tab, []);    
+    if(res){
+      const appendData = [res]
+      setXml_nonXmlData(prev => [...prev, ...appendData]);
+      setDupXml_nonXmlData(prev => [...prev, ...appendData]);
+      alert('Data saved successfully!')
+      setShowAddModal(false);
+    }else{
+      alert('Failed to save the data');
+    }
+  }
+  const addBookInCase = () => {
+    setShowAddModal(!showAddModal);
+  };
+
   return (
     <div>
       <PageTitle title={tab} 
@@ -166,7 +188,7 @@ const XmlNonXmlTab = (props) => {
         <h4 className="text-center mb-4">No Cases Assigned/Found</h4>
       )}
       
-         <ImportModal show={show}
+         <ImportModal show={showImportModal}
           onClose={handleModal}
           onShow={handleModal}
           title={"Import XML file (Intake & Triage)"}
@@ -175,6 +197,7 @@ const XmlNonXmlTab = (props) => {
           onSelect={onClientChange}
           clients={allClients}
         />
+         <AddBookInCaseModal show={showAddModal} onClose={() => setShowAddModal(false)} labels={labels} tab={tab} onSubmit={handleSubmitBokInCase} />
     </div>
   )
 }

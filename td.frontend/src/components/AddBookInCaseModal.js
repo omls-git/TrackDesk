@@ -1,24 +1,13 @@
 import React from 'react'
-import { useGlobalData } from '../services/GlobalContext';
 import { Button, Col, Form, Modal, Row } from 'react-bootstrap';
-import { postBookInCase } from '../services/API';
 
-const AddBookInCaseModal = ({show, onClose, labels, tab}) => {
+const AddBookInCaseModal = ({show, onClose, labels, tab, onSubmit}) => {
 
   const keys = Object.keys(labels);
-  const {allClients, currentClientId} = useGlobalData();
-  // const clientName = allClients && currentClientId && allClients.find(client => client.id.toString() === currentClientId?.toString())?.name;
-
   const [formData, setFormData] = React.useState({"XML_Non_XML": tab});
 
   const handleChange = (key, value, dataType) => { 
     setFormData(prev => ({ ...prev, [key]: value }));    
-  };
-
-  const handleSubmitCase = async() => {
-    const res = await postBookInCase(formData, currentClientId, tab);    
-    console.log("Response:", res);
-    onClose()
   };
 
   return (
@@ -58,7 +47,7 @@ const AddBookInCaseModal = ({show, onClose, labels, tab}) => {
         </Row>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="success" onClick={handleSubmitCase}>
+        <Button variant="success" onClick={() => onSubmit(formData)}>
           Submit
         </Button>
         <Button variant="secondary" onClick={onClose}>

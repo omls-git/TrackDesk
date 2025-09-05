@@ -5,8 +5,9 @@ import { useGlobalData } from '../services/GlobalContext';
 import { deleteCases, fetchCasesByClientId } from '../services/API';
 import { Type } from 'react-bootstrap-table2-editor';
 import { getClientAssigniesOfRole } from '../services/Common';
-import { caseStatusOptions, caseStatusOptionsCipla, getDaysOpen, inital_fupOptions, live_backlogOptions, reportTypeOptions, seriousnessOptions } from '../Utility';
+import { getDaysOpen } from '../Utility';
 import DateEditor from '../components/DateEditor';
+import { CV } from '../commonVariables/Variables';
 
 const TriageCases = ({triageTab = false}) => {
   const [loading, setLoading] = useState(false);
@@ -105,7 +106,7 @@ const TriageCases = ({triageTab = false}) => {
         editable: true,
         editor : {
           type: Type.SELECT,
-          options: inital_fupOptions
+          options: CV.inital_fupOptions
         },
         headerStyle: () => ({ width: '130px', minWidth: '130px' }),
       },
@@ -130,7 +131,7 @@ const TriageCases = ({triageTab = false}) => {
         editable: true,
         editor : {
           type: Type.SELECT,
-          options: reportTypeOptions
+          options: CV.reportTypeOptions
         },
         headerStyle: () => ({ width: '110px', minWidth: '100px' }),
         formatter: toolTipFormatter
@@ -228,7 +229,7 @@ const TriageCases = ({triageTab = false}) => {
         },
         editor : {
           type: Type.SELECT,
-          options: isCipla ? caseStatusOptionsCipla : caseStatusOptions
+          options: isCipla ? CV.caseStatusOptionsCipla : CV.caseStatusOptions
         },
         headerStyle: () => ({ width: '150px', minWidth: '150px' }),
       },
@@ -239,7 +240,7 @@ const TriageCases = ({triageTab = false}) => {
         editable: true,
         editor : {
           type: Type.SELECT,
-          options: reportTypeOptions
+          options: CV.reportTypeOptions
         },
         headerStyle: () => ({ width: '150px', minWidth: '150px' }),
       },
@@ -250,7 +251,7 @@ const TriageCases = ({triageTab = false}) => {
         editable: true,
         editor : {
           type: Type.SELECT,
-          options: seriousnessOptions
+          options: CV.seriousnessOptions
         },
         headerStyle: () => ({ width: '150px', minWidth: '150px' }),
       },
@@ -260,7 +261,7 @@ const TriageCases = ({triageTab = false}) => {
         editable: true,
         editor : {
           type: Type.SELECT,
-          options: live_backlogOptions
+          options: CV.live_backlogOptions
         },
         headerStyle: () => ({ width: '130px', minWidth: '100px' }),
         formatter: toolTipFormatter
