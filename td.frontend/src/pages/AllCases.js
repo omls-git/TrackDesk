@@ -47,7 +47,7 @@ const AllCases = () => {
       try {
         let cases = await fetchCasesByClientId(currentClientId);
         if (cases) {
-          cases = cases.filter((item) => !item.caseStatus.toLowerCase().trim().includes('triage'));
+          cases = cases.filter((item) => !item.caseStatus.toLowerCase().trim().includes('triage') && item.caseStatus.toLowerCase().trim() !== 'bookin' && item.caseStatus);
            setMasterData(cases);
            setDupMasterData(cases);
         }       
@@ -183,7 +183,7 @@ const AllCases = () => {
           value={searchTerm}
         />
         <button
-          className="btn btn-secondary"
+          className="btn btn-light"
           onClick={(e) => {
             setDateRange({ from: '', to: '' })
             handleSearchChange();

@@ -1,4 +1,5 @@
 import { formattedIST, parseExcelDate } from "../Utility";
+import { fetchBookInCases, getEmployees } from "./API";
 
 export const caseAllocation = (cases, existingAllCases, assignies, clientId) => {
   const clientAssignies = assignies.filter((item) => item.projectId.toString() === clientId.toString() && !item.onLeave);
@@ -284,7 +285,7 @@ export const getClientAssigniesOfRole = (role, clientId, assignies) => {
 
 
 
-export const userAssignedCasesCount = (clientAssignies, existingAllCases) => {
+export const userAssignedCasesCount = (clientAssignies, existingAllCases, target) => {
   
   const deAssiniees = clientAssignies.filter((item) => item.level.toLowerCase() === "data entry".toLowerCase() && !item.onLeave);
  
@@ -341,7 +342,7 @@ export const userAssignedCasesCount = (clientAssignies, existingAllCases) => {
         item.bookInAssignedTo === assigny.username 
         && !item.bookInCompletedAt 
         && item.bookInAssignedAt?.split("T")[0] === today.toISOString().split("T")[0]).length;
-      count ? bookInAvailable.push({ username: assigny.username, count, maxCount: 60 }) : bookInAvailable.push({ username: assigny.username, count:0, maxCount: 60 });
+      count ? bookInAvailable.push({ username: assigny.username, count, maxCount: target }) : bookInAvailable.push({ username: assigny.username, count:0, maxCount: target });
     })
   }
 
@@ -350,20 +351,66 @@ export const userAssignedCasesCount = (clientAssignies, existingAllCases) => {
 
 export const bookInCaseAllocation = (newBookInCases, existingAllCases, assignies, clientId) => {
     const clientAssignies = assignies.filter((item) => item.projectId.toString() === clientId.toString() && !item.onLeave);
-    if(clientAssignies && clientAssignies.length === 0) {
+    if(!clientAssignies || clientAssignies.length === 0) {
       console.error("No assignies found for the client to assign cases", clientId)
       alert('No assignies found for the client to assign cases.')
       return [];
     }
 
-  const [bookInAvailable] = userAssignedCasesCount(clientAssignies, existingAllCases);
+  const [, , , , bookInAvailable] = userAssignedCasesCount(clientAssignies, existingAllCases,60);
 
-  if(bookInAvailable && bookInAvailable.length === 0) {
+  if(!bookInAvailable || bookInAvailable.length === 0) {
     console.error("No assignies found for the client to assign cases", clientId)
     alert('No available assignies found for the client to assign cases.')
     return [];
   }
-    
+  const bookInAssignedCases = assignCases(newBookInCases, bookInAvailable, 60)
+
+    // for (let i = 0; i < newBookInCases.length; i++) {
+    //   const currentCase = newBookInCases[i];
+    //   bookInAssignedCases.push({
+    //     ...currentCase,
+    //     bookInAssignedTo: bookInAssignies[bookInCount].username,
+    //     bookInWorkStatus: "Assigned",
+    //     bookInAssignedDate: formattedIST(),
+    //   });
+    //   bookInCount++;
+    //   if (bookInCount >= bookInAssignies.length) {
+    //     bookInCount = 0;
+    //   }
+    // }
+    return bookInAssignedCases
+}
+
+export const assignNonXmlCases = async(fetched_non_xmlCases, clientId, non_xml) => {
+  const assignies = await getEmployees()
+  const clientAssignies = assignies?.filter((item) => item.projectId.toString() === clientId.toString() && !item.onLeave);
+  if(clientAssignies && clientAssignies.length===0){
+    console.error("No assignies found for the client to assign cases", clientId)
+    alert('No assignies found for the client to assign cases.')
+    return [];
+  }
+  const existingBookInCases = await fetchBookInCases(clientId)
+  const [, , , , bookInAvailable] = userAssignedCasesCount(clientAssignies, existingBookInCases, 25);
+  console.log(bookInAvailable);
+  
+
+  if(!bookInAvailable || bookInAvailable.length === 0) {
+    console.error("No assignies found for the client to assign cases", clientId)
+    alert('No available assignies found for the client to assign cases.')
+    return [];
+  }
+  let newCases = fetched_non_xmlCases;
+  if(existingBookInCases && existingBookInCases.length){
+    newCases = fetched_non_xmlCases?.filter(nonXmlCase => 
+      !existingBookInCases.find(item => item.bookInReceiptDate?.toString() === nonXmlCase.bookInReceiptDate?.toString()))
+  }
+  const assignedBookInCases = assignCases(newCases, bookInAvailable, 25)
+  
+  return assignedBookInCases
+}
+
+const assignCases = (newBookInCases, bookInAvailable, target)=>{
     let bookInAssignedCases = [];
     let bookInCount = 0;
 
@@ -371,7 +418,7 @@ export const bookInCaseAllocation = (newBookInCases, existingAllCases, assignies
       const currentCase = newBookInCases[i];
       let assigned = false;
       let attempts = 0;
-      while (!assigned && attempts < 60) {
+      while (!assigned && attempts < target) {
         const assignee = bookInAvailable[bookInCount];
         if( assignee.count < assignee.maxCount) {
           bookInAssignedCases.push({
@@ -397,18 +444,5 @@ export const bookInCaseAllocation = (newBookInCases, existingAllCases, assignies
         bookInCount = (bookInCount + 1) % bookInAvailable.length;
       }      
     }
-    // for (let i = 0; i < newBookInCases.length; i++) {
-    //   const currentCase = newBookInCases[i];
-    //   bookInAssignedCases.push({
-    //     ...currentCase,
-    //     bookInAssignedTo: bookInAssignies[bookInCount].username,
-    //     bookInWorkStatus: "Assigned",
-    //     bookInAssignedDate: formattedIST(),
-    //   });
-    //   bookInCount++;
-    //   if (bookInCount >= bookInAssignies.length) {
-    //     bookInCount = 0;
-    //   }
-    // }
     return bookInAssignedCases
 }

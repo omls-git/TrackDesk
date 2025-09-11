@@ -67,9 +67,18 @@ export const fetchCasesByClientId = async (project_id) => {
   }
 };
 
+export const createCases = async(data) => {
+  try {
+    await axios.post(`${API_URL}/cases/`, data)
+  } catch (error) {
+    console.error('error', error);
+    alert("Failed to asign cases.")
+  }
+}
+
 export const postCases = async (dataFromLL, clientId) => {
   let importedTriageCases = dataFromLL.filter((item) => item["Case Status"].toLowerCase().trim().includes('triage'))
-  let deQrMrCases = dataFromLL.filter(item => ["data entry", "quality review", "medical review"].includes(item["Case Status"].toLowerCase().trim()))
+  let deQrMrCases = dataFromLL.filter(item => !item["Case Status"].toLowerCase().trim().includes('triage'))
 
   const allOpenCases = await fetchClientOpenCases(true, clientId);
 

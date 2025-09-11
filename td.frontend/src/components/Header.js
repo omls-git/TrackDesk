@@ -96,7 +96,7 @@ const Header = () => {
             </NavLink> : null
             }
             {
-              currentClientId && allClients && allClients.find((client) => client.id.toString() === currentClientId)?.name?.toLowerCase() === "cipla" ? 
+              currentClientId && allClients && allClients.find((client) => client.id.toString() === currentClientId.toString())?.name?.toLowerCase() === "cipla" ? 
               <NavLink
               className={({ isActive }) => (isActive ? 'active ' : '') + 'nav-item nav-link'}
               to="/book-in"              

@@ -2,14 +2,15 @@ import React, { useState } from 'react'
 import PageTitle from './PageTitle'
 import TrackTable from './TrackTable';
 import { exportToCSV, getDaysOpen, jsonDataFromFile } from '../Utility';
-import { deleteCases, fetchBookInCases, postBookInCase } from '../services/API';
+import { createCases, deleteCases, fetchBookInCases, postBookInCase } from '../services/API';
 import Skeleton from './Skeleton';
 import DateEditor from './DateEditor';
 import { Type } from 'react-bootstrap-table2-editor';
 import { useGlobalData } from '../services/GlobalContext';
 import ImportModal from './ImportModal';
-import { getClientAssigniesOfRole } from '../services/Common';
+import { assignNonXmlCases, getClientAssigniesOfRole } from '../services/Common';
 import AddBookInCaseModal from '../components/AddBookInCaseModal';
+import { getUserMails } from '../services/GraphApi';
 
 const XmlNonXmlTab = (props) => {
   const {labels, tab } = props;
@@ -63,7 +64,13 @@ const XmlNonXmlTab = (props) => {
        {value}
     </span>
   )}
-  const handleModal = () => setShowImportModal(!showImportModal);
+  const handleModal = () =>{
+    // if(tab === 'xml')
+      setShowImportModal(!showImportModal);
+    // if(tab === 'non-xml'){
+
+    // }
+  };
 
   const onClientChange = (e) => {
     const clientId = e?.target?.value;
@@ -162,16 +169,60 @@ const XmlNonXmlTab = (props) => {
     setShowAddModal(!showAddModal);
   };
 
+  const handleSearch = (event) => {
+    if(event.target.value) {
+    const searchValue = event.target.value.toLowerCase();
+    setSearchTerm(event.target.value);
+    const searchedData = dupXml_nonXmlData.filter(item =>
+      Object.values(item).some(value =>
+        String(value).toLowerCase().includes(searchValue)
+      )
+    );    
+    setXml_nonXmlData(searchedData);
+    }else{
+      setSearchTerm('')
+      setXml_nonXmlData(dupXml_nonXmlData);
+    } 
+  };
+
+  const fetchEmailsAndAssign = async (selectedDate) => {    
+    try {
+      const messages = await getUserMails(selectedDate)
+        if(messages){ 
+          let casesToCreate = [];
+          messages.forEach((message) => {
+          const nonXmlCase = {
+            project_id: currentClientId,            
+            bookInReceiptDate: message.receivedDateTime,
+            subjectLine: message.subject,
+            bookInType: 'non-xml',
+            isCaseOpen: true,
+            caseStatus: "BookIn"
+          }
+            casesToCreate.push(nonXmlCase);
+          })
+          const asignedCases = await assignNonXmlCases(casesToCreate, currentClientId, tab);
+          
+          if(asignedCases && asignedCases.length){
+            await createCases(asignedCases)
+            await fetchXmlNonXmlData()
+          }
+        }
+      } catch (error) {
+        console.error(error);
+    }
+  }
+
   return (
     <div>
       <PageTitle title={tab} 
-      searchTerm={searchTerm} 
-      setSearchTerm={setSearchTerm} 
+      searchTerm={searchTerm}
       addBookInCase={addBookInCase} 
       handleModal={handleModal}
       selectedCases={selectedXmlCases}
       onDelete={handleDelete}
       onExport={handleExport}
+      handleSearch={handleSearch}
       />
       { loading ? <Skeleton /> : null}
       {
@@ -191,11 +242,12 @@ const XmlNonXmlTab = (props) => {
          <ImportModal show={showImportModal}
           onClose={handleModal}
           onShow={handleModal}
-          title={"Import XML file (Intake & Triage)"}
+          title={tab === 'xml' ?"Import XML file (Intake & Triage)" : 'non-xml'}
           onFileChange={handleImportFile} 
           selectedClient={selectedClientId}
           onSelect={onClientChange}
           clients={allClients}
+          fetchMails={fetchEmailsAndAssign}
         />
          <AddBookInCaseModal show={showAddModal} onClose={() => setShowAddModal(false)} labels={labels} tab={tab} onSubmit={handleSubmitBokInCase} />
     </div>
