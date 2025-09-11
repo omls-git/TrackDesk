@@ -50,22 +50,22 @@ const SignOutButton = () => {
 function Login() {
   const isAuthenticated = useIsAuthenticated();
 
-    return (
+     return (
     <div className="d-flex vh-100 justify-content-center align-items-center bg-light">
       {/* Container */}
-      <div 
-        className="d-flex shadow-lg rounded-4 overflow-hidden" 
+      <div
+        className="d-flex shadow-lg rounded-4 overflow-hidden"
         style={{ width: "70%", height: "60%", backgroundColor: "#ffffff" }}
       >
-        
+       
         {/* Left Side */}
-        <div 
-          className="d-flex flex-column justify-content-center align-items-center w-50 p-4" 
+        <div
+          className="d-flex flex-column justify-content-center align-items-center w-50 p-4"
           style={{ backgroundColor: "#f0f6ff" }} // very light blue background
         >
-          <div 
+          <div
             className="text-center p-4 rounded-4"
-            style={{ 
+            style={{
               backgroundColor: "#e6f0ff", // soft pastel blue
               color: "#003366", // dark navy text for contrast
               boxShadow: "0px 8px 25px rgba(0,0,0,0.15)"
@@ -75,7 +75,7 @@ function Login() {
             <p className="mt-2 mb-0">Track. Manage. Secure.</p>
           </div>
         </div>
-
+ 
         {/* Right Side */}
         <div className="d-flex flex-column justify-content-center align-items-center w-50 bg-white p-4">
           <h1 className="fw-bold" style={{ fontSize: "2.0rem", color: "#003366" }}>Login</h1>
