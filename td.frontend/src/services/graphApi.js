@@ -1,4 +1,3 @@
-// services/graphApi.js
 import axios from 'axios';
 import { msalInstance } from '../index'; // make sure this points to your MSAL instance
 import { loginRequest } from '../authConfig';
