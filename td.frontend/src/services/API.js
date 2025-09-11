@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { caseAllocation, mapCaseToApiFormat, userAssignedCasesCount } from './Common';
+import { bookInCaseAllocation, caseAllocation, mapCaseToApiFormat, userAssignedCasesCount } from './Common';
 import { formattedIST, formatToCases, getDaysOpen, modifiedNameDate, parseExcelDate } from '../Utility';
 
 const API_URL = 'http://localhost:5000/api';
@@ -67,9 +67,18 @@ export const fetchCasesByClientId = async (project_id) => {
   }
 };
 
+export const createCases = async(data) => {
+  try {
+    await axios.post(`${API_URL}/cases/`, data)
+  } catch (error) {
+    console.error('error', error);
+    alert("Failed to asign cases.")
+  }
+}
+
 export const postCases = async (dataFromLL, clientId) => {
   let importedTriageCases = dataFromLL.filter((item) => item["Case Status"].toLowerCase().trim().includes('triage'))
-  let deQrMrCases = dataFromLL.filter(item => ["data entry", "quality review", "medical review"].includes(item["Case Status"].toLowerCase().trim()))
+  let deQrMrCases = dataFromLL.filter(item => !item["Case Status"].toLowerCase().trim().includes('triage'))
 
   const allOpenCases = await fetchClientOpenCases(true, clientId);
 
@@ -94,7 +103,10 @@ export const postCases = async (dataFromLL, clientId) => {
         const triageCase = assignedTriageCases[i];
         const activeTriageCase = allOpenCasesMapDays?.find((item) => item.caseNumber === triageCase.caseNumber)
         if(activeTriageCase){
-          activeTriageCase.caseStatus = triageCase.caseStatus         
+          activeTriageCase.caseStatus = triageCase.caseStatus
+          activeTriageCase.triageStatus = activeTriageCase.triageStatus?.toLowerCase()?.trim() === 'completed' ? 'Assigned' : activeTriageCase.triageStatus
+          activeTriageCase.triageAssignedAt = activeTriageCase.triageStatus?.toLowerCase()?.trim() === 'completed' ? formattedIST() : activeTriageCase.triageAssignedAt
+          modifiedNameDate(activeTriageCase)
           await updateCase(activeTriageCase)
         }else{
           newTriageCases.push(triageCase)
@@ -414,24 +426,28 @@ export const deleteClients = async (clientIds) =>{
   }
 }
 
-export const postBookInCase = async (cases, clientId, xml_nonXmlTab, existingData) => {
+export const postBookInCase = async (cases, clientId, xml_nonXmlTab, currectData) => {
+  let existingData = currectData;
+  const existingBookInCases = await fetchBookInCases(clientId)
+   if(existingBookInCases && existingBookInCases.length > 0){
+    existingData = existingBookInCases
+   }
   let bookInCases = []
   if (!Array.isArray(cases) || !clientId) {
     if(xml_nonXmlTab.toLowerCase() === 'xml') {
-      const existingCase = existingData.find(item => item.safetyReportId === cases.safetyReportId);
+      const existingCase = existingData?.find(item => item.safetyReportId === cases.safetyReportId);
       if(existingCase) {
         alert("Case already exists with Safety Report ID: (" + existingCase.safetyReportId + ")");
         return [];
       }
     }
     if(xml_nonXmlTab.toLowerCase() === 'non-xml') {
-      const existingCase = existingData.find(item => item.OM_ID === cases.OM_ID);
+      const existingCase = existingData?.find(item => item.OM_ID === cases.OM_ID);
       if(existingCase) {
         alert("Case already exists with OM ID: (" + existingCase.OM_ID + ")");
         return [];
       }
     }
-
     bookInCases = { ...cases, 
       caseStatus: "BookIn", 
       project_id: clientId, 
@@ -439,10 +455,11 @@ export const postBookInCase = async (cases, clientId, xml_nonXmlTab, existingDat
       bookInWorkStatus: "Assigned", 
       bookInType: xml_nonXmlTab
     };
-  }else{    
+  }else{
+   
     bookInCases = cases.reduce((acc, item) => {
       const formattedItem = mapCaseToApiFormat(item, clientId);
-      const exists = existingData.some(
+      const exists = existingData?.some(
         (existing) => existing.safetyReportId === formattedItem.safetyReportId
       );
 
@@ -451,19 +468,24 @@ export const postBookInCase = async (cases, clientId, xml_nonXmlTab, existingDat
         formattedItem.bookInType = xml_nonXmlTab;
         formattedItem.caseStatus = "BookIn";
         formattedItem.project_id = clientId;
+        // formattedItem.bookInWorkStatus = "Assigned";
+        // formattedItem.bookInAssignedDate = formattedIST()
         acc.push(formattedItem);
       }
-
       return acc;
     }, []);
   }
-
+  
   if(!bookInCases || (Array.isArray(bookInCases) && bookInCases.length === 0)) {
     return [];
   }
-  
+  let assignedBookInCases = bookInCases;
+  if(bookInCases.length > 0){
+     const assignies = await getEmployees()
+    assignedBookInCases = bookInCaseAllocation(bookInCases, existingData, assignies, clientId) 
+  }
   try {
-    const res = await axios.post(`${API_URL}/cases/`, bookInCases);
+    const res = await axios.post(`${API_URL}/cases/`, assignedBookInCases);
     return res.data;
   } catch (error) {
     console.error('Error posting book-in case(s):', error);

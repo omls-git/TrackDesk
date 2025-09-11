@@ -7,8 +7,9 @@ import paginationFactory from 'react-bootstrap-table2-paginator';
 import { getClientAssigniesOfRole } from '../services/Common';
 import {updateCase, updateToNext } from '../services/API';
 import { useGlobalData } from '../services/GlobalContext';
-import { caseStatusOptions, caseStatusOptionsCipla, formattedIST, getDaysOpen } from '../Utility';
+import {formattedIST, getDaysOpen } from '../Utility';
 import CaseDetailsModal from './CaseDetailsModal';
+import { CV } from '../commonVariables/Variables';
 
 const TrackTable = (props) => {
   const { data } = props;
@@ -288,7 +289,7 @@ const TrackTable = (props) => {
       editable: isEditable || user?.assignTriage ? true : false,
       editor : {
         type: Type.SELECT,
-        options: isCipla ? caseStatusOptionsCipla : caseStatusOptions
+        options: isCipla ? CV.caseStatusOptionsCipla  : CV.caseStatusOptions
       },
       headerStyle: () => ({ width: '160px', minWidth: '150px' }),
     },
@@ -430,7 +431,7 @@ const TrackTable = (props) => {
               }
             }
 
-            if(column.dataField === "deStatus" || column.dataField === "qrStatus" || column.dataField === "mrStatus" || column.dataField === 'triageStatus'){
+            if(column.dataField === "deStatus" || column.dataField === "qrStatus" || column.dataField === "mrStatus" || column.dataField === 'triageStatus' || column.dataField === 'bookInWorkStatus'){
               updatedCase[column.dataField] = newValue.trim();
               if(column.dataField === "deStatus"){
                 updatedCase.deStartedAt = newValue.trim() === "In Progress" ? formattedIST() : updatedCase.deStartedAt;
@@ -453,8 +454,20 @@ const TrackTable = (props) => {
                 if(newValue.trim() === "Completed"){
                   updatedCase.caseStatus = "Data Entry";
                   updatedCase.isCaseOpen = true;
+                } else if(column.dataField === "bookInWorkStatus" ){
+                  if(newValue.trim() === "Assigned"){
+                    updatedCase.bookInStartedAt = null;
+                    updatedCase.bookInCompletedAt = null;
+                  }
+                  if(newValue.trim() === "In Progress"){
+                    updatedCase.bookInStartedAt = formattedIST();
+                    updatedCase.bookInWorkCompletedAt = null;
+                  }
+                  if(newValue.trim() === "Completed"){
+                    updatedCase.bookInCompletedAt = formattedIST();
+                  }
                 }
-              }              
+              }            
             }
 
             if(newValue && newValue.trim() === "Completed"){

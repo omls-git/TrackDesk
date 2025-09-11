@@ -1,23 +1,26 @@
-import React from 'react'
+import React, { useState } from 'react'
 import PageTitle from './PageTitle'
 import TrackTable from './TrackTable';
 import { exportToCSV, getDaysOpen, jsonDataFromFile } from '../Utility';
-import { deleteCases, fetchBookInCases, postBookInCase } from '../services/API';
+import { createCases, deleteCases, fetchBookInCases, postBookInCase } from '../services/API';
 import Skeleton from './Skeleton';
 import DateEditor from './DateEditor';
 import { Type } from 'react-bootstrap-table2-editor';
 import { useGlobalData } from '../services/GlobalContext';
 import ImportModal from './ImportModal';
-import { getClientAssigniesOfRole } from '../services/Common';
+import { assignNonXmlCases, getClientAssigniesOfRole } from '../services/Common';
+import AddBookInCaseModal from '../components/AddBookInCaseModal';
+import { getUserMails } from '../services/GraphApi';
 
 const XmlNonXmlTab = (props) => {
-  const { addBookInCase, labels, tab } = props;
+  const {labels, tab } = props;
   const [searchTerm, setSearchTerm] = React.useState('');
+  const [showAddModal, setShowAddModal] = useState(false);
   const [xml_nonXmlData, setXml_nonXmlData] = React.useState([]);
   const [dupXml_nonXmlData, setDupXml_nonXmlData] = React.useState([]);
   const [selectedXmlCases, setSelectedXmlCases] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
-  const [show, setShow] = React.useState(false);
+  const [showImportModal, setShowImportModal] = React.useState(false);
   const {currentClientId, allClients, users} = useGlobalData();
   const [selectedClientId, setSelectedClientId] = React.useState(currentClientId);
 
@@ -61,7 +64,13 @@ const XmlNonXmlTab = (props) => {
        {value}
     </span>
   )}
-  const handleModal = () => setShow(!show);
+  const handleModal = () =>{
+    // if(tab === 'xml')
+      setShowImportModal(!showImportModal);
+    // if(tab === 'non-xml'){
+
+    // }
+  };
 
   const onClientChange = (e) => {
     const clientId = e?.target?.value;
@@ -73,9 +82,13 @@ const XmlNonXmlTab = (props) => {
     // TODO: implement file import logic here
     if (!file) return;
     let jsonData = await jsonDataFromFile(file);
+    if(jsonData && jsonData.length > 0){
     const response = await postBookInCase(jsonData, selectedClientId, tab, xml_nonXmlData);
     setDupXml_nonXmlData((prev) => [...prev, ...response]);
     setXml_nonXmlData((prev) => [...prev, ...response]);
+    }else{
+      alert("No data found in the file.");
+    }
   };
 
   const getBookInAssignies = () => {
@@ -90,7 +103,7 @@ const XmlNonXmlTab = (props) => {
 
   // Define columns for TrackTable
   const columns = [
-    { dataField: 'id', text: 'ID', type: 'text', editable: false, hidden:true, headerStyle: () => ({ width: '100px', minWidth: '100px' }) },
+    { dataField: 'id', text: 'ID', editable: false, hidden:true, headerStyle: () => ({ width: '100px', minWidth: '100px' }) },
     ...Object.entries(labels).map(([key]) => ({
       dataField: key,
       text: labels[key].label,
@@ -103,7 +116,21 @@ const XmlNonXmlTab = (props) => {
       headerStyle: () => ({ width: labels[key].width+'px', minWidth: '100px' }),
       ...(labels[key].type === 'date' ? { editorRenderer: (editorProps, value) => <DateEditor { ...editorProps } value={ value } /> } : {}),
       formatter: (cell, row) => toolTipFormatter(cell, row, labels[key])
-    }))
+    })),
+    {
+      dataField: 'bookInWorkStatus', 
+      text: 'Status', 
+      editable: true,
+      editor: {
+        type: Type.SELECT,
+        options: [
+            { value: 'Assigned', label: 'Assigned' },
+            { value: 'In Progress', label: 'In Progress' },
+            { value: 'Completed', label: 'Completed' }
+          ]
+      },
+      headerStyle: () => ({ width: '100px', minWidth: '100px' })
+    }
     // Add more columns as needed
   ];
 
@@ -126,16 +153,76 @@ const XmlNonXmlTab = (props) => {
     exportToCSV(dataToDownload, `${tab.toUpperCase()}_intake_cases_${new Date().toISOString().slice(0, 10)}.csv`);
   };
 
+  const handleSubmitBokInCase = async(formData)=>{
+     const res = await postBookInCase(formData, currentClientId, tab, []);    
+    if(res){
+      const appendData = [res]
+      setXml_nonXmlData(prev => [...prev, ...appendData]);
+      setDupXml_nonXmlData(prev => [...prev, ...appendData]);
+      alert('Data saved successfully!')
+      setShowAddModal(false);
+    }else{
+      alert('Failed to save the data');
+    }
+  }
+  const addBookInCase = () => {
+    setShowAddModal(!showAddModal);
+  };
+
+  const handleSearch = (event) => {
+    if(event.target.value) {
+    const searchValue = event.target.value.toLowerCase();
+    setSearchTerm(event.target.value);
+    const searchedData = dupXml_nonXmlData.filter(item =>
+      Object.values(item).some(value =>
+        String(value).toLowerCase().includes(searchValue)
+      )
+    );    
+    setXml_nonXmlData(searchedData);
+    }else{
+      setSearchTerm('')
+      setXml_nonXmlData(dupXml_nonXmlData);
+    } 
+  };
+
+  const fetchEmailsAndAssign = async (selectedDate) => {    
+    try {
+      const messages = await getUserMails(selectedDate)
+        if(messages){ 
+          let casesToCreate = [];
+          messages.forEach((message) => {
+          const nonXmlCase = {
+            project_id: currentClientId,            
+            bookInReceiptDate: message.receivedDateTime,
+            subjectLine: message.subject,
+            bookInType: 'non-xml',
+            isCaseOpen: true,
+            caseStatus: "BookIn"
+          }
+            casesToCreate.push(nonXmlCase);
+          })
+          const asignedCases = await assignNonXmlCases(casesToCreate, currentClientId, tab);
+          
+          if(asignedCases && asignedCases.length){
+            await createCases(asignedCases)
+            await fetchXmlNonXmlData()
+          }
+        }
+      } catch (error) {
+        console.error(error);
+    }
+  }
+
   return (
     <div>
       <PageTitle title={tab} 
-      searchTerm={searchTerm} 
-      setSearchTerm={setSearchTerm} 
+      searchTerm={searchTerm}
       addBookInCase={addBookInCase} 
       handleModal={handleModal}
       selectedCases={selectedXmlCases}
       onDelete={handleDelete}
       onExport={handleExport}
+      handleSearch={handleSearch}
       />
       { loading ? <Skeleton /> : null}
       {
@@ -152,15 +239,17 @@ const XmlNonXmlTab = (props) => {
         <h4 className="text-center mb-4">No Cases Assigned/Found</h4>
       )}
       
-         <ImportModal show={show}
+         <ImportModal show={showImportModal}
           onClose={handleModal}
           onShow={handleModal}
-          title={"Import XML file (Intake & Triage)"}
+          title={tab === 'xml' ?"Import XML file (Intake & Triage)" : 'non-xml'}
           onFileChange={handleImportFile} 
           selectedClient={selectedClientId}
           onSelect={onClientChange}
           clients={allClients}
+          fetchMails={fetchEmailsAndAssign}
         />
+         <AddBookInCaseModal show={showAddModal} onClose={() => setShowAddModal(false)} labels={labels} tab={tab} onSubmit={handleSubmitBokInCase} />
     </div>
   )
 }

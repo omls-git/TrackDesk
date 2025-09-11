@@ -71,8 +71,8 @@ const EmployeeTable = (props) => {
           { value: false, label: "No"}          
         ]
       },
-      formatter: (cell, row) => {
-        return cell ? "Yes" : "No";
+      formatter: (cell, row) => {        
+        return cell === 'false' ? 'No' : cell ? "Yes" : "No";
       }
     },
     {
@@ -88,7 +88,7 @@ const EmployeeTable = (props) => {
         ]
       },
       formatter: (cell, row) => {
-        return row.assignTriage ? 'Yes' : 'No';
+        return row.assignTriage === 'false' ? 'No' : row.assignTriage ? "Yes" : "No";
       }
     },
     ...(isAdmin || isManager ? [{
@@ -163,11 +163,16 @@ const EmployeeTable = (props) => {
           ) => {
             const oldValue = oldValueIn;
             const newValue = newValueIn;
-            if (oldValue === newValue || (!oldValue && !newValue)) {
+            if (oldValue === newValue) {
               done(true); // No change, allow saving
               return;
             }
             let updatedEmp = row;
+            
+            if(newValue === 'true' || newValue === 'false'){
+              // console.log(newValue, oldValue, typeof newValue, typeof oldValue, Boolean(newValue), typeof Boolean(newValue));
+              updatedEmp[column.dataField] = newValue === 'true' ? true : false;
+            }            
             updatedEmp[column.dataField] = newValue;
             if (newValue !== oldValue) {
              await updateEmployee(updatedEmp)

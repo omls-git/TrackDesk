@@ -5,11 +5,13 @@ export const GlobalContext = createContext();
 
 export const GlobalProvider = ({ children }) => {
   const [users, setUsers] = useState([]);
+  // const [user, setUser] = useState([]);
   const [allClients, setAllClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isManager, setIsManager] = useState(false);
   const [isUser, setIsUser] = useState(false);
+  const [allowFetchMails, setAllowFetchMails] = useState(false);
  
   const loggedUserName = localStorage.getItem('userName');
   const loggedUserMail = localStorage.getItem('userEmail');
@@ -35,12 +37,23 @@ export const GlobalProvider = ({ children }) => {
               setIsUser(true)
             }
           }
+          if(userDetailes?.email?.trim() === 'non-xml.cipla@orcimedlifesciences.com'){
+            setAllowFetchMails(true)
+          }
       }
       setLoading(false);
     };
 
     fetchData();
   }, [loggedUserName]);
+
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      const empData = await getEmployees();
+      setUsers(empData);
+    };
+    fetchEmployees();
+  }, []);
 
   const user = localStorage.getItem("currentClient") ? 
     users?.find((user) => user.username === loggedUserName && user.projectId?.toString() === localStorage.getItem("currentClient")) 
@@ -60,7 +73,8 @@ export const GlobalProvider = ({ children }) => {
     isUser,
     currentClientId,
     loading,
-    isCipla
+    isCipla,
+    allowFetchMails
   };
 
   return (
