@@ -1,8 +1,8 @@
-const dB = require("../models");
+import dB from "../models/index.js";
 
 const Clients = dB.clients;
 
-exports.create = async(req, res) =>{
+export async function create(req, res){
   try {
     const client = await Clients.create(req.body);
     res.status(201).json(client)
@@ -11,7 +11,7 @@ exports.create = async(req, res) =>{
   }
 }
 
-exports.findAll = async(req, res) => {
+export async function findAll(req, res) {
   try {
     const clients = await Clients.findAll();
     res.json(clients)
@@ -20,7 +20,7 @@ exports.findAll = async(req, res) => {
   }
 }
 
-exports.update = async (req, res) => {
+export async function update(req, res) {
   try {
     const id = req.params.id;
     
@@ -34,8 +34,8 @@ exports.update = async (req, res) => {
   } catch (error) {
     res.status(500).send(error.message);
   }
-};
-exports.deleteMany = async (req, res) => {
+}
+export async function deleteMany(req, res) {
   try {
     const ids = req.body.ids;
     if (!Array.isArray(ids) || ids.length === 0) {
@@ -46,9 +46,9 @@ exports.deleteMany = async (req, res) => {
   } catch (error) {
     res.status(500).send(error.message);
   }
-};
+}
 
-exports.findOne = async (req, res) => {
+export async function findOne(req, res) {
   try {
     const id = req.params.id;
     const client = await Clients.findByPk(id);
@@ -60,5 +60,5 @@ exports.findOne = async (req, res) => {
   } catch (error) {
     res.status(500).send(error.message);
   }
-};
+}
 

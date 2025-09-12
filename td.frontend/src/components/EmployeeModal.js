@@ -3,20 +3,21 @@ import { Modal, Button, Form, ListGroup } from 'react-bootstrap';
 import { getUsers } from '../services/GraphApi';
 import { postEmployee } from '../services/API';
 import { useGlobalData } from '../services/GlobalContext';
+import { CV } from '../commonVariables/Variables';
 
 const EmployeeModal = ({ show, onClose, clients }) => {
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
-  const { loggedUserName, currentClientId, isAdmin } = useGlobalData();
+  const { loggedUserName, currentClientId, isAdmin, isCipla } = useGlobalData();
   const [selectedClientId, setSelectedClientId] = useState(currentClientId || '');
   const [selectedLevel, setSelectedLevel] = useState('None');
   const [selectedPermission, setSelectedPermission] = useState('User');
   const [asignTriage, setAsignTriage] = useState(false)
 
   const clientOptions = clients;
-  const levelOptions = ['None','Data Entry', 'Quality Review', 'Medical Review', 'Book In'];
+  const levelOptions = isCipla ? CV.rolesOptionsCipla.map(option => option.value) : CV.rolesOptions.map(option => option.value);
   const permissionOptions = ['Admin', 'Manager', 'User'];
 
   useEffect(() => {

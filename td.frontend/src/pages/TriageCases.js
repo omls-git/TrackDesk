@@ -24,13 +24,15 @@ const TriageCases = ({triageTab = false}) => {
         if(currentClientId){
           const allCases = await fetchCasesByClientId(currentClientId);
           if(allCases && allCases.length){
+            const keys = Object.keys(allCases[0])
+          console.log(keys);
             if(triageTab){
               const myTriageCases = allCases.filter(caseItem => caseItem.triageAssignedTo === loggedUserName 
               && !caseItem.triageCompletedAt);
               setFilteredTriageCases(myTriageCases)
               setTriageCases(myTriageCases)
-            }else{
-              const triageCases = allCases.filter(caseItem => caseItem.caseStatus.toLowerCase().trim().includes('triage'));
+            }else{              
+              const triageCases = allCases.filter(caseItem => caseItem.caseStatus?.toLowerCase().trim().includes('triage'));
               setFilteredTriageCases(triageCases)
               setTriageCases(triageCases)
             }
@@ -60,7 +62,8 @@ const TriageCases = ({triageTab = false}) => {
       {cell}
     </span>
   );
-
+  console.log( currentClientId, isCipla);
+  
   const columns = [
       {
         dataField: 'id',
@@ -101,14 +104,14 @@ const TriageCases = ({triageTab = false}) => {
       },
       {
         dataField: 'inital_fup',
-        text: 'Initial/FUP',
+        text: 'Initial/FUP/ Amendment',
         width: 100,
         editable: true,
         editor : {
           type: Type.SELECT,
           options: CV.inital_fupOptions
         },
-        headerStyle: () => ({ width: '130px', minWidth: '130px' }),
+        headerStyle: () => ({ width: '150px', minWidth: '130px' }),
       },
       {
         dataField: 'ird_frd',
@@ -122,8 +125,7 @@ const TriageCases = ({triageTab = false}) => {
         editorRenderer: (editorProps, value) => <DateEditor { ...editorProps } value={ value } />,
         formatter: formateDates,
         headerStyle: () => ({ width: '110px', minWidth: '100px' })
-      },
-      ...(currentClientId && isCipla ? [
+      },      
       {
         dataField: 'ReportType',
         text: 'Report Type',
@@ -141,6 +143,7 @@ const TriageCases = ({triageTab = false}) => {
         text: 'ORD',
         width: 100,
         editable: true,
+        hidden : currentClientId && !isCipla,
         editor : {
           type: Type.DATE,
           dateFormat: 'YYYY-MM-DD',
@@ -154,6 +157,7 @@ const TriageCases = ({triageTab = false}) => {
         text: 'Source',
         width: 100,
         editable: true,
+        // hidden : currentClientId && !isCipla,
         editor : {
           type: Type.TEXTAREA,
           rows: 3,
@@ -166,6 +170,7 @@ const TriageCases = ({triageTab = false}) => {
         text: 'Country',
         width: 100,
         editable: true,
+        // hidden : currentClientId && isCipla,
         editor : {
           type: Type.TEXT,
           rows: 3,
@@ -179,8 +184,8 @@ const TriageCases = ({triageTab = false}) => {
         width: 100,
         editable: true,
         editor : {
-          type: Type.TEXT,
-          rows: 3,
+          type: Type.SELECT,
+          options: CV.destinationForReportingOptions,
         },
         headerStyle: () => ({ width: '110px', minWidth: '100px' }),
         formatter: toolTipFormatter
@@ -190,8 +195,7 @@ const TriageCases = ({triageTab = false}) => {
         width: 100,
         editable: true,
         editor : {
-          type: Type.TEXT,
-          rows: 3,
+          type: Type.TEXT
         },
         headerStyle: () => ({ width: '110px', minWidth: '100px' }),
         formatter: toolTipFormatter
@@ -201,11 +205,21 @@ const TriageCases = ({triageTab = false}) => {
         width: 100,
         editable: true,
         editor : {
-          type: Type.TEXT,
-          rows: 3,
+          type: Type.TEXT
         },
-        headerStyle: () => ({ width: '110px', minWidth: '100px' }),
+        headerStyle: () => ({ width: '150px', minWidth: '100px' }),
         formatter: toolTipFormatter
+      },
+      {dataField: 'Partner_as_MAH_Distributor',
+        text: 'Partner as MAH/Distributor',
+        width: 100,
+        editable: true,
+        editor : {
+          type: Type.SELECT,
+          options: CV.partnerAsOptions
+        },
+        headerStyle: () => ({ width: '170px', minWidth: '100px' }),
+        // formatter: toolTipFormatter
       },
       {dataField: 'ReportingComment',
         text: 'Reporting Comment',
@@ -215,10 +229,9 @@ const TriageCases = ({triageTab = false}) => {
           type: Type.TEXT,
           rows: 3,
         },
-        headerStyle: () => ({ width: '110px', minWidth: '100px' }),
+        headerStyle: () => ({ width: '150px', minWidth: '100px' }),
         formatter: toolTipFormatter
-      }
-    ] : []),
+      },
       {
         dataField: 'caseStatus',
         text: 'Case Status',
@@ -240,7 +253,7 @@ const TriageCases = ({triageTab = false}) => {
         editable: true,
         editor : {
           type: Type.SELECT,
-          options: CV.reportTypeOptions
+          options: CV.reporatability
         },
         headerStyle: () => ({ width: '150px', minWidth: '150px' }),
       },
@@ -252,6 +265,17 @@ const TriageCases = ({triageTab = false}) => {
         editor : {
           type: Type.SELECT,
           options: CV.seriousnessOptions
+        },
+        headerStyle: () => ({ width: '150px', minWidth: '150px' }),
+      },
+      {
+        dataField: 'eventSeriousness',
+        text: 'Event Seriousness',
+        width: 100,
+        editable: true,
+        editor : {
+          type: Type.SELECT,
+          options: CV.eventSeriousnessOptions
         },
         headerStyle: () => ({ width: '150px', minWidth: '150px' }),
       },

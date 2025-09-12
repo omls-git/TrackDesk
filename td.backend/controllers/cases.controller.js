@@ -1,8 +1,8 @@
-const dB = require("../models");
+import dB from "../models/index.js";
 
 const Cases = dB.cases;
 
-exports.create = async (req, res) => {
+export async function create(req, res) {
   try {
     if (Array.isArray(req.body)) {
       if (req.body.length === 0) {
@@ -17,9 +17,9 @@ exports.create = async (req, res) => {
   } catch (error) {
     res.status(500).send(error.message);
   }
-};
+}
 
-exports.findAll = async (req, res) => {
+export async function findAll(req, res) {
   try {
     let where = {};
     if (req.query.isOpen) {
@@ -39,9 +39,9 @@ exports.findAll = async (req, res) => {
   } catch (error) {
     res.status(500).send(error);
   }
-};
+}
 
-exports.findByProject = async (req, res) => {
+export async function findByProject(req, res) {
   try {
     const { project_id } = req.params;
     if (!project_id) {
@@ -52,9 +52,9 @@ exports.findByProject = async (req, res) => {
   } catch (error) {
     res.status(500).send(error.message);
   }
-};
+}
 
-exports.findOne = async (req, res) => {
+export async function findOne(req, res) {
   try {
     const id = req.params.id;
     const foundCase = await Cases.findByPk(id);
@@ -66,9 +66,9 @@ exports.findOne = async (req, res) => {
   } catch (error) {
     res.status(500).send(error.message);
   }
-};
+}
 
-exports.findOneByNumber = async (req, res) => {
+export async function findOneByNumber(req, res) {
   console.log(req.query.project_id, "case number in findOneByNumber");
   const project_id = req.query.project_id;
 
@@ -83,9 +83,9 @@ exports.findOneByNumber = async (req, res) => {
   } catch (error) {
     res.status(500).send(error.message);
   }
-};
+}
 
-exports.update = async (req, res) => {
+export async function update(req, res) {
   if (Array.isArray(req.body)) {
     await bulkUpdate(req, res);
   }else{
@@ -102,9 +102,9 @@ exports.update = async (req, res) => {
     res.status(500).send(error.message);
   }
 }
-};
+}
 
-exports.deleteMany = async (req, res) => {
+export async function deleteMany(req, res) {
   try {
     if (Array.isArray(req.body.ids)) {
       const ids = req.body.ids;
@@ -130,7 +130,7 @@ exports.deleteMany = async (req, res) => {
   } catch (error) {
     res.status(500).send(error.message);
   }
-};
+}
 
 
 const bulkUpdate = async (req, res) => {

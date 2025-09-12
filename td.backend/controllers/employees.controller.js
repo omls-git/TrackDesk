@@ -1,9 +1,10 @@
-const dB = require("../models");
-const extractedDate = require('../common').formattedIST();
+import { formattedIST } from "../common.js";
+import dB from "../models/index.js";
+const extractedDate = formattedIST();
 
 const Employees = dB.employeeTracker;
 
-exports.create = async (req, res) => {
+export async function create(req, res) {
   try {
     const createdOn = extractedDate;
     const { username, email, projectId, level, permission, createdBy, assignTriage } = req.body;
@@ -28,18 +29,18 @@ exports.create = async (req, res) => {
   } catch (error) {
     res.status(500).send(error.message);
   }
-};
+}
 
-exports.findAll = async (req, res) => {
+export async function findAll(req, res) {
   try {
     const employees = await Employees.findAll();
     res.json(employees);
   } catch (error) {
     res.status(500).send(error);
   }
-};
+}
 
-exports.findOne = async (req, res) => {
+export async function findOne(req, res) {
   try {
     const id = req.params.id;
     const employee = await Employees.findByPk(id);
@@ -51,9 +52,9 @@ exports.findOne = async (req, res) => {
   } catch (error) {
     res.status(500).send(error.message);
   }
-};
+}
 
-exports.update = async (req, res) => {
+export async function update(req, res) {
   try {
     const id = req.params.id;
     const modifiedOn = extractedDate;
@@ -69,9 +70,9 @@ exports.update = async (req, res) => {
   } catch (error) {
     res.status(500).send(error.message);
   }
-};
+}
 
-exports.deleteMany = async (req, res) => {
+export async function deleteMany(req, res) {
   try {
     const ids = req.body.ids;
     if (!Array.isArray(ids) || ids.length === 0) {
@@ -82,4 +83,4 @@ exports.deleteMany = async (req, res) => {
   } catch (error) {
     res.status(500).send(error.message);
   }
-};
+}

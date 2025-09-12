@@ -1,14 +1,14 @@
-const express = require("express");
-const casesController = require("../controllers/cases.controller");
+import { Router } from "express";
+import { create, findAll, findByProject, findOne, update, deleteMany, findOneByNumber } from "../controllers/cases.controller.js";
 
-const casesRouter = express.Router();
+const casesRouter = Router();
 
-casesRouter.post("/", casesController.create);
-casesRouter.get("/", casesController.findAll);
-casesRouter.get("/by-project/:project_id", casesController.findByProject);
-casesRouter.get("/:id", casesController.findOne);
-casesRouter.put("/:id", casesController.update);
-casesRouter.delete("/", casesController.deleteMany);
-casesRouter.get("/by-number/:caseNumber", casesController.findOneByNumber);
+casesRouter.post("/", create);
+casesRouter.get("/", findAll);
+casesRouter.get("/by-project/:project_id", findByProject);
+casesRouter.get("/:id", findOne);
+casesRouter.put("/:id", update);
+casesRouter.delete("/", deleteMany);
+casesRouter.get("/by-number/:caseNumber", findOneByNumber);
 
-module.exports = casesRouter;
+export default casesRouter;

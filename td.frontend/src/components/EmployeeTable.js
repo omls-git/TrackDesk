@@ -6,10 +6,11 @@ import { Type } from 'react-bootstrap-table2-editor';
 import cellEditFactory from 'react-bootstrap-table2-editor';
 import { updateEmployee } from '../services/API';
 import { useGlobalData } from '../services/GlobalContext';
+import { CV } from '../commonVariables/Variables';
 
 const EmployeeTable = (props) => {
   const { data, clients } = props;
-  const { isManager, isAdmin } = useGlobalData();
+  const { isManager, isAdmin,isCipla } = useGlobalData();
   const isEditable = (cell,  row) => {
       const editable = (isManager|| isAdmin) ? true : false
       // console.log(isManager(row.project_id) , isAdmin(row.project_id))
@@ -30,13 +31,7 @@ const EmployeeTable = (props) => {
       editable: isEditable,
       editor : {
         type: Type.SELECT,
-        options: [
-          { value: 'None', label: 'None' },
-          { value: 'Data Entry', label: 'Data Entry' },
-          { value: 'Quality Review', label: 'Quality Review' },
-          { value: 'Medical Review', label: 'Medical Review' },
-          { value: 'Book In', label: 'Book In' }
-        ],
+        options: isCipla ? CV.rolesOptionsCipla : CV.rolesOptions,
       },
     },
     {

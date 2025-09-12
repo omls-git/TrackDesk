@@ -77,8 +77,8 @@ export const createCases = async(data) => {
 }
 
 export const postCases = async (dataFromLL, clientId) => {
-  let importedTriageCases = dataFromLL.filter((item) => item["Case Status"].toLowerCase().trim().includes('triage'))
-  let deQrMrCases = dataFromLL.filter(item => !item["Case Status"].toLowerCase().trim().includes('triage'))
+  let importedTriageCases = dataFromLL.filter((item) => item["Case Status"]?.toLowerCase().trim().includes('triage'))
+  let deQrMrCases = dataFromLL.filter(item => !item["Case Status"]?.toLowerCase().trim().includes('triage'))
 
   const allOpenCases = await fetchClientOpenCases(true, clientId);
 
@@ -94,7 +94,7 @@ export const postCases = async (dataFromLL, clientId) => {
   }
 
   if(importedTriageCases && importedTriageCases.length){//only new triage cases are assigned and created, existing unassigned triage cases are updated with latest status from LL and also existing triage cases has to be assigned and updated
-    const existingTriageCases = allOpenCasesMapDays?.filter((item) => item.caseStatus.toLowerCase().trim().includes('triage'));
+    const existingTriageCases = allOpenCasesMapDays?.filter((item) => item.caseStatus?.toLowerCase().trim().includes('triage'));
     const assignedTriageCases = caseAllocation(importedTriageCases, existingTriageCases, assignies, clientId);
     
     if(assignedTriageCases && assignedTriageCases.length){
@@ -125,7 +125,7 @@ export const postCases = async (dataFromLL, clientId) => {
 
   if(deQrMrCases && deQrMrCases.length){ //all open cases in workflow are asigned and updated with status as well as assigned
     const activeWorkFlowCases = allOpenCasesMapDays?.filter((item) => 
-      ["data entry", "quality review", "medical review"].includes(item.caseStatus.toLowerCase().trim()))
+      ["data entry", "quality review", "medical review"].includes(item.caseStatus?.toLowerCase().trim()))
     
     if(activeWorkFlowCases && activeWorkFlowCases.length){
       //vlookup - updating the status corresponding to ll status
@@ -140,25 +140,25 @@ export const postCases = async (dataFromLL, clientId) => {
       })
 
       let unAssignedCases = openCasesWithUpdatedStatus?.filter(
-        (unAssignedCase) => (unAssignedCase.caseStatus.toLowerCase().trim() === "data entry" && !unAssignedCase.de) 
-        || (unAssignedCase.caseStatus.toLowerCase().trim() === "quality review" && !unAssignedCase.qr) 
-        || (unAssignedCase.caseStatus.toLowerCase().trim() === "medical review" && !unAssignedCase.mr))
+        (unAssignedCase) => (unAssignedCase.caseStatus?.toLowerCase().trim() === "data entry" && !unAssignedCase.de) 
+        || (unAssignedCase.caseStatus?.toLowerCase().trim() === "quality review" && !unAssignedCase.qr) 
+        || (unAssignedCase.caseStatus?.toLowerCase().trim() === "medical review" && !unAssignedCase.mr))
       .sort((a, b) => a.casesOpen - b.casesOpen);
 
       // Assign unassigned cases from existing open cases
       if(unAssignedCases && unAssignedCases.length){ 
-        const assignUnAssignedCases = caseAllocation(unAssignedCases, openCasesWithUpdatedStatus, assignies, clientId)?.filter((unAssignedCase) => (unAssignedCase.caseStatus.toLowerCase().trim() === "data entry" && unAssignedCase.de) 
-        || (unAssignedCase.caseStatus.toLowerCase().trim() === "quality review" && unAssignedCase.qr) 
-        || (unAssignedCase.caseStatus.toLowerCase().trim() === "medical review" && unAssignedCase.mr))
+        const assignUnAssignedCases = caseAllocation(unAssignedCases, openCasesWithUpdatedStatus, assignies, clientId)?.filter((unAssignedCase) => (unAssignedCase.caseStatus?.toLowerCase().trim() === "data entry" && unAssignedCase.de) 
+        || (unAssignedCase.caseStatus?.toLowerCase().trim() === "quality review" && unAssignedCase.qr) 
+        || (unAssignedCase.caseStatus?.toLowerCase().trim() === "medical review" && unAssignedCase.mr))
         if(assignUnAssignedCases && assignUnAssignedCases.length){
           await updateCase(assignUnAssignedCases);
         }
       }
 
       let assignedCases = openCasesWithUpdatedStatus?.filter(
-        (unAssignedCase) => (unAssignedCase.caseStatus.toLowerCase().trim() === "data entry" && unAssignedCase.de) 
-        || (unAssignedCase.caseStatus.toLowerCase().trim() === "quality review" && unAssignedCase.qr) 
-        || (unAssignedCase.caseStatus.toLowerCase().trim() === "medical review" && unAssignedCase.mr));
+        (unAssignedCase) => (unAssignedCase.caseStatus?.toLowerCase().trim() === "data entry" && unAssignedCase.de) 
+        || (unAssignedCase.caseStatus?.toLowerCase().trim() === "quality review" && unAssignedCase.qr) 
+        || (unAssignedCase.caseStatus?.toLowerCase().trim() === "medical review" && unAssignedCase.mr));
 
       if (assignedCases && assignedCases.length){
         for (let i = 0; i < assignedCases.length; i++) {
@@ -222,7 +222,7 @@ export const postCases = async (dataFromLL, clientId) => {
 const findIsActiveCase = (llCase, activeCase) => {
   if(llCase && activeCase){
     let llCaseNumber = llCase["Case Number"] || llCase["Case ID"] || llCase["Case Num"] || ""
-    let isActive = llCaseNumber.toLowerCase().trim() === activeCase.caseNumber.toLowerCase().trim()
+    let isActive = llCaseNumber?.toLowerCase().trim() === activeCase.caseNumber?.toLowerCase().trim()
     return isActive
   }else{
     return false
@@ -341,7 +341,7 @@ export const updateToNext = async (updatedCase) => {
   const [deAvailabe, qrAvailabe, mrAvailable, triageesAvailable] = userAssignedCasesCount(clientAssignies, selectedClientOpenCases);
   // console.log(deAvailabe, qrAvailabe, mrAvailable, triageesAvailable)
 
-   if(updatedCase.caseStatus.toLowerCase().trim().includes('triage')){
+   if(updatedCase.caseStatus?.toLowerCase().trim().includes('triage')){
       const nextAvailableUserName = triageesAvailable.sort((a,b) => a.count - b.count)[0]
       if(nextAvailableUserName.maxCount > nextAvailableUserName.count){
       updatedCase.triageAssignedTo = nextAvailableUserName.username
@@ -354,7 +354,7 @@ export const updateToNext = async (updatedCase) => {
       }
     }
 
-    if(updatedCase.caseStatus.toLowerCase().trim() === "data entry"){
+    if(updatedCase.caseStatus?.toLowerCase().trim() === "data entry"){
       const nextAvailableUserName = deAvailabe.sort((a,b) => a.count - b.count)[0]
       if(nextAvailableUserName.maxCount > nextAvailableUserName.count){
         updatedCase.de = nextAvailableUserName.username;
@@ -367,7 +367,7 @@ export const updateToNext = async (updatedCase) => {
         isUpdated = false
       }
     }
-     if(updatedCase.caseStatus.toLowerCase().trim() === "quality review"){
+     if(updatedCase.caseStatus?.toLowerCase().trim() === "quality review"){
       const nextAvailableUserName = qrAvailabe.sort((a,b) => a.count - b.count)[0]
       if(nextAvailableUserName.maxCount > nextAvailableUserName.count){
       updatedCase.qr = nextAvailableUserName.username
@@ -380,7 +380,7 @@ export const updateToNext = async (updatedCase) => {
         isUpdated = false
       }
     }
-    if(updatedCase.caseStatus.toLowerCase().trim() === "medical review"){
+    if(updatedCase.caseStatus?.toLowerCase().trim() === "medical review"){
       const nextAvailableUserName = mrAvailable.sort((a,b) => a.count - b.count)[0]?.username
       updatedCase.mr = nextAvailableUserName
       updatedCase.assignedDateMr = formattedIST()
@@ -390,7 +390,7 @@ export const updateToNext = async (updatedCase) => {
       modifiedNameDate(updatedCase)
     }
    
-    if(updatedCase.caseStatus.toLowerCase().trim() === "reporting"){
+    if(updatedCase.caseStatus?.toLowerCase().trim() === "reporting"){
       updatedCase.completedDateMr = formattedIST()
       updatedCase.isCaseOpen = false      
       modifiedNameDate(updatedCase)
@@ -434,14 +434,14 @@ export const postBookInCase = async (cases, clientId, xml_nonXmlTab, currectData
    }
   let bookInCases = []
   if (!Array.isArray(cases) || !clientId) {
-    if(xml_nonXmlTab.toLowerCase() === 'xml') {
+    if(xml_nonXmlTab?.toLowerCase() === 'xml') {
       const existingCase = existingData?.find(item => item.safetyReportId === cases.safetyReportId);
       if(existingCase) {
         alert("Case already exists with Safety Report ID: (" + existingCase.safetyReportId + ")");
         return [];
       }
     }
-    if(xml_nonXmlTab.toLowerCase() === 'non-xml') {
+    if(xml_nonXmlTab?.toLowerCase() === 'non-xml') {
       const existingCase = existingData?.find(item => item.OM_ID === cases.OM_ID);
       if(existingCase) {
         alert("Case already exists with OM ID: (" + existingCase.OM_ID + ")");

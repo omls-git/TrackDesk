@@ -46,8 +46,10 @@ const AllCases = () => {
     if(user){
       try {
         let cases = await fetchCasesByClientId(currentClientId);
+        console.log(cases);
+        
         if (cases) {
-          cases = cases.filter((item) => !item.caseStatus.toLowerCase().trim().includes('triage') && item.caseStatus.toLowerCase().trim() !== 'bookin' && item.caseStatus);
+          cases = cases.filter((item) => !item.caseStatus?.toLowerCase().trim().includes('triage') && item.caseStatus?.toLowerCase().trim() !== 'bookin' && item.caseStatus);
            setMasterData(cases);
            setDupMasterData(cases);
         }       

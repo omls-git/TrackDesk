@@ -25,11 +25,11 @@ export const caseAllocation = (cases, existingAllCases, assignies, clientId) => 
    console.log(deAvailabe, qrAvailabe, mrAvailable, triageesAvailable, "available assignies");
    
 
-    const dataEntryCases = mappedCases.filter(item => item.caseStatus.toLowerCase().trim() === "data entry");
-    const qualityReviewCases = mappedCases.filter(item => item.caseStatus.toLowerCase().trim() === "quality review");
-    const medicalReviewCases = mappedCases.filter(item => item.caseStatus.toLowerCase().trim() === "medical review");
-    const triageCases = mappedCases.filter(item => item.caseStatus.toLowerCase().trim().includes('triage'));
-    const remainingCases = mappedCases.filter(item => !["data entry", "quality review", "medical review", "triage", "intake & triage"].includes(item.caseStatus.toLowerCase().trim()));
+    const dataEntryCases = mappedCases.filter(item => item.caseStatus?.toLowerCase().trim() === "data entry");
+    const qualityReviewCases = mappedCases.filter(item => item.caseStatus?.toLowerCase().trim() === "quality review");
+    const medicalReviewCases = mappedCases.filter(item => item.caseStatus?.toLowerCase().trim() === "medical review");
+    const triageCases = mappedCases.filter(item => item.caseStatus?.toLowerCase().trim().includes('triage'));
+    const remainingCases = mappedCases.filter(item => !["data entry", "quality review", "medical review", "triage", "intake & triage"].includes(item.caseStatus?.toLowerCase().trim()));
 
     const dateEntryAssignedCases = employeesToAssign(deAvailabe, dataEntryCases, "de", clientId);
     const qualityReviewAssignedCases = employeesToAssign(qrAvailabe, qualityReviewCases, "qr", clientId);
@@ -271,7 +271,7 @@ export const getClientAssigniesOfRole = (role, clientId, assignies) => {
   }else {
     clientAssigniesOfRole = assignies.filter((item) => 
     !item.onLeave 
-    && item.level.toLowerCase() === role.toLowerCase() 
+    && item.level?.toLowerCase() === role?.toLowerCase() 
     && item.projectId.toString() === clientId.toString());
   }
   
@@ -287,7 +287,7 @@ export const getClientAssigniesOfRole = (role, clientId, assignies) => {
 
 export const userAssignedCasesCount = (clientAssignies, existingAllCases, target) => {
   
-  const deAssiniees = clientAssignies.filter((item) => item.level.toLowerCase() === "data entry".toLowerCase() && !item.onLeave);
+  const deAssiniees = clientAssignies.filter((item) => item.level?.toLowerCase() === "data entry" && !item.onLeave);
  
    let deAvailabe = [];
    const today = new Date()
@@ -299,7 +299,7 @@ export const userAssignedCasesCount = (clientAssignies, existingAllCases, target
     });
   }
 
-    const qrAssignees = clientAssignies.filter((item) => item.level.toLowerCase() === "quality review".toLowerCase() && !item.onLeave);
+    const qrAssignees = clientAssignies.filter((item) => item.level?.toLowerCase() === "quality review" && !item.onLeave);
     let qrAvailabe = [];
 
   if (qrAssignees && qrAssignees.length > 0){
@@ -309,7 +309,7 @@ export const userAssignedCasesCount = (clientAssignies, existingAllCases, target
     });
   }
 
-    const mrAssignees = clientAssignies.filter((item) => item.level.toLowerCase() === "medical review".toLowerCase() && !item.onLeave);
+    const mrAssignees = clientAssignies.filter((item) => item.level?.toLowerCase() === "medical review" && !item.onLeave);
     let mrAvailable = [];
   if (mrAssignees && mrAssignees.length > 0){
     mrAssignees.forEach(assigny => {
@@ -334,7 +334,7 @@ export const userAssignedCasesCount = (clientAssignies, existingAllCases, target
     });
   }
 
-  const bookInAssignies = clientAssignies.filter((item) => !item.onLeave && item.level.toLowerCase() === 'book in');
+  const bookInAssignies = clientAssignies.filter((item) => !item.onLeave && item.level?.toLowerCase() === 'book in');
   let bookInAvailable = [];
   if (bookInAssignies && bookInAssignies.length > 0){
     bookInAssignies.forEach(assigny => {
@@ -350,7 +350,7 @@ export const userAssignedCasesCount = (clientAssignies, existingAllCases, target
 }
 
 export const bookInCaseAllocation = (newBookInCases, existingAllCases, assignies, clientId) => {
-    const clientAssignies = assignies.filter((item) => item.projectId.toString() === clientId.toString() && !item.onLeave);
+    const clientAssignies = assignies.filter((item) => item.projectId?.toString() === clientId.toString() && !item.onLeave);
     if(!clientAssignies || clientAssignies.length === 0) {
       console.error("No assignies found for the client to assign cases", clientId)
       alert('No assignies found for the client to assign cases.')

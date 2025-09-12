@@ -1,4 +1,4 @@
-module.exports = (sequelize, DataTypes) => {
+export default (sequelize, DataTypes) => {
   const Cases = sequelize.define("masterCases", {
     project_id: {
       type: DataTypes.INTEGER,
@@ -318,6 +318,26 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.BOOLEAN,
       allowNull: true,
       defaultValue: false
+    },
+    outlookId:{
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    submissionDate: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    submissionDueDate: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    eventSeriousness: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    Partner_as_MAH_Distributor: {
+      type: DataTypes.STRING,
+      allowNull: true
     }
   },{
     timestamps: true

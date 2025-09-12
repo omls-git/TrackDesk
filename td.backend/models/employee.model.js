@@ -1,4 +1,4 @@
-module.exports = (sequelize, DataTypes) => {
+export default (sequelize, DataTypes) => {
   const EmployeeTracker = sequelize.define("employeeTracker", {
     username: {
       type: DataTypes.STRING,

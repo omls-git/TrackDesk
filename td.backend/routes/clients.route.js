@@ -1,10 +1,10 @@
-const express = require("express");
-const clientsRouter = express.Router();
-const clients = require("../controllers/clients.controller");
-clientsRouter.post("/", clients.create);
-clientsRouter.get("/", clients.findAll);
-clientsRouter.get("/:id", clients.findOne);
-clientsRouter.put("/:id", clients.update);
-clientsRouter.delete("/", clients.deleteMany);
+import { Router } from "express";
+const clientsRouter = Router();
+import { create, findAll, findOne, update, deleteMany } from "../controllers/clients.controller.js";
+clientsRouter.post("/", create);
+clientsRouter.get("/", findAll);
+clientsRouter.get("/:id", findOne);
+clientsRouter.put("/:id", update);
+clientsRouter.delete("/", deleteMany);
 
-module.exports = clientsRouter
+export default clientsRouter
